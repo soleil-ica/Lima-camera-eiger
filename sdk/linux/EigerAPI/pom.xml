@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fr.soleil</groupId>
+        <artifactId>super-pom-C-CPP</artifactId>
+        <version>RELEASE</version>
+    </parent>
+	
+    <groupId>fr.soleil.lib</groupId>
+    <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+	
+    <packaging>nar</packaging>
+    <name>EigerAPI</name>
+    <description>Eiger detector control library</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>se.haxx.lib</groupId>
+            <artifactId>curl-${aol}-${library}-${mode}</artifactId>
+        </dependency>
+      
+			<dependency>
+				<groupId>fr.soleil.lib</groupId>
+				<artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
+				<!--<version>2.1.5</version>-->
+			</dependency>
+    </dependencies>
+   
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.freehep</groupId>
+                <artifactId>freehep-nar-plugin</artifactId>
+                <configuration>
+                    <cpp>
+                        <sourceDirectory>src</sourceDirectory>
+                        <includePaths>
+                            <includePath>include</includePath>
+                            <includePath>jsoncpp-src-0.5.0/include</includePath>
+                        </includePaths>
+                        <defines>
+                             <define>COMPILATION_WITH_CURL</define> 
+                        </defines>                       
+                    </cpp>
+                    <linker>
+                        <libs>
+                            <lib>
+                                <name>json_linux-gcc-4.4.2_libmt</name>
+                                <type>static</type>
+                                <directory>jsoncpp-src-0.5.0/libs/linux-gcc-4.4.2</directory>
+                            </lib>
+                        </libs>
+			
+                    </linker>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>fr.soleil.maven.plugins</groupId>
+                <artifactId>maven-check-plugin</artifactId>
+                <configuration>
+                    <enable>false</enable>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <connection>${scm.connection.cvs.tango-ds}:Libraries/EigerCPP</connection>
+        <developerConnection>${scm.developerConnection.cvs.tango-ds}:Libraries/EigerCPP</developerConnection>
+        <url>${scm.url.cvs.tango-ds}/Libraries/EigerCPP</url>
+    </scm>
+   
+    <developers>
+        <developer>
+            <id>bouladoux</id>
+            <name>bouladoux</name>
+            <url>http://controle/</url>
+            <organization>Synchrotron Soleil</organization>
+            <organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+            <roles>
+                <role>developper</role>
+            </roles>
+            <timezone>1</timezone>
+        </developer>
+    </developers>
+</project>
