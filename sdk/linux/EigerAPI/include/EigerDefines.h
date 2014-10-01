@@ -31,8 +31,8 @@
 namespace eigerapi
 {
 
-#define C_EIGERAPI_EIGER1M_WIDTH  1030
-#define C_EIGERAPI_EIGER1M_HEIGHT 1065
+//#define C_EIGERAPI_EIGER1M_WIDTH  1030
+//#define C_EIGERAPI_EIGER1M_HEIGHT 1065
 #define C_NAME_PATTERN "lima"
 
 const char RESOURCE_NOT_FOUND[]    = "Resource not found: ";
@@ -40,6 +40,7 @@ const char JSON_PARSE_FAILED[]     = "Json parse failed: ";
 const char DATA_TYPE_NOT_HANDLED[] = "Data type not handled: ";
 const char EMPTY_RESPONSE[]        = "Empty response";
 const char READONLY_RESOURCE[]     = "Resource is read only: ";
+const char CREATE_FILE[]           = "Unable to create file: ";
 
 // Trigger modes
 typedef enum
@@ -48,7 +49,7 @@ typedef enum
    ETRIGMODE_EXPO = 0,
    ETRIGMODE_EXTT,
    ETRIGMODE_EXTM,
-   ETRIGMODE_EXTTE
+   ETRIGMODE_EXTE
 } ENUM_TRIGGERMODE;
 
 
@@ -66,6 +67,7 @@ typedef enum
    ESTATE_NA = 0, 
    ESTATE_DISABLED,
    ESTATE_READY,
+   ESTATE_IDLE, 
    ESTATE_ACQUIRE,
    ESTATE_ERROR,
    ESTATE_INITIALIZE,
@@ -80,6 +82,12 @@ typedef enum
 class EigerSize
 {
 public:
+    EigerSize() 
+    {
+        m_x = 0;
+        m_y = 0;
+    }
+    
     EigerSize(const int x, const int y)
     {
         m_x = x;

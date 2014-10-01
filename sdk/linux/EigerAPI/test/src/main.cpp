@@ -27,25 +27,25 @@ int main(int, char *[])
 	std::string version = "0.8.1";
 
 	//============================================================================  
-	try
-	{
-		eigerapi::EigerAdapter eiger_wrapper(ip);
+	// try
+	// {
+	// 	eigerapi::EigerAdapter eiger_wrapper(ip);
 
-		std::cout << "========================================" << std::endl;
-		eiger_wrapper.downloadAcquiredFile("here");
-		std::cout << "========================================" << std::endl;
+	// 	std::cout << "========================================" << std::endl;
+	// 	eiger_wrapper.downloadAcquiredFile("here");
+	// 	std::cout << "========================================" << std::endl;
 
-		std::cout << "========================================" << std::endl;
-		eiger_wrapper.arm();
-		std::cout << "========================================" << std::endl;
-		std::cout << eiger_wrapper.getTriggerMode() << std::endl;
-		std::cout << "========================================" << std::endl;
-		eiger_wrapper.setTriggerMode(eigerapi::ETRIGMODE_EXPO);		
-	}
-	catch ( eigerapi::EigerException &e )
-	{
-		std::cout << e.what();
-	}
+	// 	std::cout << "========================================" << std::endl;
+	// 	eiger_wrapper.arm();
+	// 	std::cout << "========================================" << std::endl;
+	// 	std::cout << eiger_wrapper.getTriggerMode() << std::endl;
+	// 	std::cout << "========================================" << std::endl;
+	// 	eiger_wrapper.setTriggerMode(eigerapi::ETRIGMODE_EXPO);		
+	// }
+	// catch ( eigerapi::EigerException &e )
+	// {
+	// 	std::cout << e.what();
+	// }
 
 
 /*
@@ -69,8 +69,8 @@ int main(int, char *[])
 */	
 	
 
-	std::cout << std::endl << "= RESTfulClient::get_file() test ========================================" << std::endl;	
-	eigerapi::RESTfulClient client;
+	// std::cout << std::endl << "= RESTfulClient::get_file() test ========================================" << std::endl;	
+	// eigerapi::RESTfulClient client;
 
 	//client.get_file("http://172.19.27.26/")
 
@@ -78,9 +78,13 @@ int main(int, char *[])
 	std::cout << std::endl << "= CFileImage_Nxs test ========================================" << std::endl;
 	eigerapi::CFileImage_Nxs H5File;
 
-	//long nimages = H5File.openFile("/home/guest/SOLEIL/HDF5/series_269_data_000000.h5");
+	//std::string name = "/home/guest/SOLEIL/HDF5/series_269_data_000000.h5";
+	std::string name = "/home/guest/SOLEIL/HDF5/test_lz4.h5";
+	//std::string name = "/home/guest/SOLEIL/HDF5/temp.h5";
+	
+	std::cout << "open: " << name << std::endl;
+	long nimages = H5File.openFile(name);
 
-	long nimages = H5File.openFile("/home/guest/SOLEIL/HDF5/lima_data_000001.h5");
 	std::cout << "openfile returned nbImages: " << nimages << std::endl;
 
 	if (-1 != nimages)
@@ -91,15 +95,25 @@ int main(int, char *[])
 		std::cout << "heigth:   " << h << std::endl;
 		std::cout << "depth:    " << d << std::endl;
 
+		std::cout << std::endl << "Extracting images ... " << std::endl;
 		void* src;
 		long long int ext = 0;
 		while (NULL != (src = H5File.getNextImage()))
 		{
-			std::string fname = "/home/guest/SOLEIL/HDF5/eiger.";
-			fname = fname + std::to_string(ext++) + std::string(".tga");
+			std::cout << std::to_string(ext) << "\t";
+			std::cout << std::flush;
 
-			SaveTGA(fname, src, w, h, d);
+			if (ext < 10) // only write out the 10 first images
+			{
+				std::string fname = "/home/guest/SOLEIL/HDF5/eiger.";
+				fname = fname + std::to_string(ext) + std::string(".tga");
+
+				SaveTGA(fname, src, w, h, d);
+			}
+
+			ext++;
 		}
+		std::cout << std::endl << "Extracting images end " << std::endl;
 
 		H5File.closeFile();
 	}

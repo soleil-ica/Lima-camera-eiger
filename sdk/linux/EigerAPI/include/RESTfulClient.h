@@ -38,10 +38,36 @@ namespace eigerapi
 
 static std::string RESTfulClient_data;
 
-size_t RESTfulClient_writeCallback(char* buf, size_t size, size_t nmemb, void* /*up*/);
-size_t RESTfulClient_header_callback(char* /*buffer*/,   size_t size,   size_t nitems,   void* /*userdata*/);
-size_t RESTfulClient_write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
+//// size_t RESTfulClient_writeCallback(char* buf, size_t size, size_t nmemb, void* /*up*/);
+////size_t RESTfulClient_header_callback(char* /*buffer*/,   size_t size,   size_t nitems,   void* /*userdata*/);
+////size_t RESTfulClient_write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
+
+//---------------------------------------------------------------------------
+/// Callback for get_parameter()
+//---------------------------------------------------------------------------
+static size_t RESTfulClient_writeCallback(char* buf, size_t size, size_t nmemb, void* /*up*/)
+{  //callback must have this declaration
+   //buf is a pointer to the data that m_curl has for us
+   //size*nmemb is the size of the buffer
+   for(unsigned int c = 0; c < size*nmemb; c++)
+   {
+      RESTfulClient_data.push_back(buf[c]);
+   }
+   return size*nmemb; //tell m_curl how many bytes we handled
+}
+
+//---------------------------------------------------------------------------
+/// Callback for send_command()
+//---------------------------------------------------------------------------
+static size_t RESTfulClient_header_callback(char* buffer,   size_t size,   size_t nitems,   void* /*userdata*/)
+{
+   for(unsigned int c = 0; c < size*nitems; c++)
+   {
+      RESTfulClient_data.push_back(buffer[c]);
+   }
+   return size*nitems; //tell m_curl how many bytes we handled
+}
 
 //---------------------------------------------------------------------------
 //
@@ -64,7 +90,8 @@ public:
    void get_file(const std::string& url, const std::string& targetPath);
    void delete_file(const std::string& url);
 
-private:    
+private:
+    static size_t RESTfulClient_write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
     
 #ifdef COMPILATION_WITH_CURL    
    CURL* m_curl; //our curl object

@@ -114,20 +114,28 @@ void Interface::getStatus(StatusType& status)
     Eiger_status = m_cam.getStatus();
     switch (Eiger_status)
     {
-    case Camera::Ready:
-      status.set(HwInterface::StatusType::Ready);
-      break;
-    case Camera::Exposure:
-      status.set(HwInterface::StatusType::Exposure);
-      break;
-    case Camera::Readout:
-      status.set(HwInterface::StatusType::Readout);
-      break;
-    case Camera::Latency:
-      status.set(HwInterface::StatusType::Latency);
-      break;
-    case Camera::Fault:
-      status.set(HwInterface::StatusType::Fault);
+      case Camera::Ready:
+        status.set(HwInterface::StatusType::Ready);
+        break;
+
+      case Camera::Exposure:
+        status.set(HwInterface::StatusType::Exposure);
+        break;
+
+      case Camera::Readout:
+        status.set(HwInterface::StatusType::Readout);
+        break;
+
+      case Camera::Latency:
+        status.set(HwInterface::StatusType::Latency);
+        break;
+
+      case Camera::Fault:
+        status.set(HwInterface::StatusType::Fault);
+        break;
+        
+      case Camera::Preparing:
+         status.set(HwInterface::StatusType::Exposure);
     }
     
     DEB_RETURN() << DEB_VAR1(status);

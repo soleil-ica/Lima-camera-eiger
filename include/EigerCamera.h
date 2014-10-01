@@ -58,8 +58,8 @@ using namespace std;
 								  }
 
 // Delay between two getStatus calls
-#define C_DETECTOR_POLL_TIME 0.25 // seconds
-#define C_DETECTOR_MAX_TIME  60   // seconds
+#define C_DETECTOR_POLL_TIME 2  // second
+#define C_DETECTOR_MAX_TIME  60 // seconds
 
 // Name of the downloaded file
 #define C_DOWNLOADED_FILENAME "/temp.h5"
@@ -80,7 +80,7 @@ namespace lima
 
 		public:
 
-			enum Status {	Ready, Exposure, Readout, Latency, Fault };
+			enum Status {	Ready, Exposure, Readout, Latency, Fault, Preparing };
 
 			Camera(const std::string& detector_ip, const std::string& target_path);
 			~Camera();
@@ -154,14 +154,15 @@ namespace lima
 				public:
 
 				enum
-				{ // Status
-					Ready = MaxThreadStatus, Exposure, Readout, Latency
+				{ // thread Status
+					Ready = MaxThreadStatus, Exposure, Readout, Latency, Preparing
 				};
 
 				enum
-				{ // Cmd
+				{ // thread commands
 					StartAcq = MaxThreadCmd,
-					StopAcq
+					StopAcq,
+					PrepareAcq
 				};
 
 				CameraThread(Camera& cam);
@@ -176,7 +177,9 @@ namespace lima
 
 				private:
 					void execStartAcq();
-               		void WaitForState(eigerapi::ENUM_STATE eTargetState); ///< [in] state to wait for
+					void execPrepareAcq();
+                    void WaitForState(eigerapi::ENUM_STATE eTargetStateDET,  ///< [in] Detector state to wait for
+                                      eigerapi::ENUM_STATE eTargetStateFW);  ///< [in] Filewriter state to wait for
 					
                Camera* m_cam;
 			};
@@ -187,21 +190,25 @@ namespace lima
 			eigerapi::ENUM_TRIGGERMODE getTriggerMode(const TrigMode trig_mode); ///< [in] lima trigger mode value
 			bool isBinningSupported(const int binValue);	/// Check if a binning value is supported
 
+            // Timestamp functions
+        	Timestamp T0, T1, DeltaT;
+            void TStart();
+            double TStop();
+
 			//-----------------------------------------------------------------------------
 			//- lima stuff
 			SoftBufferCtrlObj	      m_buffer_ctrl_obj;
 			int                       m_nb_frames;
 			Camera::Status            m_status;
 			int                       m_image_number;
-			int                       m_timeout;
 			double                    m_latency_time;
 			TrigMode                  m_trig_mode;
 
 			//- camera stuff
 			string                    m_detector_model;
 			string                    m_detector_type;
-			long					  m_depth, m_bytesPerPixel;
 			long					  m_maxImageWidth, m_maxImageHeight;
+            ImageType                 m_detectorImageType;  
 
 			//- EigerAPI stuff
          	eigerapi::EigerAdapter*   m_pEigerAPI;
@@ -214,7 +221,7 @@ namespace lima
 			double                    m_x_pixelsize, m_y_pixelsize;
 			string                    m_targetFilename;
 
-			CameraThread 			     m_thread;
+			CameraThread 			  m_thread;
 	};
 	} // namespace Eiger
 } // namespace lima

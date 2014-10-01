@@ -78,34 +78,55 @@ void Camera::CameraThread::execCmd(int cmd)
 {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "CameraThread::execCmd - BEGIN";
+        std::cout << "CameraThread::execCmd - BEGIN" << std::endl;
+ 
     int status = getStatus();
+  
     switch (cmd)
     {
-      case StartAcq:
-        if (status != Ready)
-        throw LIMA_HW_EXC(InvalidValue, "Not Ready to StartAcq");
-        execStartAcq();
-      break;
+        case StartAcq:
+        {
+            if (status != Exposure) throw LIMA_HW_EXC(InvalidValue, "Not Ready to StartAcq");
+            execStartAcq();
+            break;
+        }
+
+        case PrepareAcq:
+        {
+            if (status != Ready) throw LIMA_HW_EXC(InvalidValue, "Not Ready to PrepareAcq");
+            execPrepareAcq();
+            break;
+        }
+
+        default:
+        {
+            DEB_ERROR() << "CameraThread::execCmd  Unknown command.";
+            THROW_HW_ERROR(Error) << "CameraThread::execCmd  Unknown command.";
+        }
     }
     DEB_TRACE() << "CameraThread::execCmd - END";
+        std::cout << "CameraThread::execCmd - END" << std::endl;    
 }
 
 
 //-----------------------------------------------------------------------------
 ///  Waits for a specific device state
 //-----------------------------------------------------------------------------
-void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetState) ///< [in] state to wait for
+void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetStateDET, ///< [in] Detector state to wait for
+                                        eigerapi::ENUM_STATE eTargetStateFW)  ///< [in] Filewriter state to wait for
 {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "CameraThread::WaitForState - BEGIN";
 
     int iterCount = 0; // iteration counter
-    eigerapi::ENUM_STATE eState;
+
+    eigerapi::ENUM_STATE eStateFileWriter, eStateDetector;
     do
-    {      
+    {
         try
         {
-            eState = m_cam->m_pEigerAPI->getState(eigerapi::ESUBSYSTEM_FILEWRITER);
+            eStateFileWriter = m_cam->m_pEigerAPI->getState(eigerapi::ESUBSYSTEM_FILEWRITER);
+            eStateDetector   = m_cam->m_pEigerAPI->getState(eigerapi::ESUBSYSTEM_DETECTOR);
         }
         catch (eigerapi::EigerException &e)
         {
@@ -115,33 +136,70 @@ void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetState) ///< 
         iterCount++;
 
         // Check for faulty states
-        switch (eState)
+        bool bError = false;
+        switch (eStateFileWriter)
         {
             case eigerapi::ESTATE_DISABLED:
             case eigerapi::ESTATE_ERROR:
-            {
-              DEB_ERROR() << "Faulty state reached during WaitForState.";
-              THROW_HW_ERROR(Error) << "Faulty state reached during WaitForState.";
-            }
-            break;
+                bError = true;
+                break;
+        }
+        switch (eStateDetector)
+        {
+            case eigerapi::ESTATE_DISABLED:
+            case eigerapi::ESTATE_ERROR:
+                bError = true;
+                break;
+        }
+
+        if (bError)
+        {
+            DEB_ERROR() << "Faulty state reached during WaitForState.";
+            THROW_HW_ERROR(Error) << "Faulty state reached during WaitForState.";
         }
 
         // Check for operation timeout
-        if ((eTargetState!=eState) && (iterCount*C_DETECTOR_POLL_TIME >= C_DETECTOR_MAX_TIME) )
+        if ( (eTargetStateFW!=eStateFileWriter) && (eTargetStateDET!=eStateDetector) && (iterCount*C_DETECTOR_POLL_TIME >= C_DETECTOR_MAX_TIME) )
         {
             DEB_ERROR() << "Timeout reached during WaitForState.";
             THROW_HW_ERROR(Error) << "Timeout reached during WaitForState.";
         }
 
         // If target state still not reached, wait before requesting the state again
-        if (eTargetState!=eState)
+        if ( (eTargetStateFW!=eStateFileWriter) || (eTargetStateDET!=eStateDetector) )
         {
             lima::Sleep(C_DETECTOR_POLL_TIME);
         }
     }
-    while (eTargetState!=eState);
+    while ( (eTargetStateFW!=eStateFileWriter) || (eTargetStateDET!=eStateDetector) );
 
     DEB_TRACE() << "CameraThread::WaitForState - END";
+}
+
+
+//---------------------------------------------------------------------------------------
+//! Thread prepare the acquisition by sending the arm command
+//---------------------------------------------------------------------------------------
+void Camera::CameraThread::execPrepareAcq()
+{
+    DEB_MEMBER_FUNCT();
+
+    DEB_TRACE() << "CameraThread::execPrepareAcq - BEGIN";
+
+        std::cout << "CameraThread::execPrepareAcq - BEGIN" << std::endl;
+
+    setStatus(Preparing);
+
+    // send the arm command
+    m_cam->TStart();
+    EIGER_EXEC(m_cam->m_pEigerAPI->arm());
+    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+
+    setStatus(Exposure);
+
+    DEB_TRACE() << "CameraThread::execPrepareAcq - END";
+
+        std::cout << "CameraThread::execPrepareAcq - END" << std::endl;
 }
 
 
@@ -153,7 +211,11 @@ void Camera::CameraThread::execStartAcq()
     DEB_MEMBER_FUNCT();
 
     DEB_TRACE() << "CameraThread::execStartAcq - BEGIN";
-    setStatus(Exposure);
+     std::cout << "CameraThread::execStartAcq - BEGIN" << std::endl;
+
+    waitStatus(CameraThread::Exposure); // Wait prepareacq 
+
+    setStatus(Readout);
 
     StdBufferCbMgr& buffer_mgr = m_cam->m_buffer_ctrl_obj.getBuffer();
 
@@ -164,10 +226,21 @@ void Camera::CameraThread::execStartAcq()
 
     DEB_TRACE() << "Run";
 
+    // send the trigger command (should return only when acquisition ended)
+    m_cam->TStart();
+    EIGER_EXEC(m_cam->m_pEigerAPI->trigger());
+    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+
+    // Send a disarm command to finalize the acquisition
+    m_cam->TStart();
+    EIGER_EXEC(m_cam->m_pEigerAPI->disarm());
+    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+
     // Wait for filewriter status to be ready
-    WaitForState(eigerapi::ESTATE_READY);
+    WaitForState(eigerapi::ESTATE_IDLE, eigerapi::ESTATE_READY);
 
     // Download and open the captured file for reading
+    m_cam->TStart();
     try
     {
         m_cam->m_pEigerAPI->downloadAcquiredFile(m_cam->m_targetFilename);
@@ -176,11 +249,13 @@ void Camera::CameraThread::execStartAcq()
     {
         HANDLE_EIGERERROR(e.what());
     }
+    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
 
   	// Begin to transfer the images to Lima
     buffer_mgr.setStartTimestamp(Timestamp::now());
 
   	// Acquisition loop
+    m_cam->TStart();
     bool bAcquisitionEnd = false;
     while ( (!bAcquisitionEnd) && ((0==m_cam->m_nb_frames) || (m_cam->m_image_number < m_cam->m_nb_frames)) )
     {   
@@ -220,15 +295,16 @@ void Camera::CameraThread::execStartAcq()
 
     } /* end of acquisition loop */
 
-    // Delete the acquired file
     try
     {
-        m_cam->m_pEigerAPI->deleteAcquiredFile();
+        m_cam->m_pEigerAPI->deleteAcquiredFile();   // Delete the acquired file from Eiger server data storage
     }
     catch (eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
+
+    std::cout << "End of lima acquisition. Duration: " << m_cam->TStop() << "s" << std::endl;
 
     setStatus(Ready);
 
@@ -240,19 +316,21 @@ void Camera::CameraThread::execStartAcq()
 ///  Ctor
 //-----------------------------------------------------------------------------
 Camera::Camera(const std::string& detector_ip,	///< [in] Ip address of the detector server
-			         const std::string& target_path)	///< [in] temporary path where to store downloaded files
+			   const std::string& target_path)	///< [in] temporary path where to store downloaded files
               : m_thread(*this),
-    m_status(Ready),
-    m_image_number(0),
-    m_depth(16),
-    m_latency_time(0.),
-    m_exp_time(1.),
-    m_targetFilename(target_path),
-    m_pEigerAPI(NULL)
+                m_image_number(0),
+                m_latency_time(0.),
+                m_exp_time(1.),
+                m_targetFilename(target_path),
+                m_pEigerAPI(NULL),
+                m_detectorImageType(Bpp16)
 {
     DEB_CONSTRUCTOR();
 
     m_targetFilename += C_DOWNLOADED_FILENAME;
+
+    std::cout << "Camera::Camera(" << detector_ip << ", " << target_path << ")" << std::endl;
+    std::cout << "Targetfilename = " << m_targetFilename << std::endl;
 
     // Init EigerAPI
     try
@@ -261,13 +339,6 @@ Camera::Camera(const std::string& detector_ip,	///< [in] Ip address of the detec
 
       // --- Initialise deeper parameters of the controller
       initialiseController();
-
-      Size sizeMax;
-      getDetectorImageSize(sizeMax);
-
-      // Store max image size
-      m_maxImageWidth  = sizeMax.getWidth();
-      m_maxImageHeight = sizeMax.getHeight();      
     }
     catch (eigerapi::EigerException &e)
     {
@@ -314,10 +385,8 @@ void Camera::prepareAcq()
 {
 	DEB_MEMBER_FUNCT();
 
-    // initialize ?
-
-    // send the arm command
-    EIGER_EXEC(m_pEigerAPI->arm());
+    std::cout << "Camera::prepareAcq() start CmdThread" << std::endl;
+    m_thread.sendCmd(CameraThread::PrepareAcq);
 }
 
 
@@ -328,9 +397,6 @@ void Camera::startAcq()
 {
     DEB_MEMBER_FUNCT();
 
-    // send the trigger command   
-    EIGER_EXEC(m_pEigerAPI->trigger());
-
     // init force stop flag before starting acq thread
     m_thread.m_force_stop = false;
 
@@ -338,8 +404,8 @@ void Camera::startAcq()
     m_image_number = 0;   
     m_thread.sendCmd(CameraThread::StartAcq);
 
-    // Wait running state of acquisition thread
-    m_thread.waitNotStatus(CameraThread::Ready);
+    // Wait for acquisition to end
+    // m_thread.waitStatus(CameraThread::Ready);
 }
 
 
@@ -376,11 +442,14 @@ void Camera::getDetectorMaxImageSize(Size& size) ///< [out] image dimensions
 //-----------------------------------------------------------------------------
 void Camera::getDetectorImageSize(Size& size) ///< [out] image dimensions
 {
-  DEB_MEMBER_FUNCT();
+    DEB_MEMBER_FUNCT();
 
-  int xmax = C_EIGERAPI_EIGER1M_WIDTH;
-  int ymax = C_EIGERAPI_EIGER1M_HEIGHT;    
-  size = Size(xmax, ymax);
+    eigerapi::EigerSize eSz;
+    EIGER_EXEC(eSz = m_pEigerAPI->getDetectorSize());
+    int width  = eSz.getX();
+    int height = eSz.getY();
+
+    size = Size(width, height);
 }
 
 
@@ -389,9 +458,9 @@ void Camera::getDetectorImageSize(Size& size) ///< [out] image dimensions
 //-----------------------------------------------------------------------------
 void Camera::getImageType(ImageType& type) ///< [out] image type
 {
- DEB_MEMBER_FUNCT();
+    DEB_MEMBER_FUNCT();
 
- type = Bpp16;
+    type = m_detectorImageType;    
 }
 
 
@@ -576,7 +645,7 @@ const
   long	capflags;
   double	step, defaultvalue;
    // get exposure time range using EigerAPI
-  min_expo = 0.0;
+  min_expo = 0.0001;
   max_expo = 10.0;
 	/*if(  )
 	{
@@ -620,7 +689,15 @@ void Camera::setNbFrames(int nb_frames) ///< [in] number of frames to take
         HANDLE_EIGERERROR("video mode is not supported.");
     }
 
-    m_nb_frames = nb_frames;
+    try
+    {
+       m_pEigerAPI->setNbImagesToAcquire(nb_frames); 
+       m_nb_frames = nb_frames;
+    }
+    catch (eigerapi::EigerException &e)
+    {
+        HANDLE_EIGERERROR(e.what());
+    }
 }
 
 
@@ -669,6 +746,9 @@ Camera::Status Camera::getStatus() ///< [out] current camera status
 
         case CameraThread::Latency:
           return Camera::Latency;
+
+        case CameraThread::Preparing:
+            return Camera::Preparing;
 
         default:
           throw LIMA_HW_EXC(Error, "Invalid thread status");
@@ -729,7 +809,7 @@ void Camera::reset()
 */
 
 //-----------------------------------------------------------------------------
-///    initialise controller with speeds and preamp gain
+///    initialise controller
 //-----------------------------------------------------------------------------
 void Camera::initialiseController()
 {
@@ -737,20 +817,37 @@ void Camera::initialiseController()
     DEB_TRACE() << "initialiseController()";
 
     // Fills the map of available trigger modes
-    m_map_trig_modes[IntTrig] 		  = eigerapi::ETRIGMODE_EXPO;
+    m_map_trig_modes[IntTrig] 		= eigerapi::ETRIGMODE_EXPO;
     m_map_trig_modes[ExtTrigSingle] = eigerapi::ETRIGMODE_EXTT;
-    m_map_trig_modes[ExtTrigMult]	  = eigerapi::ETRIGMODE_EXTM;
-    m_map_trig_modes[ExtGate]       = eigerapi::ETRIGMODE_EXTTE;
-
-    // Send an "initialize" command
-    DEB_TRACE() << "m_pEigerAPI->initialize()";
-    m_pEigerAPI->initialize();
+    m_map_trig_modes[ExtTrigMult]	= eigerapi::ETRIGMODE_EXTM;
+    m_map_trig_modes[ExtGate]       = eigerapi::ETRIGMODE_EXTE;
 
     // Retrieve pixel size
     DEB_TRACE() << "m_pEigerAPI->getPixelSize()";
     eigerapi::EigerSize eSz = m_pEigerAPI->getPixelSize();
     m_x_pixelsize = eSz.getX();
     m_y_pixelsize = eSz.getY();
+
+
+    Size sizeMax;
+    getDetectorImageSize(sizeMax);
+
+    // Store max image size
+    m_maxImageWidth  = sizeMax.getWidth();
+    m_maxImageHeight = sizeMax.getHeight();
+
+    // Store pixel depth    
+    int bits = m_pEigerAPI->getBitDepthReadout();
+    switch (bits)
+    {
+        case 12: m_detectorImageType = Bpp16; break;
+        default:
+        {
+            char Msg[256];
+            sprintf(Msg, "Unexpected bit depth: %d", bits);
+            HANDLE_EIGERERROR(Msg);
+        }
+    }
 
     // Detector model
     DEB_TRACE() << "m_pEigerAPI->getDescription()";
@@ -817,7 +914,7 @@ double Camera::getHumidity()
 {
     DEB_MEMBER_FUNCT();
 
-    EIGER_EXEC(m_pEigerAPI->getHumidity());
+    EIGER_EXEC(return m_pEigerAPI->getHumidity());
 }
 
 
@@ -971,5 +1068,18 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
     DEB_MEMBER_FUNCT();
 
     EIGER_EXEC(value = m_pEigerAPI->getPhotonEnergy());
+}
+
+
+//-----------------------------------------------------------------------------
+void Camera::TStart()
+{
+    T0 = Timestamp::now();
+}
+
+double Camera::TStop()
+{
+    T1 = Timestamp::now();
+    return (T1 - T0);
 }
 

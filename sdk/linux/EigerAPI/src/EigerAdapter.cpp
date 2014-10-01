@@ -51,12 +51,13 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
     m_vectTriggerModes.push_back("expo");
     m_vectTriggerModes.push_back("extt");
     m_vectTriggerModes.push_back("extm");
-    m_vectTriggerModes.push_back("extte");
+    m_vectTriggerModes.push_back("exte");
 
     // Subsystems status strings
     m_vectStatusString.push_back("na");         // ESTATE_NA
     m_vectStatusString.push_back("disabled");   // ESTATE_DISABLED
     m_vectStatusString.push_back("ready");      // ESTATE_READY
+    m_vectStatusString.push_back("idle");       // ESTATE_IDLE
     m_vectStatusString.push_back("acquire");    // ESTATE_ACQUIRE
     m_vectStatusString.push_back("error");      // ESTATE_ERROR
     m_vectStatusString.push_back("initialize"); // ESTATE_INITIALIZE
@@ -64,6 +65,9 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
     m_vectStatusString.push_back("test");       // ESTATE_TEST
 
     m_fileImage = NULL;
+
+    // Send an "initialize" command
+    initialize();
 
     // Init capture timings
     m_readout_time = getReadoutTime(); // get the current readout time in the detector
@@ -81,8 +85,10 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
     // Disable LZ4 compression by default
     std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
     compression->get(m_compression); // store initial value
-    compression->set(false);
-
+    std::cout<<"m_compression = "<<m_compression<<std::endl;
+    compression->set(true);
+    compression->get(m_compression); // store initial value
+    std::cout<<"m_compression = "<<m_compression<<std::endl;
     // Disable auto_summation for now
     std::shared_ptr<ResourceValue> autosummation (dynamic_cast<ResourceValue*> (m_pFactory->getResource("auto_summation")));
     autosummation->set(false);
@@ -121,9 +127,14 @@ void EigerAdapter::initialize()
 /// Run the arm command
 //---------------------------------------------------------------------------
 void EigerAdapter::arm()
-{
+{    
     std::shared_ptr<Resource> armCmd (m_pFactory->getResource("arm"));
     armCmd->execute();
+
+#ifndef COMPILATION_WITH_CURL
+    usleep(1700000);
+#endif
+
 }
 
 
@@ -151,7 +162,7 @@ void EigerAdapter::trigger()
 /// Download and open the last acquired data file
 //---------------------------------------------------------------------------
 void EigerAdapter::downloadAcquiredFile(const std::string& destination) ///< [in] full destination path where to download the data file
-/// (this string shall include the destination file name too )
+                                                                        /// (this string shall include the destination file name too )
 {
     std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
 
@@ -246,12 +257,16 @@ void EigerAdapter::setExposureTime(const double exposureTime) ///< [in] exposure
 //---------------------------------------------------------------------------
 double EigerAdapter::getExposureTime()
 {
+#ifdef COMPILATION_WITH_CURL
     std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("exposure")));
     double exposureTime = 0.0;
     value->get(exposureTime);
     m_exposure_time = exposureTime;
 
     return exposureTime;
+#else
+    return 1.0;
+#endif
 }
 
 
@@ -313,13 +328,15 @@ ENUM_STATE EigerAdapter::getState(const ENUM_SUBSYSTEM eDevice) ///< [in] subsys
     std::string resourceName;
     switch (eDevice)
     {
-        case ESUBSYSTEM_DETECTOR:   resourceName = "detector_status";
-        case ESUBSYSTEM_FILEWRITER: resourceName = "filewriter_status";
+        case ESUBSYSTEM_DETECTOR:   resourceName = "detector_status"; break;
+        case ESUBSYSTEM_FILEWRITER: resourceName = "filewriter_status"; break;
+        default: resourceName = "unknown_subsystem";
     }
 
     std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource(resourceName)));
     std::string strStatus;
     value->get(strStatus);
+    std::cout << " " << resourceName << " : " << strStatus << std::endl;
 
     // Return the index of the status string
     return ENUM_STATE(GetIndex(m_vectStatusString, strStatus));
@@ -361,16 +378,19 @@ double EigerAdapter::getHumidity()
 //---------------------------------------------------------------------------
 // Get the bit depth of the detector (bits per pixel)
 /*!
-@return bit per pixel value
+@return bit per pixel value (usually 12 for Eiger 1M)
  */
 //---------------------------------------------------------------------------
 int EigerAdapter::getBitDepthReadout()
 {
-    int bitDepthReadout = 0;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("humidity")));
-    value->get(bitDepthReadout);
-
-    return bitDepthReadout;
+#ifdef COMPILATION_WITH_CURL
+    int pixelDepth = 0;
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("pixeldepth")));
+    value->get(pixelDepth);
+    return pixelDepth;
+#else
+    return 12;
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -574,12 +594,16 @@ int EigerAdapter::getLastError(std::string& msg) ///< [out] error message
 //---------------------------------------------------------------------------
 std::string EigerAdapter::getDescription()
 {
+#ifdef COMPILATION_WITH_CURL
     std::string descriptionStr;
 
     std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("description")));
     value->get(descriptionStr);
 
     return descriptionStr;
+#else
+    return "EigerAdapter test";
+#endif
 }
 
 
@@ -620,6 +644,30 @@ EigerSize EigerAdapter::getPixelSize(void)
 
 
 //-----------------------------------------------------------------------------
+/// return the detector dimensions in pixel
+/*!
+@return EigerSize object containing detector width and heigth
+ */
+//-----------------------------------------------------------------------------
+EigerSize EigerAdapter::getDetectorSize(void)
+{
+#ifdef COMPILATION_WITH_CURL
+    int width, height;
+
+    std::shared_ptr<ResourceValue> valueWidth (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_witdh")));
+    valueWidth->get(width);
+
+    std::shared_ptr<ResourceValue> valueHeight (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_height")));
+    valueHeight->get(height);
+
+    return EigerSize(width, height);
+#else
+    return EigerSize(1065, 1030);
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
 /// Set the number of images per file
 //-----------------------------------------------------------------------------
 void EigerAdapter::setImagesPerFile(const int imagesPerFile)
@@ -636,6 +684,9 @@ void EigerAdapter::setNbImagesToAcquire(const int nimages)
 {
     std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("nimages")));
     value->set(nimages);
+
+    // Update images per file accordingly
+    setImagesPerFile(nimages);
 }
 
 
@@ -647,13 +698,16 @@ void EigerAdapter::setNbImagesToAcquire(const int nimages)
 //---------------------------------------------------------------------------
 std::string EigerAdapter::GetAPIVersion()
 {
-//  std::string url = std::string(HTTP_ROOT) + m_ipaddr + std::string("/") + CSTR_SUBSYSTEMDETECTOR + std::string("/")
-//   + std::string(CSTR_EIGERAPI) + std::string("/") + CSTR_EIGERVERSION;
-//
-//  RESTfulClient client;
-//  std::string value = client.get_parameter<std::string>(url);
-//  return value;
-    return "0.8.1";
+#ifdef COMPILATION_WITH_CURL
+  std::string url = std::string(HTTP_ROOT) + m_ipaddr + std::string("/") + CSTR_SUBSYSTEMDETECTOR + std::string("/")
+   + std::string(CSTR_EIGERAPI) + std::string("/") + CSTR_EIGERVERSION + std::string("/");
+
+  RESTfulClient client;
+  std::string value = client.get_parameter<std::string>(url);
+  return value;
+#else
+  return "#ApiVersion#";
+#endif
 }
 
 

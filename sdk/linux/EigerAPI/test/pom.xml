@@ -45,12 +45,28 @@
 	</plugins>
 	</build>
 
-    <dependencies>    
-		<dependency>
+    <dependencies>     
+
+ 		<dependency>
 			<groupId>fr.soleil.lib</groupId>
 	    	<artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
+			<version>1.0.0-SNAPSHOT</version>
         </dependency>
+
+
+
+        <dependency>
+          <groupId>ncsa.uiuc.edu</groupId>
+          <artifactId>HDF5-${aol}-shared-release</artifactId>
+          <version>1.8.13</version>
+        </dependency>  
+
+		<dependency>
+			<groupId>fr.soleil.lib</groupId>
+			<artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
+		</dependency>
+
     </dependencies>
  
    <developers>

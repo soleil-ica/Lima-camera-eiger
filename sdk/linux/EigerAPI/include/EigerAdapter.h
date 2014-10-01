@@ -40,24 +40,33 @@ public:
     EigerAdapter(const std::string& strIP);
    ~EigerAdapter();   
 
+// Detector Commands
    void initialize();
    void arm();
    void disarm();
    void trigger();
-   void setNbImagesToAcquire(const int);
+
+// Acquired data managenent
+   void setImagesPerFile(const int imagesPerFile);
    void downloadAcquiredFile(const std::string& destination);
    void* getFrame();
    void deleteAcquiredFile();
+
+// Detector Configuration
+   void setNbImagesToAcquire(const int);
+
    void setTriggerMode(const ENUM_TRIGGERMODE);
    ENUM_TRIGGERMODE getTriggerMode();
+
    void setExposureTime(const double value);
    double getExposureTime();
+
    double getLatencyTime();
    void setLatencyTime(const double latency);
+
    ENUM_STATE getState(const ENUM_SUBSYSTEM);
    double getTemperature();
    double getHumidity();
-   int getBitDepthReadout();
    void setCountrateCorrection(const bool enabled);
    bool getCountrateCorrection();
    void setFlatfieldCorrection(const bool enabled);
@@ -74,10 +83,14 @@ public:
    void setPhotonEnergy(const double value);
    double getPhotonEnergy();
    int getLastError(std::string& msg);
+
+// Detector geometry and miscs
+   int getBitDepthReadout();
    EigerSize getPixelSize(void);
+   EigerSize getDetectorSize(void);
    std::string getDescription(void);
    std::string getDetectorNumber(void);
-   void setImagesPerFile(const int imagesPerFile);
+
 
 private:
    int GetIndex(const std::vector<std::string>& vect,      ///< [in] vector to search into

@@ -61,13 +61,17 @@ ResourceFactory::ResourceFactory(const std::string& strIP,           ///< [in] d
    m_resources["pixeldepth"]   = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "bit_depth_readout");
    m_resources["x_pixel_size"] = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "x_pixel_size");
    m_resources["y_pixel_size"] = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "y_pixel_size");
+
+   m_resources["detector_witdh"]  = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "x_pixels_in_detector");
+   m_resources["detector_height"] = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "y_pixels_in_detector");
+
    m_resources["description"]  = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "description");
    m_resources["detector_number"] = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "detector_number");
    m_resources["detector_readout_time"] = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, "detector_readout_time");
     
 // Detector Read/Write settings
    m_resources["exposure"]                 = new ResourceDescription(ERESOURCETYPE_VALUE_READWRITE, "count_time");
-   m_resources["frame_time"]               = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY,  "frame_time");
+   m_resources["frame_time"]               = new ResourceDescription(ERESOURCETYPE_VALUE_READWRITE, "frame_time");
    m_resources["trigger_mode"]             = new ResourceDescription(ERESOURCETYPE_VALUE_READWRITE, "trigger_mode");
    m_resources["countrate_correction"]     = new ResourceDescription(ERESOURCETYPE_VALUE_READWRITE, "countrate_correction_applied");
    m_resources["flatfield_correction"]     = new ResourceDescription(ERESOURCETYPE_VALUE_READWRITE, "flatfield_correction_applied");

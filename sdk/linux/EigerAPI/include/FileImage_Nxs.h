@@ -48,6 +48,8 @@ private:
 
    nxcpp::NexusFile* m_nxFile;
    nxcpp::NexusDataSet m_dataSet;
+   nxcpp::NexusDataSet* m_pSubsetNextImage;
+   nxcpp::NexusDataType m_dataType;
    
    long m_imageIndex;   
    long m_nbImages;

@@ -24,6 +24,8 @@
 #include "FileImage_Nxs.h"
 #include "EigerDefines.h"
 
+#define NXMSG_LEN 256
+
 namespace eigerapi
 {
 
@@ -33,6 +35,7 @@ namespace eigerapi
 CFileImage_Nxs::CFileImage_Nxs()
 {
    m_nxFile            = NULL;
+   m_pSubsetNextImage  = NULL;
    ClearData();
 }
 
@@ -62,7 +65,7 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    {
       m_nxFile = new nxcpp::NexusFile();
       m_nxFile->OpenRead(fileName.c_str());
-
+      m_nxFile->Initialize();
       std::string Groupname  = EIGER_HDF5_GROUP;
       std::string NeXusclass = EIGER_HDF5_CLASS;
       
@@ -80,31 +83,28 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
             // Extract dataset info
             nxcpp::NexusDataSetInfo nxDatasetinfo;        
             m_nxFile->GetDataSetInfo(&nxDatasetinfo, EIGER_HDF5_DATASET);
-            m_nbImages = *nxDatasetinfo.DimArray();
-            nbImmages  =  m_nbImages;
-            m_heigth   = *(nxDatasetinfo.DimArray()+1);      
-            m_width    = *(nxDatasetinfo.DimArray()+2);
+            m_nbImages  = *nxDatasetinfo.DimArray();
+            nbImmages   =  m_nbImages;
+            m_heigth    = *(nxDatasetinfo.DimArray()+1);      
+            m_width     = *(nxDatasetinfo.DimArray()+2);
             m_DatumSize = nxDatasetinfo.DatumSize();
+            m_dataType  = nxDatasetinfo.DataType();
             
             std::cout << "TotalDimArray: " << *nxDatasetinfo.TotalDimArray() << std::endl;
             std::cout << "Size:          " << nxDatasetinfo.Size()           << std::endl;         
-            std::cout << "DatumSize:     " << nxDatasetinfo.DatumSize()      << std::endl;
-            
-            std::cout << "GetData: " << EIGER_HDF5_DATASET << std::endl;
-            // Extract data
-            m_nxFile->GetData(&m_dataSet, EIGER_HDF5_DATASET);
-            std::cout << "opened :" << m_nxFile->CurrentDataset() << std::endl;
-            
-            std::cout << "Data size :" << m_dataSet.Size() << std::endl;     
+            std::cout << "DatumSize:     " << nxDatasetinfo.DatumSize()      << std::endl;    
          }
       }
    }
    catch(nxcpp::NexusException& e)
    {  
-      #define NXMSG_LEN 256
       char nxMsg[NXMSG_LEN];
       e.GetMsg(nxMsg, NXMSG_LEN);
       throw EigerException(nxMsg, "", "CFileImage_Nxs::openFile" );
+   }
+   catch (const std::exception& e)
+   {
+      throw EigerException(e.what(), "", "CFileImage_Nxs::openFile" );   
    }
 
    return nbImmages;
@@ -123,8 +123,42 @@ void* CFileImage_Nxs::getNextImage()
    char* addr = NULL;
    
    if (m_imageIndex < m_nbImages)
-   {
-      addr =  ((char*)m_dataSet.Data())+m_imageIndex*(m_DatumSize*m_width*m_heigth);
+   {                                                                  
+      // init subset description array
+      int iDim[3];   // Image geometry
+      iDim[0]=1;
+      iDim[1]=m_heigth;
+      iDim[2]=m_width;
+
+      int iStart[3]; // Start position in dataset
+      iStart[0]=m_imageIndex;
+      iStart[1]=0;
+      iStart[2]=0;
+      
+      try
+      {
+         // delete previous datasubset
+         if (NULL!=m_pSubsetNextImage) delete m_pSubsetNextImage;
+
+         // Create the dataset to retreive one image
+                       // NexusDataSet(NexusDataType eDataType, void *pData, int iRank, int *piDim, int *piStart=NULL);
+         m_pSubsetNextImage = new nxcpp::NexusDataSet(m_dataType, NULL,             3,       iDim,       iStart);
+
+         m_nxFile->GetDataSubSet(m_pSubsetNextImage, EIGER_HDF5_DATASET);
+         addr = (char*)m_pSubsetNextImage->Data();
+
+      }
+      catch(nxcpp::NexusException& e)
+      {
+         char nxMsg[NXMSG_LEN];
+         e.GetMsg(nxMsg, NXMSG_LEN);
+         throw EigerException(nxMsg, "", "CFileImage_Nxs::getNextImage" );
+      }
+      catch (const std::exception& e)
+      {
+         throw EigerException(e.what(), "", "CFileImage_Nxs::getNextImage" );   
+      }
+
       m_imageIndex++;
    }
    
@@ -165,6 +199,12 @@ void CFileImage_Nxs::GetSize(int& width,   ///< [out] images width
 //---------------------------------------------------------------------------
 void CFileImage_Nxs::ClearData()
 {
+   if (NULL!=m_pSubsetNextImage) 
+   {
+      delete m_pSubsetNextImage;
+      m_pSubsetNextImage = NULL;
+   }
+   
    m_dataSet.Clear();
    
    m_imageIndex = 0;

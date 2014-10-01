@@ -62,6 +62,8 @@ void RESTfulClient::set_parameter(const std::string& url,   ///< [in] URL to wri
    curl_easy_setopt(m_curl, CURLOPT_POSTFIELDSIZE, json_struct.length()); // data length
 
    CURLcode result = curl_easy_perform(m_curl);
+
+   curl_slist_free_all(headers);
    
    if (result != CURLE_OK)
    {
@@ -89,6 +91,11 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
 
    RESTfulClient_data = "";
 #ifdef COMPILATION_WITH_CURL
+   struct curl_slist *headers = NULL;
+
+   headers = curl_slist_append(headers, "Accept: application/json");
+   headers = curl_slist_append(headers, "Content-Type: application/json;charset=utf-8");
+
 
    curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
 
@@ -97,19 +104,14 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); //tell m_curl to output its progress
 
    CURLcode result =  curl_easy_perform(m_curl);
+
+   curl_slist_free_all(headers);
+   
    if (result != CURLE_OK)
    {
         throw EigerException(curl_easy_strerror(result), "", "RESTfulClient::get_parameter");     
    }   
    
-//   curl_easy_cleanup(m_curl);
-
-#endif   
-
-//   if (RESTfulClient_data.empty())
-//   {
-//      throw EigerException(eigerapi::EMPTY_RESPONSE, "", "RESTfulClient::get_parameter");
-//   }
 
    //- Json decoding to return the wanted data
    Json::Value  root;
@@ -121,8 +123,6 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
       throw EigerException(eigerapi::JSON_PARSE_FAILED, reader.getFormatedErrorMessages().c_str(),
                            "RESTfulClient::get_parameter");
    }
-   //- for debug purpose json_struct.c_str()
-   //std::cout << "Pretty-Print: " << root.toStyledString() << std::endl;
 
    //- supported types by dectris are:
    //- bool, float, int, string or a list of float or int
@@ -140,6 +140,10 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    {
       value = (int) root.get("value", -1).asInt();
    }
+   else if (root.get("value_type", "dummy").asString() == "uint")
+   {
+      value = (int) root.get("value", -1).asInt();
+   }
    else
    {
       throw EigerException(eigerapi::DATA_TYPE_NOT_HANDLED, 
@@ -148,6 +152,11 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    }
 
    return value;
+#else
+   T value = T();
+   return value;
+#endif   
+
 }
 
 
