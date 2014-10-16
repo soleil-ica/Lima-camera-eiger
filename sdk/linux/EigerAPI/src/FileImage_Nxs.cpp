@@ -65,7 +65,7 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    {
       m_nxFile = new nxcpp::NexusFile();
       m_nxFile->OpenRead(fileName.c_str());
-      m_nxFile->Initialize();
+//      m_nxFile->Initialize(); //to ensurte that the target is 3.0.0-SNAPSHOT !!
       std::string Groupname  = EIGER_HDF5_GROUP;
       std::string NeXusclass = EIGER_HDF5_CLASS;
       
