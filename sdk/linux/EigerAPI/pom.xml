@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>
@@ -17,14 +17,17 @@
 
     <dependencies>
               
-<!--         <dependency>
+        <!--         
+        <dependency>
             <groupId>se.haxx.lib</groupId>
             <artifactId>curl-${aol}-static-${mode}</artifactId>
-        </dependency> -->
-            <dependency>
-                <groupId>fr.soleil.lib</groupId>
-                <artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
-            </dependency>
+        </dependency> 
+        -->
+        
+        <dependency>
+            <groupId>fr.soleil.lib</groupId>
+            <artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
+        </dependency>
      
 
     </dependencies>
