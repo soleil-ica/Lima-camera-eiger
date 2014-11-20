@@ -16,20 +16,29 @@
     <description>Eiger detector control library</description>
 
     <dependencies>
-              
-        <!--         
+        
+        <dependency>
+            <groupId>net.sf.lib</groupId>
+            <artifactId>json-${aol}-static-${mode}</artifactId>
+            <version>0.5.0</version>
+        </dependency>   
+        
         <dependency>
             <groupId>se.haxx.lib</groupId>
             <artifactId>curl-${aol}-static-${mode}</artifactId>
-        </dependency> 
-        -->
-        
+        </dependency>      
+                                                            
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
+        </dependency>    
+            
+        <dependency>
+            <groupId>ncsa.uiuc.edu</groupId>
+            <artifactId>HDF5-${aol}-shared-release</artifactId>
+            <version>1.8.13</version>
         </dependency>
-     
-
+           
     </dependencies>
    
     <build>
@@ -42,30 +51,12 @@
                         <sourceDirectory>src</sourceDirectory>
                         <includePaths>
                             <includePath>include</includePath>
-                            <includePath>jsoncpp-src-0.5.0/include</includePath>
                         </includePaths>
                         <defines>
-                              <define>COMPILATION_WITH_CURL</define>  
+                            <define>COMPILATION_WITH_CURL</define>                              
                         </defines>                       
                     </cpp>
-                    <linker>
-                        <libs>
-                            <lib>
-                                <name>json_linux-gcc-4.4.2_libmt</name>
-                                <type>static</type>
-                                <directory>jsoncpp-src-0.5.0/libs/linux-gcc-4.4.2</directory>
-                            </lib>
-                        </libs>
-                        
- 					  <sysLibs>
-						<sysLib>
-						  <name>curl</name>
-						  <type>shared</type>
-						</sysLib>
-					  </sysLibs>	  
-                                              
-			
-                    </linker>
+
                 </configuration>
             </plugin>
             <plugin>

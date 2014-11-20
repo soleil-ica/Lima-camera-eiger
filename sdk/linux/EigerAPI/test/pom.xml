@@ -64,7 +64,6 @@
 		<dependency>
 			<groupId>fr.soleil.lib</groupId>
 			<artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
 		</dependency>
 
     </dependencies>
