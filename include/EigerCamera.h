@@ -51,7 +51,7 @@ using namespace std;
 									{\
 										__EigerCode__;\
 									}\
-									catch (eigerapi::EigerException &e)\
+									catch (const eigerapi::EigerException &e)\
 								    {\
 								        HANDLE_EIGERERROR(e.what());\
 								    }\
@@ -80,7 +80,7 @@ namespace lima
 
 		public:
 
-			enum Status {	Ready, Exposure, Readout, Latency, Fault, Preparing };
+			enum Status {	Ready, Exposure, Readout, Latency, Fault, Preparing, Armed };
 
 			Camera(const std::string& detector_ip, const std::string& target_path);
 			~Camera();
@@ -146,6 +146,9 @@ namespace lima
 			void setPhotonEnergy(const double);
 			void getPhotonEnergy(double&);			
 
+			void getCompression(bool&);
+   			void setCompression(const bool);
+
 		private:
 			class CameraThread: public CmdThread
 			{
@@ -155,7 +158,7 @@ namespace lima
 
 				enum
 				{ // thread Status
-					Ready = MaxThreadStatus, Exposure, Readout, Latency, Preparing
+					Ready = MaxThreadStatus, Exposure, Readout, Latency, Fault, Preparing, Armed
 				};
 
 				enum

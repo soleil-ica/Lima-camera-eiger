@@ -712,6 +712,31 @@ std::string EigerAdapter::GetAPIVersion()
 
 
 //---------------------------------------------------------------------------
+// Get the status of the LZ4 compression feature
+/*!
+@return true:enabled, false:disabled
+ */
+//---------------------------------------------------------------------------
+bool EigerAdapter::getCompression(void)
+{
+    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
+    bool bCompression;
+    compression->get(bCompression);
+
+    return bCompression;
+}
+
+
+//---------------------------------------------------------------------------
+// Set the status of the LZ4 compression feature
+//---------------------------------------------------------------------------
+void EigerAdapter::setCompression(const bool enabled)  ///< [in] true:enabled, false:disabled
+{
+    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
+    compression->set(enabled);
+}
+
+//---------------------------------------------------------------------------
 // Search the index of a string in a vector
 /*!
 @return index of the string or -1 if not found

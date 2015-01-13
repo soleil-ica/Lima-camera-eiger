@@ -118,6 +118,10 @@ void Interface::getStatus(StatusType& status)
         status.set(HwInterface::StatusType::Ready);
         break;
 
+      case Camera::Armed:
+        status.set(HwInterface::StatusType::Ready);
+        break;      
+
       case Camera::Exposure:
         status.set(HwInterface::StatusType::Exposure);
         break;

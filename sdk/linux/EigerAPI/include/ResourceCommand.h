@@ -39,7 +39,7 @@ friend class ResourceFactory;
    public:      
       ~ResourceCommand();
         
-      int execute();            
+      void execute();            
 };
 
 } // namespace eigerapi

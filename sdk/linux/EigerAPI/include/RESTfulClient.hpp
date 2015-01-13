@@ -89,7 +89,7 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
 {
    std::cout << "RESTfulClient::get_parameter(" << url << ")" << std::endl;
 
-   RESTfulClient_data = "";
+   m_RESTfulClient_data = "";
 #ifdef COMPILATION_WITH_CURL
    struct curl_slist *headers = NULL;
 
@@ -100,7 +100,7 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
 
    curl_easy_setopt(m_curl, CURLOPT_PROXY, "");
-   curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, &RESTfulClient_writeCallback);   
+   curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, writeCallback);   
    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); //tell m_curl to output its progress
 
    CURLcode result =  curl_easy_perform(m_curl);
@@ -117,8 +117,8 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    Json::Value  root;
    Json::Reader reader;
 
-   std::cout<<"RESTfulClient_data = "<<RESTfulClient_data<<std::endl;
-   if (!reader.parse(RESTfulClient_data, root)) 
+   //std::cout << "m_RESTfulClient_data = " << m_RESTfulClient_data << std::endl;
+   if (!reader.parse(m_RESTfulClient_data, root)) 
    {
       throw EigerException(eigerapi::JSON_PARSE_FAILED, reader.getFormatedErrorMessages().c_str(),
                            "RESTfulClient::get_parameter");
@@ -146,6 +146,7 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    }
    else
    {
+      std::cout << "m_RESTfulClient_data = " << m_RESTfulClient_data << std::endl;
       throw EigerException(eigerapi::DATA_TYPE_NOT_HANDLED, 
                            root.get("value_type", "dummy").asString().c_str(),
                            "RESTfulClient::get_parameter");

@@ -41,6 +41,7 @@ const char DATA_TYPE_NOT_HANDLED[] = "Data type not handled: ";
 const char EMPTY_RESPONSE[]        = "Empty response";
 const char READONLY_RESOURCE[]     = "Resource is read only: ";
 const char CREATE_FILE[]           = "Unable to create file: ";
+const char BAD_REQUEST[]           = "Command failed (HTTP 400): ";
 
 // Trigger modes
 typedef enum

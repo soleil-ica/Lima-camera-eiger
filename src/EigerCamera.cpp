@@ -55,6 +55,7 @@ void Camera::CameraThread::start()
 {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "CameraThread::start - BEGIN";
+    std::cout << "CameraThread::start - BEGIN" << std::endl;
     CmdThread::start();
     waitStatus(Ready);
     DEB_TRACE() << "CameraThread::start - END";
@@ -67,6 +68,7 @@ void Camera::CameraThread::init()
 {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "CameraThread::init - BEGIN";
+    std::cout << "CameraThread::init - BEGIN" << std::endl;
     setStatus(Ready);
     DEB_TRACE() << "CameraThread::init - END";
 }
@@ -78,22 +80,29 @@ void Camera::CameraThread::execCmd(int cmd)
 {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "CameraThread::execCmd - BEGIN";
-        std::cout << "CameraThread::execCmd - BEGIN" << std::endl;
- 
+    
     int status = getStatus();
   
     switch (cmd)
     {
         case StartAcq:
         {
-            if (status != Exposure) throw LIMA_HW_EXC(InvalidValue, "Not Ready to StartAcq");
+            if (status != Armed) 
+            {
+                DEB_ERROR() << "CameraThread::execCmd - Not Ready to StartAcq";
+                throw LIMA_HW_EXC(InvalidValue, "Not Ready to StartAcq");            
+            }
             execStartAcq();
             break;
         }
 
         case PrepareAcq:
         {
-            if (status != Ready) throw LIMA_HW_EXC(InvalidValue, "Not Ready to PrepareAcq");
+            if (status != Ready) 
+            {
+                DEB_ERROR() << "CameraThread::execCmd - Not Ready to PrepareAcq";
+                throw LIMA_HW_EXC(InvalidValue, "Not Ready to PrepareAcq");            
+            }
             execPrepareAcq();
             break;
         }
@@ -105,7 +114,6 @@ void Camera::CameraThread::execCmd(int cmd)
         }
     }
     DEB_TRACE() << "CameraThread::execCmd - END";
-        std::cout << "CameraThread::execCmd - END" << std::endl;    
 }
 
 
@@ -128,7 +136,7 @@ void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetStateDET, //
             eStateFileWriter = m_cam->m_pEigerAPI->getState(eigerapi::ESUBSYSTEM_FILEWRITER);
             eStateDetector   = m_cam->m_pEigerAPI->getState(eigerapi::ESUBSYSTEM_DETECTOR);
         }
-        catch (eigerapi::EigerException &e)
+        catch (const eigerapi::EigerException &e)
         {
             HANDLE_EIGERERROR(e.what());
         }
@@ -154,15 +162,13 @@ void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetStateDET, //
 
         if (bError)
         {
-            DEB_ERROR() << "Faulty state reached during WaitForState.";
-            THROW_HW_ERROR(Error) << "Faulty state reached during WaitForState.";
+            HANDLE_EIGERERROR("Faulty state reached during WaitForState");
         }
 
         // Check for operation timeout
         if ( (eTargetStateFW!=eStateFileWriter) && (eTargetStateDET!=eStateDetector) && (iterCount*C_DETECTOR_POLL_TIME >= C_DETECTOR_MAX_TIME) )
         {
-            DEB_ERROR() << "Timeout reached during WaitForState.";
-            THROW_HW_ERROR(Error) << "Timeout reached during WaitForState.";
+            HANDLE_EIGERERROR("Timeout reached during WaitForState.");
         }
 
         // If target state still not reached, wait before requesting the state again
@@ -172,6 +178,9 @@ void Camera::CameraThread::WaitForState(eigerapi::ENUM_STATE eTargetStateDET, //
         }
     }
     while ( (eTargetStateFW!=eStateFileWriter) || (eTargetStateDET!=eStateDetector) );
+
+    // test: an aditional state always called ...
+    lima::Sleep(C_DETECTOR_POLL_TIME);
 
     DEB_TRACE() << "CameraThread::WaitForState - END";
 }
@@ -186,20 +195,26 @@ void Camera::CameraThread::execPrepareAcq()
 
     DEB_TRACE() << "CameraThread::execPrepareAcq - BEGIN";
 
-        std::cout << "CameraThread::execPrepareAcq - BEGIN" << std::endl;
-
     setStatus(Preparing);
 
     // send the arm command
     m_cam->TStart();
-    EIGER_EXEC(m_cam->m_pEigerAPI->arm());
-    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+    try
+    {
+        m_cam->m_pEigerAPI->arm();
+    }
+    catch (const eigerapi::EigerException &e)
+    {
+        DEB_ERROR() << e.what();
+        setStatus(Fault);
+        return;
+    }
 
-    setStatus(Exposure);
+    DEB_TRACE() << "Duration: " << m_cam->TStop() << "s";
+
+    setStatus(Armed);
 
     DEB_TRACE() << "CameraThread::execPrepareAcq - END";
-
-        std::cout << "CameraThread::execPrepareAcq - END" << std::endl;
 }
 
 
@@ -211,9 +226,6 @@ void Camera::CameraThread::execStartAcq()
     DEB_MEMBER_FUNCT();
 
     DEB_TRACE() << "CameraThread::execStartAcq - BEGIN";
-     std::cout << "CameraThread::execStartAcq - BEGIN" << std::endl;
-
-    waitStatus(CameraThread::Exposure); // Wait prepareacq 
 
     setStatus(Readout);
 
@@ -228,28 +240,58 @@ void Camera::CameraThread::execStartAcq()
 
     // send the trigger command (should return only when acquisition ended)
     m_cam->TStart();
-    EIGER_EXEC(m_cam->m_pEigerAPI->trigger());
-    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+    try
+    {
+        m_cam->m_pEigerAPI->trigger();
+    }
+    catch (const eigerapi::EigerException &e)
+    {
+        DEB_ERROR() << e.what();
+        setStatus(Fault);
+        return;
+    }
+
+    DEB_TRACE() << "Duration trigger : " << m_cam->TStop() << "s";
 
     // Send a disarm command to finalize the acquisition
     m_cam->TStart();
-    EIGER_EXEC(m_cam->m_pEigerAPI->disarm());
-    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+    try
+    {
+        m_cam->m_pEigerAPI->disarm();
+    }
+    catch (const eigerapi::EigerException &e)
+    {
+        DEB_ERROR() << e.what();
+        setStatus(Fault);
+        return;
+    }
+
+   DEB_TRACE() << "Duration disarm : " << m_cam->TStop() << "s";
 
     // Wait for filewriter status to be ready
-    WaitForState(eigerapi::ESTATE_IDLE, eigerapi::ESTATE_READY);
+    try
+    {
+        WaitForState(eigerapi::ESTATE_IDLE, eigerapi::ESTATE_READY);
+    }
+    catch (Exception& e)
+    {
+        setStatus(Fault);
+        return;
+    }
 
     // Download and open the captured file for reading
     m_cam->TStart();
     try
-    {
+    {   // This call must be commented when testing with the Eiger server Simulator 1.0
         m_cam->m_pEigerAPI->downloadAcquiredFile(m_cam->m_targetFilename);
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
-        HANDLE_EIGERERROR(e.what());
+        setStatus(Fault);
+        DEB_ERROR() << e.what();
+        return;
     }
-    std::cout << "Duration: " << m_cam->TStop() << "s" << std::endl;
+    std::cout << "Duration download file : " << m_cam->TStop() << "s" << std::endl;
 
   	// Begin to transfer the images to Lima
     buffer_mgr.setStartTimestamp(Timestamp::now());
@@ -285,7 +327,9 @@ void Camera::CameraThread::execStartAcq()
             }
             else
             {
-                HANDLE_EIGERERROR("newFrameReady failure.");
+                setStatus(Fault);
+                DEB_ERROR() << "newFrameReady failure.";
+                return;
             }
         }
         else
@@ -299,12 +343,14 @@ void Camera::CameraThread::execStartAcq()
     {
         m_cam->m_pEigerAPI->deleteAcquiredFile();   // Delete the acquired file from Eiger server data storage
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
-        HANDLE_EIGERERROR(e.what());
+        setStatus(Fault);
+        DEB_ERROR() << e.what();
+        return;
     }
 
-    std::cout << "End of lima acquisition. Duration: " << m_cam->TStop() << "s" << std::endl;
+    std::cout << "Duration of reading and publishing "<<m_cam->m_nb_frames<<" frames : "<<m_cam->TStop() << "s" << std::endl;
 
     setStatus(Ready);
 
@@ -340,7 +386,7 @@ Camera::Camera(const std::string& detector_ip,	///< [in] Ip address of the detec
       // --- Initialise deeper parameters of the controller
       initialiseController();
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
@@ -365,13 +411,14 @@ Camera::Camera(const std::string& detector_ip,	///< [in] Ip address of the detec
 Camera::~Camera()
 {
     DEB_DESTRUCTOR();
-    stopAcq();              
   
+    m_thread.abort();
+
     try
     {   
         delete m_pEigerAPI;
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
@@ -385,7 +432,14 @@ void Camera::prepareAcq()
 {
 	DEB_MEMBER_FUNCT();
 
-    std::cout << "Camera::prepareAcq() start CmdThread" << std::endl;
+    DEB_TRACE() << "Camera::prepareAcq() start CmdThread";    
+    
+    if (m_thread.getStatus() == CameraThread::Armed) 
+    {
+        DEB_ERROR() << "CameraThread::execCmd - Already Prepared";
+        throw LIMA_HW_EXC(InvalidValue, "Already Prepared");            
+    }
+    
     m_thread.sendCmd(CameraThread::PrepareAcq);
 }
 
@@ -396,16 +450,17 @@ void Camera::prepareAcq()
 void Camera::startAcq()
 {
     DEB_MEMBER_FUNCT();
+    std::cout << "Camera::startAcq() start CmdThread" << std::endl;
 
     // init force stop flag before starting acq thread
     m_thread.m_force_stop = false;
 
     // Start the thread
-    m_image_number = 0;   
-    m_thread.sendCmd(CameraThread::StartAcq);
+    m_image_number = 0;
 
-    // Wait for acquisition to end
-    // m_thread.waitStatus(CameraThread::Ready);
+    m_thread.waitStatus(CameraThread::Armed); // Wait then end of execPrepareAcq()
+
+    m_thread.sendCmd(CameraThread::StartAcq);
 }
 
 
@@ -416,14 +471,15 @@ void Camera::stopAcq()
 {
     DEB_MEMBER_FUNCT();
 
-    EIGER_EXEC(m_pEigerAPI->disarm()); // send the disarm command
+    EIGER_EXEC(m_pEigerAPI->disarm());
 
-    m_thread.m_force_stop = true;
+    if (m_thread.getStatus() == CameraThread::Readout)
+    {
+        m_thread.m_force_stop = true;
 
-    m_thread.sendCmd(CameraThread::StopAcq);
-
-    // Wait for thread to finish
-    m_thread.waitStatus(CameraThread::Ready);
+        // Wait for thread to finish
+        m_thread.waitNotStatus(CameraThread::Readout);        
+    }
 }
 
 
@@ -546,11 +602,11 @@ void Camera::setTrigMode(TrigMode mode) ///< [in] lima trigger mode to set
         if (eigerapi::ETRIGMODE_UNKNOWN != eEigertrigMode)
         {
             // set trigger mode using EigerAPI
-            m_pEigerAPI->setTriggerMode(eEigertrigMode);
+            EIGER_EXEC(m_pEigerAPI->setTriggerMode(eEigertrigMode));
             m_trig_mode = mode;
         }
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
@@ -613,7 +669,7 @@ void Camera::setLatTime(double lat_time) ///< [in] latency time
           m_latency_time = lat_time;
         }
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
@@ -694,7 +750,7 @@ void Camera::setNbFrames(int nb_frames) ///< [in] number of frames to take
        m_pEigerAPI->setNbImagesToAcquire(nb_frames); 
        m_nb_frames = nb_frames;
     }
-    catch (eigerapi::EigerException &e)
+    catch (const eigerapi::EigerException &e)
     {
         HANDLE_EIGERERROR(e.what());
     }
@@ -749,6 +805,12 @@ Camera::Status Camera::getStatus() ///< [out] current camera status
 
         case CameraThread::Preparing:
             return Camera::Preparing;
+
+        case CameraThread::Armed:
+            return Camera::Armed;
+
+        case CameraThread::Fault:
+            return Camera::Fault;
 
         default:
           throw LIMA_HW_EXC(Error, "Invalid thread status");
@@ -1070,6 +1132,25 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
     EIGER_EXEC(value = m_pEigerAPI->getPhotonEnergy());
 }
 
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled
+{
+    DEB_MEMBER_FUNCT();
+
+    EIGER_EXEC(value = m_pEigerAPI->getCompression());
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void Camera::setCompression(const bool value)
+{
+    DEB_MEMBER_FUNCT();
+
+    EIGER_EXEC(m_pEigerAPI->setCompression(value));
+}
 
 //-----------------------------------------------------------------------------
 void Camera::TStart()

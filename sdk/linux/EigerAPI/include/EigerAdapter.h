@@ -84,6 +84,9 @@ public:
    double getPhotonEnergy();
    int getLastError(std::string& msg);
 
+   bool getCompression(void);
+   void setCompression(const bool enabled);
+
 // Detector geometry and miscs
    int getBitDepthReadout();
    EigerSize getPixelSize(void);

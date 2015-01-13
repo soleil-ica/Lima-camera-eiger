@@ -42,14 +42,10 @@ ResourceCommand::~ResourceCommand()
 //---------------------------------------------------------------------------
 /// Execute the command
 //---------------------------------------------------------------------------
-/*!
-@return the value returned by the server
-*/
-//---------------------------------------------------------------------------
-int ResourceCommand::execute()
+void ResourceCommand::execute()
 {  
    RESTfulClient client;
-   return client.send_command(Resource::m_URL);
+   client.send_command(Resource::m_URL);
 }
 
 }

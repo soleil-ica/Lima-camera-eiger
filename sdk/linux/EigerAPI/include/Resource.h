@@ -41,7 +41,7 @@ private:
 public:
    virtual ~Resource();
 
-   virtual int execute() { return 0; };
+   virtual void execute() { };
    
    std::string getURL() { return m_URL; };
    

@@ -24,7 +24,7 @@
 #include "FileImage_Nxs.h"
 #include "EigerDefines.h"
 
-#define NXMSG_LEN 256
+#define NXMSG_LEN 1024
 
 namespace eigerapi
 {
@@ -99,7 +99,8 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    catch(nxcpp::NexusException& e)
    {  
       char nxMsg[NXMSG_LEN];
-      e.GetMsg(nxMsg, NXMSG_LEN);
+      e.GetMsg(nxMsg, NXMSG_LEN-1);
+      std::cout<<">>>>>>>> nxMsg = "<<nxMsg<<std::endl;
       throw EigerException(nxMsg, "", "CFileImage_Nxs::openFile" );
    }
    catch (const std::exception& e)
