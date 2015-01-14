@@ -5,64 +5,80 @@ DECTRIS EIGER 1M Detector System
 
 Introduction
 ------------
-The EIGER 1M is a high performance X-Ray detector system.
-The API consists in communicating with the system via its integrated HTTP server using JSON data objects.
-A C++ wrapper for LImA is currently being developed at Synchrotron SOLEIL.
+| The EIGER 1M is a high performance X-Ray detector system.
+| It is made of two subsystems: a detector and a control server.
+| The control server is driven using an HTTP RESTful interface.
+| A C++ API for LImA has been developed at Synchrotron SOLEIL.
 
 Prerequisite
 ------------
-
-* unknown at the moment
+* This is a Linux plug-in.
 
 Initialization and Capabilities
 -------------------------------
-In order to help people understand how the camera plugin has been implemented in LImA this section provides some important information about the developer's choices.
+In order to help people understand how the camera plug-in has been implemented in LImA this section provides some important information about the developer's choices.
 
 Camera initialization
 ---------------------
-* unknown at the moment
+Initialization is performed automatically when the plug-in starts (the control server must be reachable on the network).
 
-Std capabilites
----------------
-
-This plugin has been implemented in respect of the mandatory capabilites but with some limitations according to some programmer's choices.
-We only provide here extra information for a better understanding of the capabilities of the Orca camera.
+Std capabilities
+----------------
 
 * HwDetInfo
++------------------------+-----------------------+
+| Capability             | Value                 |
++========================+=======================+
+| Maximum image size     | 1030 * 1065           | 
++------------------------+-----------------------+
+| Pixel depth            | 12 bits               |
++------------------------+-----------------------+
+| Pixel size             | 75µm * 75µm           |
++------------------------+-----------------------+
+| Maximum frame rate     | 3000Hz                |
++------------------------+-----------------------+
 
- * Maximum image size is : 1030 * 1065
- * 12 bit data type is used a the maximum frame rate. (higher bit depth at lower frame rates)
- * Pixel size: 75µm * 75µm
- * Maximum frame rate is 3000Hz
- 
 * HwSync
 	Supported trigger types are:
-	
- * unknown at the moment
+ * IntTrig
+ * ExtTrigSingle
+ * ExtTrigMult
+ * ExtGate
  
+* There is no hardware support for binning or roi.
+* There is no shutter control.
 
 Optional capabilities
 ---------------------
 
-* HwBin
-	Possible binning values are:
- * unknown at the moment
-
-* HwRoi
-
- * unknown at the moment
-
-* HwShutter
-
- * unknown at the moment
-
 * Cooling
 
  * The detector uses liquid cooling.
- * It is unknown at the moment whether the API allows accessing the sensor cooler.
- 
+ * The API allows accessing the temperature and humidity as read-only values.
+
+| At the moment, the specific device supports the control of the following features of the Eiger Dectris API.
+| (Extended description can be found in the Eiger API user manual from Dectris).
+
+* Accumulation mode
+* LZ4 Compression
+* Countrate correction
+* Efficiency correction
+* Flatfield correction
+* Photon energy
+* Threshold energy
+* Pixelmask
+* Virtual pixel correction
+
 Configuration
 -------------
 
-How to use
-----------
+* Device configuration
+The default values of the following properties must be updated in the specific device to meet your system configuration.
+
++------------------------+---------------------------------------------------------------------------------------------------+----------------+
+| Property name          | Description                                                                                       | Default value  | 
++========================+===================================================================================================+================+
+| DetectorIP             | Defines the IP address of the Eiger control server (ex: 192.168.10.1)                             |      127.0.0.1 |
++------------------------+---------------------------------------------------------------------------------------------------+----------------+
+| TargetPath             | A path having file creation and write access (ex: /tmp). It will be used to store temporary files.|           /tmp |
++------------------------+---------------------------------------------------------------------------------------------------+----------------+
