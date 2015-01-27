@@ -22,7 +22,7 @@
 #ifndef EIGERDETINFOCTRLOBJ_H
 #define EIGERDETINFOCTRLOBJ_H
 
-#include "HwDetInfoCtrlObj.h"
+#include "lima/HwDetInfoCtrlObj.h"
 #include "EigerCamera.h"
 
 namespace lima

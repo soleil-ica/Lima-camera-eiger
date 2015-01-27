@@ -26,7 +26,7 @@
 #include <math.h>
 #include <algorithm>
 #include "EigerCamera.h"
-#include <Timestamp.h>
+#include "lima/Timestamp.h"
 
 using namespace lima;
 using namespace lima::Eiger;
