@@ -33,9 +33,10 @@ namespace lima
     namespace Eiger
     {
 
-	class DetInfoCtrlObj;
-    class SyncCtrlObj;
-    class Camera;
+      class DetInfoCtrlObj;
+      class SyncCtrlObj;
+      class SavingCtrlObj;
+      class Camera;
 	
 	/*******************************************************************
 	* \class Interface
@@ -66,6 +67,7 @@ namespace lima
 	    CapList         m_cap_list;
 	    DetInfoCtrlObj* m_det_info;
 	    SyncCtrlObj*    m_sync;
+	    SavingCtrlObj*  m_saving;
 	};
 
     } // namespace Eiger

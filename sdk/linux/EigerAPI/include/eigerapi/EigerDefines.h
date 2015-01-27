@@ -112,15 +112,19 @@ public:
 class EigerException: public std::exception
 {
 public:
-  EigerException(const char *pcszDesc, const char* pcszArg, const char *pcszOrigin)
+  EigerException(const char *pcszDesc, const char* pcszArg, const char *pcszOrigin,
+		 const char *filename = NULL)
   {
     std::ostringstream oss;
     oss << std::endl
         << "--------------------------------------------------------------------------------------------" << std::endl
         << "EigerException " << std::endl 
-        << "Description: "   << pcszDesc << pcszArg << std::endl 
-        << "Origin     : "   << pcszOrigin << std::endl 
-        << "--------------------------------------------------------------------------------------------" << std::endl;
+        << "Description: "   << pcszDesc << ":" << pcszArg << std::endl 
+        << "Origin     : "   << pcszOrigin << std::endl;
+      if(filename)
+        oss << "Location   : "   << filename << std::endl;
+
+      oss << "--------------------------------------------------------------------------------------------" << std::endl;
 
     msg = oss.str();
   }
@@ -146,5 +150,13 @@ private:
 };
 
 } // namespace eigerapi
+
+
+#define EIGER_EXPEND_LINE__SUB(x) #x
+#define EIGER_EXPEND_LINE_(x) EIGER_EXPEND_LINE__SUB(x)
+#define EIGER_LOCATION __FILE__ " line " EIGER_EXPEND_LINE_(__LINE__)
+
+#define THROW_EIGER_EXCEPTION(pcszDesc,pcszArg) \
+  throw eigerapi::EigerException(pcszDesc,pcszArg,__PRETTY_FUNCTION__,EIGER_LOCATION)
 
 #endif

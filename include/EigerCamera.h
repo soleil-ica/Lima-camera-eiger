@@ -35,40 +35,25 @@
 #include "lima/HwBufferMgr.h"
 #include "lima/ThreadUtils.h"
 
-#include <EigerAdapter.h>
+#include <eigerapi/EigerDefines.h>
 
 #include <ostream>
 
-using namespace std;
-
-#define HANDLE_EIGERERROR(__errMsg__) { \
-										DEB_ERROR() << __errMsg__;\
-										THROW_HW_ERROR(Error) << __errMsg__;\
-									  }
-
-#define EIGER_EXEC(__EigerCode__) {\
-									try\
-									{\
-										__EigerCode__;\
-									}\
-									catch (const eigerapi::EigerException &e)\
-								    {\
-								        HANDLE_EIGERERROR(e.what());\
-								    }\
-								  }
 
 // Delay between two getStatus calls
 #define C_DETECTOR_POLL_TIME 2  // second
 #define C_DETECTOR_MAX_TIME  60 // seconds
 
-// Name of the downloaded file
-#define C_DOWNLOADED_FILENAME "/temp.h5"
+namespace eigerapi
+{
+  class Requests;
+}
 
 namespace lima
 {
    namespace Eiger
    {
-
+     class SavingCtrlObj;
    /*******************************************************************
    * \class Camera
    * \brief object controlling the Eiger camera via EigerAPI
@@ -77,13 +62,16 @@ namespace lima
 	{
 		DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Eiger");
 		friend class Interface;
+		friend class SavingCtrlObj;
 
 		public:
 
-			enum Status {	Ready, Exposure, Readout, Latency, Fault, Preparing, Armed };
+		enum Status { Ready, Initialising, Exposure, Readout, Fault };
 
-			Camera(const std::string& detector_ip, const std::string& target_path);
+			Camera(const std::string& detector_ip);
 			~Camera();
+
+			void initialize();
 
 			void startAcq();
 			void stopAcq();
@@ -124,107 +112,69 @@ namespace lima
 			void getPixelSize(double& sizex, double& sizey);
 
 			Camera::Status getStatus();
-
+			std::string getCamStatus();
 //			void reset();
 
 			// -- Eiger specific
-			double getTemperature();
-			double getHumidity();
+			void getTemperature(double&);
+			void getHumidity(double&);
          
-			void setCountrateCorrection(const bool);
+			void setCountrateCorrection(bool);
 			void getCountrateCorrection(bool&);
-			void setFlatfieldCorrection(const bool);
+			void setFlatfieldCorrection(bool);
 			void getFlatfieldCorrection(bool&);
-		    void setEfficiencyCorrection(const bool);
+		    void setEfficiencyCorrection(bool);
 		    void getEfficiencyCorrection(bool& value);
-			void setPixelMask(const bool);
+			void setPixelMask(bool);
 			void getPixelMask(bool&);
-			void setThresholdEnergy(const double);
+			void setThresholdEnergy(double);
 			void getThresholdEnergy(double&);
-			void setVirtualPixelCorrection(const bool);
+			void setVirtualPixelCorrection(bool);
 			void getVirtualPixelCorrection(bool&);
-			void setPhotonEnergy(const double);
+			void setPhotonEnergy(double);
 			void getPhotonEnergy(double&);			
 
 			void getCompression(bool&);
-   			void setCompression(const bool);
+   			void setCompression(bool);
+			void getSerieId(int&);
+			void deleteMemoryFiles();
 
 		private:
-			class CameraThread: public CmdThread
-			{
-				DEB_CLASS_NAMESPC(DebModCamera, "CameraThread", "Eiger");
-
-				public:
-
-				enum
-				{ // thread Status
-					Ready = MaxThreadStatus, Exposure, Readout, Latency, Fault, Preparing, Armed
-				};
-
-				enum
-				{ // thread commands
-					StartAcq = MaxThreadCmd,
-					StopAcq,
-					PrepareAcq
-				};
-
-				CameraThread(Camera& cam);
-
-				virtual void start();
-
-				volatile bool m_force_stop;
-
-				protected:
-					virtual void init();
-					virtual void execCmd(int cmd);
-
-				private:
-					void execStartAcq();
-					void execPrepareAcq();
-                    void WaitForState(eigerapi::ENUM_STATE eTargetStateDET,  ///< [in] Detector state to wait for
-                                      eigerapi::ENUM_STATE eTargetStateFW);  ///< [in] Filewriter state to wait for
-					
-               Camera* m_cam;
-			};
-			friend class CameraThread;
-
-			
+			enum InternalStatus {IDLE,RUNNING,ERROR};
+			class AcqCallback;
+			friend class AcqCallback;
+			class InitCallback;
+			friend class InitCallback;
 			void initialiseController(); /// Used during plug-in initialization
-			eigerapi::ENUM_TRIGGERMODE getTriggerMode(const TrigMode trig_mode); ///< [in] lima trigger mode value
-			bool isBinningSupported(const int binValue);	/// Check if a binning value is supported
-
-            // Timestamp functions
-        	Timestamp T0, T1, DeltaT;
-            void TStart();
-            double TStop();
-
+			void _acquisition_finished(bool);
 			//-----------------------------------------------------------------------------
 			//- lima stuff
 			SoftBufferCtrlObj	      m_buffer_ctrl_obj;
 			int                       m_nb_frames;
-			Camera::Status            m_status;
 			int                       m_image_number;
 			double                    m_latency_time;
 			TrigMode                  m_trig_mode;
 
 			//- camera stuff
-			string                    m_detector_model;
-			string                    m_detector_type;
-			long					  m_maxImageWidth, m_maxImageHeight;
+			std::string               m_detector_model;
+			std::string               m_detector_type;
+			unsigned int		  m_maxImageWidth, m_maxImageHeight;
             ImageType                 m_detectorImageType;  
 
+                        InternalStatus m_initilize_state;
+			InternalStatus m_trigger_state;
+			int	       m_serie_id;
 			//- EigerAPI stuff
-         	eigerapi::EigerAdapter*   m_pEigerAPI;
+			eigerapi::Requests*	  m_requests;
          
 			double                    m_temperature;
 			double                    m_humidity;
-			map<TrigMode, eigerapi::ENUM_TRIGGERMODE> m_map_trig_modes;
 			double                    m_exp_time;
 			double                    m_exp_time_max;
+			double		          m_readout_time;
 			double                    m_x_pixelsize, m_y_pixelsize;
-			string                    m_targetFilename;
-
-			CameraThread 			  m_thread;
+			Cond			  m_cond;
+			
 	};
 	} // namespace Eiger
 } // namespace lima
