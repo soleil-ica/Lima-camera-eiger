@@ -21,6 +21,7 @@
 //###########################################################################
 #include <cstdlib>
 #include <cstring>
+#include <stdio.h>
 
 #include <sstream>
 
@@ -699,13 +700,17 @@ size_t Requests::Param::_write_callback(char *ptr,size_t size,
 Requests::Transfer::Transfer(Requests& requests,
 			     const std::string& url,
 			     const std::string& target_path,
-			     bool delete_after_transfer) :
+			     bool delete_after_transfer,
+			     int buffer_write_size) :
   CurlLoop::FutureRequest(url),
   m_requests(requests),
   m_delete_after_transfer(delete_after_transfer),
   m_download_size(0)
 {
+  if(posix_memalign(&m_buffer,4*1024,buffer_write_size))
+    THROW_EIGER_EXCEPTION("Can't allocate write buffer memory","");
   m_target_file = fopen(target_path.c_str(),"w+");
+  setbuffer(m_target_file,(char*)m_buffer,buffer_write_size);
   if(!m_target_file)
     THROW_EIGER_EXCEPTION("Can't open target file",target_path.c_str());
 
@@ -716,6 +721,7 @@ Requests::Transfer::~Transfer()
 {
   if(m_target_file)
     fclose(m_target_file);
+  free(m_buffer);
 }
 
 size_t

@@ -95,9 +95,10 @@ namespace eigerapi
       friend class Requests;
     public:
       Transfer(Requests& requests,
-		const std::string& url,
-		const std::string& target_path,
-		bool delete_after_transfer = true);
+	       const std::string& url,
+	       const std::string& target_path,
+	       bool delete_after_transfer = true,
+	       int buffer_write_size = 64 * 1024);
       virtual ~Transfer();
     private:
       static size_t _write(void *ptr, size_t size, size_t nmemb,Transfer*);
@@ -107,6 +108,7 @@ namespace eigerapi
       bool	m_delete_after_transfer;
       long	m_download_size;
       FILE*	m_target_file;
+      void*	m_buffer;
     };
 
     enum COMMAND_NAME {INITIALIZE,ARM, DISARM,TRIGGER,CANCEL,ABORT};
