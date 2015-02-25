@@ -141,7 +141,17 @@ Camera::Camera(const std::string& detector_ip)	///< [in] Ip address of the detec
     DEB_CONSTRUCTOR();
     DEB_PARAM() << DEB_VAR1(detector_ip);
     // Init EigerAPI
-    initialiseController();
+    try
+      {
+	initialiseController();
+      }
+    catch(Exception& e)
+      {
+	DEB_ALWAYS() << "Could not get configuration parameters, try to initialize";
+	EIGER_SYNC_CMD_TIMEOUT(Requests::INITIALIZE,5*60);
+	initialiseController();
+      }
+    
 
     // Display max image size
     DEB_TRACE() << "Detector max width: " << m_maxImageWidth;
