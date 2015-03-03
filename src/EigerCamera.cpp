@@ -245,9 +245,7 @@ void Camera::startAcq()
 void Camera::stopAcq()
 {
   DEB_MEMBER_FUNCT();
-  AutoMutex lock(m_cond.mutex());
-  if(m_trigger_state == RUNNING)
-    EIGER_SYNC_CMD(Requests::ABORT);
+  EIGER_SYNC_CMD(Requests::ABORT);
 }
 
 
