@@ -22,7 +22,7 @@
 #ifndef EIGERSYNCCTRLOBJ_H
 #define EIGERSYNCCTRLOBJ_H
 
-#include "HwInterface.h"
+#include "lima/HwInterface.h"
 #include "EigerCamera.h"
 
 namespace lima

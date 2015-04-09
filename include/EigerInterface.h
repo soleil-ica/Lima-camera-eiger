@@ -23,7 +23,7 @@
 #define EIGERINTERFACE_H
 
 #include "EigerCompatibility.h"
-#include "HwInterface.h"
+#include "lima/HwInterface.h"
 /*#include "EigerCamera.h"
 #include "EigerDetInfoCtrlObj.h"
 #include "EigerSyncCtrlObj.h"*/
