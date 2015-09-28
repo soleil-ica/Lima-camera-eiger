@@ -224,8 +224,12 @@ void RESTfulClient::get_file(const std::string& url,        ///< [in] file url t
 
 #ifdef COMPILATION_WITH_CURL
    int status = remove(targetPath.c_str());
-   std::cout << "remove -> " << status << std::endl;
-   FILE *fp = fopen(targetPath.c_str() ,"w+");
+
+   FILE *fp = fopen(targetPath.c_str() ,"wb");
+   #define FBUFFER_SIZE 32768
+   char fileBuffer[FBUFFER_SIZE];
+   setbuf(fp, fileBuffer);
+
    if (NULL==fp)
    {
       throw EigerException(eigerapi::CREATE_FILE, 
@@ -240,6 +244,7 @@ void RESTfulClient::get_file(const std::string& url,        ///< [in] file url t
 
    CURLcode result = curl_easy_perform(m_curl);
 
+   fflush(fp);
    fclose(fp);
 
    if (result != CURLE_OK)

@@ -65,21 +65,13 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    {
       m_nxFile = new nxcpp::NexusFile();
       m_nxFile->OpenRead(fileName.c_str());
-//      m_nxFile->Initialize(); //to ensurte that the target is 3.0.0-SNAPSHOT !!
       std::string Groupname  = EIGER_HDF5_GROUP;
       std::string NeXusclass = EIGER_HDF5_CLASS;
       
       if (m_nxFile->OpenGroup(Groupname.c_str(), NeXusclass.c_str()))
       {
-         std::cout << "OpenGroup ok" << std::endl;
-
-         std::cout << "OpenDataSet" << std::endl;
          if (m_nxFile->OpenDataSet(EIGER_HDF5_DATASET))
          {            
-            std::cout << "OpenDataSet ok" << std::endl;
-            //long nrImage_High = -1; // not needed for now
-            //m_nxFile->GetAttribute(EIGER_HDF5_ATTR_NR_IMAGE_H, &nrImage_High);
-            
             // Extract dataset info
             nxcpp::NexusDataSetInfo nxDatasetinfo;        
             m_nxFile->GetDataSetInfo(&nxDatasetinfo, EIGER_HDF5_DATASET);
@@ -89,10 +81,6 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
             m_width     = *(nxDatasetinfo.DimArray()+2);
             m_DatumSize = nxDatasetinfo.DatumSize();
             m_dataType  = nxDatasetinfo.DataType();
-            
-            std::cout << "TotalDimArray: " << *nxDatasetinfo.TotalDimArray() << std::endl;
-            std::cout << "Size:          " << nxDatasetinfo.Size()           << std::endl;         
-            std::cout << "DatumSize:     " << nxDatasetinfo.DatumSize()      << std::endl;    
          }
       }
    }
@@ -100,7 +88,6 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    {  
       char nxMsg[NXMSG_LEN];
       e.GetMsg(nxMsg, NXMSG_LEN-1);
-      std::cout<<">>>>>>>> nxMsg = "<<nxMsg<<std::endl;
       throw EigerException(nxMsg, "", "CFileImage_Nxs::openFile" );
    }
    catch (const std::exception& e)
@@ -119,7 +106,7 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
 @remark memory allocation is handled by CFileImage (any allocated memory will be released in closeFile())
 */
 //---------------------------------------------------------------------------
-void* CFileImage_Nxs::getNextImage()
+void* CFileImage_Nxs::getNextImage(const unsigned int nbFrames) /// [in] number of frames to retreive at a time.
 {   
    char* addr = NULL;
    
@@ -127,7 +114,7 @@ void* CFileImage_Nxs::getNextImage()
    {                                                                  
       // init subset description array
       int iDim[3];   // Image geometry
-      iDim[0]=1;
+      iDim[0]=nbFrames;
       iDim[1]=m_heigth;
       iDim[2]=m_width;
 
@@ -152,7 +139,7 @@ void* CFileImage_Nxs::getNextImage()
       catch(nxcpp::NexusException& e)
       {
          char nxMsg[NXMSG_LEN];
-         e.GetMsg(nxMsg, NXMSG_LEN);
+         e.GetMsg(nxMsg, NXMSG_LEN-1);
          throw EigerException(nxMsg, "", "CFileImage_Nxs::getNextImage" );
       }
       catch (const std::exception& e)
@@ -160,7 +147,7 @@ void* CFileImage_Nxs::getNextImage()
          throw EigerException(e.what(), "", "CFileImage_Nxs::getNextImage" );   
       }
 
-      m_imageIndex++;
+      m_imageIndex += nbFrames;
    }
    
    return (void*)addr;

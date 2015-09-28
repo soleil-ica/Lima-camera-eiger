@@ -50,7 +50,7 @@ class IFileImage
 {
 public:
    virtual long openFile(const std::string& fileName) =0;
-   virtual void* getNextImage() =0;
+   virtual void* getNextImage(const unsigned int nbFrames=1) =0;
    virtual void closeFile() =0;
 };
 

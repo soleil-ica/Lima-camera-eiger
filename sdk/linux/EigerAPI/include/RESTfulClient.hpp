@@ -146,7 +146,6 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    }
    else
    {
-      std::cout << "m_RESTfulClient_data = " << m_RESTfulClient_data << std::endl;
       throw EigerException(eigerapi::DATA_TYPE_NOT_HANDLED, 
                            root.get("value_type", "dummy").asString().c_str(),
                            "RESTfulClient::get_parameter");

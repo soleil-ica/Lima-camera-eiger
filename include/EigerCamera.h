@@ -198,6 +198,8 @@ namespace lima
             void TStart();
             double TStop();
 
+            long getFileSize(const std::string& fullName); ///< [in] full file name (including path)
+
 			//-----------------------------------------------------------------------------
 			//- lima stuff
 			SoftBufferCtrlObj	      m_buffer_ctrl_obj;

@@ -26,7 +26,7 @@
 #include <math.h>
 #include <algorithm>
 #include "EigerCamera.h"
-#include <lima/Timestamp.h>
+#include "lima/Timestamp.h"
 
 using namespace lima;
 using namespace lima::Eiger;
@@ -280,6 +280,7 @@ void Camera::CameraThread::execStartAcq()
     }
 
     // Download and open the captured file for reading
+    DEB_TRACE() << "Downloading file ...";
     m_cam->TStart();
     try
     {   // This call must be commented when testing with the Eiger server Simulator 1.0
@@ -291,7 +292,15 @@ void Camera::CameraThread::execStartAcq()
         DEB_ERROR() << e.what();
         return;
     }
-    std::cout << "Duration download file : " << m_cam->TStop() << "s" << std::endl;
+    double dlDuration = m_cam->TStop();
+
+    long fSize = m_cam->getFileSize(m_cam->m_targetFilename);
+    DEB_TRACE() <<  "Size         : " << fSize << " bytes";
+    DEB_TRACE() <<  "Duration     : " << dlDuration << "s";
+    if (dlDuration > 0.0)
+    {
+        DEB_TRACE() <<  "Speed        : " << m_cam->getFileSize(m_cam->m_targetFilename) / 1000000 / dlDuration << " MB/s";
+    }
 
   	// Begin to transfer the images to Lima
     buffer_mgr.setStartTimestamp(Timestamp::now());
@@ -1134,6 +1143,7 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
 
 
 //-----------------------------------------------------------------------------
+/// Compression status getter
 //-----------------------------------------------------------------------------
 void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled
 {
@@ -1144,23 +1154,56 @@ void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled
 
 
 //-----------------------------------------------------------------------------
+/// Compression status setter
 //-----------------------------------------------------------------------------
-void Camera::setCompression(const bool value)
+void Camera::setCompression(const bool value) ///< [in] true:enabled, false:disabled
 {
     DEB_MEMBER_FUNCT();
 
     EIGER_EXEC(m_pEigerAPI->setCompression(value));
 }
 
+
+//-----------------------------------------------------------------------------
+/// Timer start function
 //-----------------------------------------------------------------------------
 void Camera::TStart()
 {
     T0 = Timestamp::now();
 }
 
+
+//-----------------------------------------------------------------------------
+/// Timer stop function
+/*
+@return elapsed time (seconds)
+*/
+//-----------------------------------------------------------------------------
 double Camera::TStop()
 {
     T1 = Timestamp::now();
     return (T1 - T0);
 }
 
+
+//-----------------------------------------------------------------------------
+/// File size getter
+/*
+@return file size (bytes)
+*/
+//-----------------------------------------------------------------------------
+long Camera::getFileSize(const std::string& fullName) ///< [in] full file name (including path)
+{
+    FILE *pFile = fopen(fullName.c_str() ,"rb");
+
+    // set the file pointer to end of file
+    fseek( pFile, 0, SEEK_END );
+
+    // get the file size
+    long size = ftell( pFile );
+
+    // close stream and release buffer
+    fclose( pFile );    
+
+    return size;
+}

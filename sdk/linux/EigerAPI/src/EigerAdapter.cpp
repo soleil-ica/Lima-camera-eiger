@@ -81,8 +81,7 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
     std::shared_ptr<ResourceValue> name_pattern (dynamic_cast<ResourceValue*> (m_pFactory->getResource("name_pattern")));
     name_pattern->set(std::string(C_NAME_PATTERN));
 
-    // TODO: Remove following calls when NexusCPP handles LZ4
-    // Disable LZ4 compression by default
+    // Set LZ4 compression enabled by default
     std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
     compression->get(m_compression); // store initial value
     std::cout<<"m_compression = "<<m_compression<<std::endl;
@@ -132,7 +131,7 @@ void EigerAdapter::arm()
     armCmd->execute();
 
 #ifndef COMPILATION_WITH_CURL
-    usleep(1700000);
+    usleep(1700000); // emulate the arm command duration when REST commands are not possible
 #endif
 
 }

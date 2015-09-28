@@ -38,7 +38,7 @@ public:
    ~CFileImage_Nxs();
 
    virtual long openFile(const std::string& fileName);
-   virtual void* getNextImage();
+   virtual void* getNextImage(const unsigned int nbFrames=1);
    virtual void closeFile();
    
    void GetSize(int& width, int& height, int& depth);
