@@ -34,6 +34,7 @@
 #define HTTP_ROOT          "http://"
 #define CSTR_EIGERAPI      "api"
 #define CSTR_EIGERDATAFILE "lima_data_000001.h5"
+#define CSTR_EIGERMASTERFILE "lima_master.h5"
 
 namespace eigerapi
 {

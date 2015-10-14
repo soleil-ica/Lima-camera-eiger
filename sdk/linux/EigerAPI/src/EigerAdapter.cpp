@@ -83,14 +83,15 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
 
     // Set LZ4 compression enabled by default
     std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
-    compression->get(m_compression); // store initial value
-    std::cout<<"m_compression = "<<m_compression<<std::endl;
     compression->set(true);
     compression->get(m_compression); // store initial value
     std::cout<<"m_compression = "<<m_compression<<std::endl;
     // Disable auto_summation for now
     std::shared_ptr<ResourceValue> autosummation (dynamic_cast<ResourceValue*> (m_pFactory->getResource("auto_summation")));
     autosummation->set(false);
+    m_auto_summation = false;
+    ////autosummation->get(m_auto_summation);
+    std::cout<<"m_auto_summation = "<<m_auto_summation<<std::endl;
 }
 
 
@@ -99,16 +100,13 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
 //---------------------------------------------------------------------------
 EigerAdapter::~EigerAdapter()
 {
-    // Restore compression initial value
-    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
-    compression->set(m_compression);
-
+    //delete Factory object
     delete m_pFactory;
-
-    if (NULL != m_fileImage)
-    {
-        delete m_fileImage;
-    }
+    m_pFactory = NULL;
+    
+    //delete fileImage object
+    delete m_fileImage;
+    m_fileImage = NULL;
 }
 
 
@@ -158,25 +156,70 @@ void EigerAdapter::trigger()
 
 
 //---------------------------------------------------------------------------
-/// Download and open the last acquired data file
+/// Run the status_update command
 //---------------------------------------------------------------------------
-void EigerAdapter::downloadAcquiredFile(const std::string& destination) ///< [in] full destination path where to download the data file
-                                                                        /// (this string shall include the destination file name too )
+void EigerAdapter::status_update()
+{
+    std::shared_ptr<Resource> statusUpdateCmd (m_pFactory->getResource("status_update"));
+    statusUpdateCmd->execute();
+}
+
+//---------------------------------------------------------------------------
+/// Download the last acquired data file
+//---------------------------------------------------------------------------
+void EigerAdapter::downloadAcquiredFile(const std::string& destination) ///< [in] full destination path+name where to download the data file                                                                        
 {
     std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
 
     serverFile->download(destination);
-    if (NULL != m_fileImage)
-    {
-        delete m_fileImage;
-    }
-    m_fileImage = new CFileImage_Nxs();
-    m_fileImage->openFile(destination);
 }
 
+//---------------------------------------------------------------------------
+/// Delete the last acquired data file
+//---------------------------------------------------------------------------
+void EigerAdapter::deleteAcquiredFile()
+{
+    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
+    resFile->erase();
+}
 
 //---------------------------------------------------------------------------
-/// Get a frame from the last acquired data file
+///(TANGODEVIC-1256)
+/// Download the master file
+//---------------------------------------------------------------------------
+void EigerAdapter::downloadMasterFile(const std::string& destination) ///< [in] full destination path+name where to download the master file                                                                      
+{
+    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("masterfile")));
+
+    serverFile->download(destination);
+}
+
+//---------------------------------------------------------------------------
+///(TANGODEVIC-1256)
+/// Delete the master file
+//---------------------------------------------------------------------------
+void EigerAdapter::deleteMasterFile()
+{
+    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("masterfile")));
+    resFile->erase();
+}
+
+//---------------------------------------------------------------------------
+///Open the data file (must be refactored in the future !!)
+//---------------------------------------------------------------------------
+void EigerAdapter::openDataFile(const std::string& source) ///< [in] the data file name to open
+{
+    //delete previous object
+    delete m_fileImage;
+    m_fileImage = NULL;
+
+    //instantiate a new fileImage object
+    m_fileImage = new CFileImage_Nxs();
+    m_fileImage->openFile(source);
+}
+
+//---------------------------------------------------------------------------
+/// Get a frame from the last opened data file
 /*!
 @return pointer to valid image data buffer (valid until next call to getFrame() or deleteAcquiredFile())
  */
@@ -192,17 +235,6 @@ void* EigerAdapter::getFrame()
         return NULL;
     }
 }
-
-
-//---------------------------------------------------------------------------
-/// Delete the last acquired data file
-//---------------------------------------------------------------------------
-void EigerAdapter::deleteAcquiredFile()
-{
-    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
-    resFile->erase();
-}
-
 
 //---------------------------------------------------------------------------
 /// Sets the trigger mode on the detector

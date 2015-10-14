@@ -37,10 +37,11 @@ ResourceFactory::ResourceFactory(const std::string& strIP,           ///< [in] d
    m_APIVersion = strAPIVersion;
 
 // Detector Commands
-   m_resources["initialize"]  = new ResourceDescription(ERESOURCETYPE_COMMAND, "initialize");
-   m_resources["arm"]         = new ResourceDescription(ERESOURCETYPE_COMMAND, "arm"); 
-   m_resources["disarm"]      = new ResourceDescription(ERESOURCETYPE_COMMAND, "disarm");
-   m_resources["trigger"]     = new ResourceDescription(ERESOURCETYPE_COMMAND, "trigger");
+   m_resources["initialize"]    = new ResourceDescription(ERESOURCETYPE_COMMAND, "initialize");
+   m_resources["arm"]           = new ResourceDescription(ERESOURCETYPE_COMMAND, "arm"); 
+   m_resources["disarm"]        = new ResourceDescription(ERESOURCETYPE_COMMAND, "disarm");
+   m_resources["trigger"]       = new ResourceDescription(ERESOURCETYPE_COMMAND, "trigger");
+   m_resources["status_update"] = new ResourceDescription(ERESOURCETYPE_COMMAND, "status_update");
    
 // Detector Read only values   
    m_resources["temp"]        = new ResourceDescription(ERESOURCETYPE_VALUE_READONLY, 
@@ -92,6 +93,9 @@ ResourceFactory::ResourceFactory(const std::string& strIP,           ///< [in] d
    
 // File management
    m_resources["datafile"] = new ResourceDescription(ERESOURCETYPE_FILE, CSTR_EIGERDATAFILE ); // "lima_data_000000.h5"
+   
+// File management (TANGODEVIC-1256)
+   m_resources["masterfile"] = new ResourceDescription(ERESOURCETYPE_FILE, CSTR_EIGERMASTERFILE ); // "lima_master.h5"   
 }
 
 

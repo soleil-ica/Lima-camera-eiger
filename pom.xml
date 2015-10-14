@@ -10,7 +10,7 @@
 
     <groupId>fr.soleil.lib.Lima.Camera</groupId>
     <artifactId>LimaEiger-${aol}-shared-${mode}</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 
     <packaging>nar</packaging>
     <name>LimaEiger</name>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
    
     </dependencies>

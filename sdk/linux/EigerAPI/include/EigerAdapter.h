@@ -45,12 +45,16 @@ public:
    void arm();
    void disarm();
    void trigger();
+   void status_update();
 
 // Acquired data managenent
    void setImagesPerFile(const int imagesPerFile);
    void downloadAcquiredFile(const std::string& destination);
+   void deleteAcquiredFile();   
+   void downloadMasterFile(const std::string& destination);
+   void deleteMasterFile();
+   void openDataFile(const std::string& source);
    void* getFrame();
-   void deleteAcquiredFile();
 
 // Detector Configuration
    void setNbImagesToAcquire(const int);
@@ -112,6 +116,7 @@ private:
    double m_latency_time;
    double m_exposure_time;
    bool   m_compression;
+   bool   m_auto_summation;
    std::string m_ipaddr;
 };
 

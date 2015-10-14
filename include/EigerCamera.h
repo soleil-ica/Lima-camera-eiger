@@ -62,8 +62,8 @@ using namespace std;
 #define C_DETECTOR_MAX_TIME  60 // seconds
 
 // Name of the downloaded file
-#define C_DOWNLOADED_FILENAME "/temp.h5"
-
+#define DOWNLOADED_MASTER_FILE_NAME "/temp_master.h5"
+#define DOWNLOADED_DATA_FILE_NAME "/temp_data.h5"
 namespace lima
 {
    namespace Eiger
@@ -148,6 +148,9 @@ namespace lima
 
 			void getCompression(bool&);
    			void setCompression(const bool);
+            
+            bool getReaderHDF5();
+            void setReaderHDF5(const bool);
 
 		private:
 			class CameraThread: public CmdThread
@@ -192,13 +195,15 @@ namespace lima
 			void initialiseController(); /// Used during plug-in initialization
 			eigerapi::ENUM_TRIGGERMODE getTriggerMode(const TrigMode trig_mode); ///< [in] lima trigger mode value
 			bool isBinningSupported(const int binValue);	/// Check if a binning value is supported
-
-            // Timestamp functions
-        	Timestamp T0, T1, DeltaT;
-            void TStart();
-            double TStop();
-
             long getFileSize(const std::string& fullName); ///< [in] full file name (including path)
+            
+            // Chronometers functions
+            void    resetChrono();
+            double  elapsedChrono();
+        	Timestamp   m_chrono_0;
+            Timestamp   m_chrono_1;  
+            //////////////////////
+                        
 
 			//-----------------------------------------------------------------------------
 			//- lima stuff
@@ -212,20 +217,23 @@ namespace lima
 			//- camera stuff
 			string                    m_detector_model;
 			string                    m_detector_type;
-			long					  m_maxImageWidth, m_maxImageHeight;
-            ImageType                 m_detectorImageType;  
+			long					  m_max_image_width;
+            long                      m_max_image_height;
+            ImageType                 m_detector_image_type;  
 
 			//- EigerAPI stuff
-         	eigerapi::EigerAdapter*   m_pEigerAPI;
+         	eigerapi::EigerAdapter*   m_eiger_adapter;
          
 			double                    m_temperature;
 			double                    m_humidity;
 			map<TrigMode, eigerapi::ENUM_TRIGGERMODE> m_map_trig_modes;
 			double                    m_exp_time;
 			double                    m_exp_time_max;
-			double                    m_x_pixelsize, m_y_pixelsize;
-			string                    m_targetFilename;
-
+			double                    m_x_pixel_size; 
+            double                    m_y_pixel_size;
+            string                    m_target_data_file_name;
+            string                    m_target_master_file_name;
+            bool                      m_is_reader_hdf5_enabled;
 			CameraThread 			  m_thread;
 	};
 	} // namespace Eiger
