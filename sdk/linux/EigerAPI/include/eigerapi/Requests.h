@@ -144,6 +144,8 @@ namespace eigerapi
 		     FILEWRITER_TIME,
 		     FILEWRITER_BUFFER_FREE,
 		     FILEWRITER_LS,
+		     STREAM_MODE,
+		     STREAM_HEADER_DETAIL,
     };
 
     Requests(const std::string& address);

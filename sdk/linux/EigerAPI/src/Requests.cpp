@@ -65,6 +65,7 @@ static const char* CSTR_EIGERSTATUS		= "status";
 static const char* CSTR_EIGERSTATUS_BOARD	= "status/board_000";
 static const char* CSTR_EIGERCOMMAND		= "command";
 static const char* CSTR_SUBSYSTEMFILEWRITER	= "filewriter";
+static const char* CSTR_SUBSYSTEMSTREAM		= "stream";
 static const char* CSTR_SUBSYSTEMDETECTOR	= "detector";
 static const char* CSTR_DATA			= "data";
 static const char* CSTR_EIGERVERSION		= "version";
@@ -156,6 +157,8 @@ ParamIndex ParamDescription[] = {
   {Requests::FILEWRITER_TIME,		{"time", CSTR_SUBSYSTEMFILEWRITER, CSTR_EIGERSTATUS}},
   {Requests::FILEWRITER_BUFFER_FREE,	{"buffer_free", CSTR_SUBSYSTEMFILEWRITER, CSTR_EIGERSTATUS}},
   {Requests::FILEWRITER_LS,		{"files", CSTR_SUBSYSTEMFILEWRITER,NULL}},
+  {Requests::STREAM_MODE,		{"mode", CSTR_SUBSYSTEMSTREAM}},
+  {Requests::STREAM_HEADER_DETAIL,	{"header_detail", CSTR_SUBSYSTEMSTREAM}},
 };
 
 const char* get_param_name(Requests::PARAM_NAME param_name)
