@@ -48,9 +48,6 @@ namespace Eiger
     void getDetectorImageSize(Size& size /Out/);
     void getDetectorMaxImageSize(Size& size /Out/);
 
-    // -- Buffer control object
-    HwBufferCtrlObj* getBufferCtrlObj();
-
     //-- Synch control object
     bool checkTrigMode(TrigMode trig_mode);
     void setTrigMode(TrigMode  mode);

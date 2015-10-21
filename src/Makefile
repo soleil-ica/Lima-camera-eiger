@@ -1,11 +1,12 @@
-eiger-objs = EigerCamera.o EigerInterface.o EigerDetInfoCtrlObj.o EigerSyncCtrlObj.o EigerSavingCtrlObj.o
+eiger-objs = EigerCamera.o EigerInterface.o EigerDetInfoCtrlObj.o EigerSyncCtrlObj.o EigerSavingCtrlObj.o EigerStream.o EigerDecompress.o
 
 SRCS = $(eiger-objs:.o=.cpp)
 
 
 CXXFLAGS += -std=c++11 -I../include -I../../../hardware/include -I../../../common/include\
 	-I../sdk/linux/EigerAPI/include \
-	 -Wall -pthread -fPIC -g
+	-I../../../third-party/Processlib/core/include \
+	-Wall -pthread -fPIC -g 
 
 all:	Eiger.o
 

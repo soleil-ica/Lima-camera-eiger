@@ -136,7 +136,8 @@ Camera::Camera(const std::string& detector_ip)	///< [in] Ip address of the detec
 		m_trigger_state(IDLE),
 		m_serie_id(0),
                 m_requests(new Requests(detector_ip)),
-                m_exp_time(1.)
+                m_exp_time(1.),
+		m_detector_ip(detector_ip)
 {
     DEB_CONSTRUCTOR();
     DEB_PARAM() << DEB_VAR1(detector_ip);
@@ -235,7 +236,6 @@ void Camera::startAcq()
       m_trigger_state = RUNNING;
     }
   
-  m_buffer_ctrl_obj.getBuffer().setStartTimestamp(Timestamp::now());
 }
 
 
@@ -317,19 +317,6 @@ void Camera::getDetectorModel(string& model) ///< [out] detector model
   DEB_MEMBER_FUNCT();
 
   model = m_detector_model;
-}
-
-
-//-----------------------------------------------------------------------------
-/// return the internal buffer manager
-/*!
-@ return buffer control object
-*/
-//-----------------------------------------------------------------------------
-HwBufferCtrlObj* Camera::getBufferCtrlObj()
-{
-  DEB_MEMBER_FUNCT();
-  return &m_buffer_ctrl_obj;
 }
 
 
@@ -888,4 +875,9 @@ void Camera::deleteMemoryFiles()
      DEB_TRACE() << "delete file: " << *i;
      m_requests->delete_file(*i);
    }
+}
+
+const std::string& Camera::getDetectorIp() const
+{
+  return m_detector_ip;
 }

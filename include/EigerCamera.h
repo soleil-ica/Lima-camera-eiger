@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <limits>
 #include "lima/HwMaxImageSizeCallback.h"
-#include "lima/HwBufferMgr.h"
 #include "lima/ThreadUtils.h"
 
 #include <eigerapi/EigerDefines.h>
@@ -54,6 +53,7 @@ namespace lima
    namespace Eiger
    {
      class SavingCtrlObj;
+     class Stream;
    /*******************************************************************
    * \class Camera
    * \brief object controlling the Eiger camera via EigerAPI
@@ -63,6 +63,7 @@ namespace lima
 		DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Eiger");
 		friend class Interface;
 		friend class SavingCtrlObj;
+		friend class Stream;
 
 		public:
 
@@ -85,9 +86,6 @@ namespace lima
 			void getDetectorModel(std::string& model);
 			void getDetectorImageSize(Size& size);
 			void getDetectorMaxImageSize(Size& size);
-
-			// -- Buffer control object
-			HwBufferCtrlObj* getBufferCtrlObj();
 
 			//-- Synch control object
 			bool checkTrigMode(TrigMode trig_mode);
@@ -139,6 +137,7 @@ namespace lima
 			void getSerieId(int&);
 			void deleteMemoryFiles();
 
+			const std::string& getDetectorIp() const;
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
 			class AcqCallback;
@@ -149,7 +148,6 @@ namespace lima
 			void _acquisition_finished(bool);
 			//-----------------------------------------------------------------------------
 			//- lima stuff
-			SoftBufferCtrlObj	      m_buffer_ctrl_obj;
 			int                       m_nb_frames;
 			int                       m_image_number;
 			double                    m_latency_time;
@@ -174,6 +172,7 @@ namespace lima
 			double		          m_readout_time;
 			double                    m_x_pixelsize, m_y_pixelsize;
 			Cond			  m_cond;
+			std::string		  m_detector_ip;
 			
 	};
 	} // namespace Eiger

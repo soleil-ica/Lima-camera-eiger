@@ -24,6 +24,8 @@
 #include "EigerDetInfoCtrlObj.h"
 #include "EigerSyncCtrlObj.h"
 #include "EigerSavingCtrlObj.h"
+#include "EigerStream.h"
+#include "EigerDecompress.h"
 
 using namespace lima;
 using namespace lima::Eiger;
@@ -45,9 +47,13 @@ Interface::Interface(Camera& cam) : m_cam(cam)
   m_saving = new SavingCtrlObj(cam);
   m_cap_list.push_back(HwCap(m_saving));
 
-  HwBufferCtrlObj* buffer = m_cam.getBufferCtrlObj();
+  m_stream = new Stream(cam);
+  
+  HwBufferCtrlObj* buffer = m_stream->getBufferCtrlObj();
   m_cap_list.push_back(HwCap(buffer));	
-    
+
+  m_decompress = new Decompress(*m_stream);
+  m_cap_list.push_back(HwCap(m_decompress));
 }
 
 //-----------------------------------------------------
@@ -56,8 +62,11 @@ Interface::Interface(Camera& cam) : m_cam(cam)
 Interface::~Interface()
 {
     DEB_DESTRUCTOR();
-	delete m_det_info;
-	delete m_sync;	
+    delete m_det_info;
+    delete m_sync;
+    delete m_saving;
+    delete m_stream;
+    delete m_decompress;
 }
 
 //-----------------------------------------------------
@@ -86,6 +95,9 @@ void Interface::reset(ResetLevel reset_level)
 void Interface::prepareAcq()
 {
     DEB_MEMBER_FUNCT();
+    m_stream->setActive(!m_saving->isActive());
+    m_decompress->setActive(!m_saving->isActive());
+    
     m_cam.prepareAcq();
     int serie_id; m_cam.getSerieId(serie_id);
     m_saving->setSerieId(serie_id);
@@ -97,8 +109,12 @@ void Interface::prepareAcq()
 void Interface::startAcq()
 {
     DEB_MEMBER_FUNCT();
+    // either we use eiger saving or the raw stream
+    if(m_saving->isActive())
+      m_saving->start();
+    else
+      m_stream->start();
     m_cam.startAcq();
-    m_saving->start();
 }
 
 //-----------------------------------------------------
@@ -109,6 +125,7 @@ void Interface::stopAcq()
   DEB_MEMBER_FUNCT();
   m_cam.stopAcq();
   m_saving->stop();
+  m_stream->stop();
 }
 
 //-----------------------------------------------------

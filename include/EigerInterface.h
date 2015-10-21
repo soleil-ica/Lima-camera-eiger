@@ -37,7 +37,8 @@ namespace lima
       class SyncCtrlObj;
       class SavingCtrlObj;
       class Camera;
-	
+      class Stream;
+      class Decompress;
 	/*******************************************************************
 	* \class Interface
 	* \brief Eiger hardware interface
@@ -68,6 +69,8 @@ namespace lima
 	    DetInfoCtrlObj* m_det_info;
 	    SyncCtrlObj*    m_sync;
 	    SavingCtrlObj*  m_saving;
+	    Stream*	    m_stream;
+	    Decompress*	    m_decompress;
 	};
 
     } // namespace Eiger
