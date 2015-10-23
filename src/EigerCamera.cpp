@@ -610,9 +610,6 @@ void Camera::initialiseController()
   DEB_TRACE() << "initialiseController()";
 
   std::list<std::shared_ptr<Requests::Param> > synchro_list;
-  int bit_depth;
-  synchro_list.push_back(m_requests->get_param(Requests::PIXELDEPTH,bit_depth));
-
   std::string trig_name;
   synchro_list.push_back(m_requests->get_param(Requests::TRIGGER_MODE,trig_name));
   
@@ -646,14 +643,7 @@ void Camera::initialiseController()
 
   m_exp_time_max = 10.0; // TODO: implement the getminmax in RestFul client/ ResourceValue
 
-  // Store pixel depth
-  switch (bit_depth)
-    {
-    case 12: m_detectorImageType = Bpp16; break;
-    case 32: m_detectorImageType = Bpp32S; break;
-    default:
-      THROW_HW_ERROR(InvalidValue) << "Unexpected bit depth: " << DEB_VAR1(bit_depth);
-    }
+  m_detectorImageType = Bpp32;
 
   //Trigger mode
   if(trig_name == "ints")
