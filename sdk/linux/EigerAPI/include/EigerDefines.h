@@ -31,9 +31,6 @@
 namespace eigerapi
 {
 
-//#define C_EIGERAPI_EIGER1M_WIDTH  1030
-//#define C_EIGERAPI_EIGER1M_HEIGHT 1065
-#define C_NAME_PATTERN "lima"
 
 const char RESOURCE_NOT_FOUND[]    = "Resource not found: ";
 const char JSON_PARSE_FAILED[]     = "Json parse failed: ";
@@ -46,34 +43,34 @@ const char BAD_REQUEST[]           = "Command failed (HTTP 400): ";
 // Trigger modes
 typedef enum
 {
-   ETRIGMODE_UNKNOWN = -1,
-   ETRIGMODE_EXPO = 0,
-   ETRIGMODE_EXTT,
-   ETRIGMODE_EXTM,
-   ETRIGMODE_EXTE
+   TRIGMODE_UNKNOWN = -1,
+   TRIGMODE_INTS = 0,
+   TRIGMODE_EXTS,
+   TRIGMODE_EXTM,       
+   TRIGMODE_EXTE
 } ENUM_TRIGGERMODE;
 
 
 // Server subsystems
 typedef enum
 {
-   ESUBSYSTEM_DETECTOR,
-   ESUBSYSTEM_FILEWRITER
+   SUBSYSTEM_DETECTOR,
+   SUBSYSTEM_FILEWRITER
 } ENUM_SUBSYSTEM;
 
 // Subsystem states
 typedef enum
 {
-   ESTATE_UNKNOWN = -1,  
-   ESTATE_NA = 0, 
-   ESTATE_DISABLED,
-   ESTATE_READY,
-   ESTATE_IDLE, 
-   ESTATE_ACQUIRE,
-   ESTATE_ERROR,
-   ESTATE_INITIALIZE,
-   ESTATE_CONFIGURE,
-   ESTATE_TEST
+   STATE_UNKNOWN = -1,  
+   STATE_NA = 0, 
+   STATE_DISABLED,
+   STATE_READY,
+   STATE_IDLE, 
+   STATE_ACQUIRE,
+   STATE_ERROR,
+   STATE_INITIALIZE,
+   STATE_CONFIGURE,
+   STATE_TEST
 } ENUM_STATE;
 
 
@@ -112,14 +109,14 @@ public:
 class EigerException: public std::exception
 {
 public:
-  EigerException(const char *pcszDesc, const char* pcszArg, const char *pcszOrigin)
+  EigerException(const char *szDesc, const char* szArg, const char *szOrigin)
   {
     std::ostringstream oss;
     oss << std::endl
         << "--------------------------------------------------------------------------------------------" << std::endl
         << "EigerException " << std::endl 
-        << "Description: "   << pcszDesc << pcszArg << std::endl 
-        << "Origin     : "   << pcszOrigin << std::endl 
+        << "Description: "   << szDesc << szArg << std::endl 
+        << "Origin     : "   << szOrigin << std::endl 
         << "--------------------------------------------------------------------------------------------" << std::endl;
 
     msg = oss.str();

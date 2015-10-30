@@ -34,8 +34,8 @@ namespace eigerapi
 //---------------------------------------------------------------------------
 CFileImage_Nxs::CFileImage_Nxs()
 {
-   m_nxFile            = NULL;
-   m_pSubsetNextImage  = NULL;
+   m_nxs_file            = NULL;
+   m_subset_next_image  = NULL;
    ClearData();
 }
 
@@ -63,25 +63,31 @@ long CFileImage_Nxs::openFile(const std::string& fileName) ///< [in] name of the
    
    try
    {
-      m_nxFile = new nxcpp::NexusFile();
-      m_nxFile->OpenRead(fileName.c_str());
+      m_nxs_file = new nxcpp::NexusFile();
+      m_nxs_file->OpenRead(fileName.c_str());
       std::string Groupname  = EIGER_HDF5_GROUP;
       std::string NeXusclass = EIGER_HDF5_CLASS;
+	  std::string Groupname_next  = EIGER_HDF5_GROUP_NEXT;
+      std::string NeXusclass_next = EIGER_HDF5_CLASS_NEXT;
       
-      if (m_nxFile->OpenGroup(Groupname.c_str(), NeXusclass.c_str()))
+      if (m_nxs_file->OpenGroup(Groupname.c_str(), NeXusclass.c_str()))
       {
-         if (m_nxFile->OpenDataSet(EIGER_HDF5_DATASET))
+		if (m_nxs_file->OpenGroup(Groupname_next.c_str(), NeXusclass_next.c_str()))
+      	{
+
+         if (m_nxs_file->OpenDataSet(EIGER_HDF5_DATASET))
          {            
             // Extract dataset info
             nxcpp::NexusDataSetInfo nxDatasetinfo;        
-            m_nxFile->GetDataSetInfo(&nxDatasetinfo, EIGER_HDF5_DATASET);
-            m_nbImages  = *nxDatasetinfo.DimArray();
-            nbImmages   =  m_nbImages;
-            m_heigth    = *(nxDatasetinfo.DimArray()+1);      
+            m_nxs_file->GetDataSetInfo(&nxDatasetinfo, EIGER_HDF5_DATASET);
+            m_nb_images  = *nxDatasetinfo.DimArray();
+            nbImmages   =  m_nb_images;
+            m_height    = *(nxDatasetinfo.DimArray()+1);      
             m_width     = *(nxDatasetinfo.DimArray()+2);
-            m_DatumSize = nxDatasetinfo.DatumSize();
-            m_dataType  = nxDatasetinfo.DataType();
+            m_datum_size = nxDatasetinfo.DatumSize();
+            m_data_type  = nxDatasetinfo.DataType();
          }
+		}
       }
    }
    catch(nxcpp::NexusException& e)
@@ -110,30 +116,30 @@ void* CFileImage_Nxs::getNextImage(const unsigned int nbFrames) /// [in] number 
 {   
    char* addr = NULL;
    
-   if (m_imageIndex < m_nbImages)
+   if (m_image_index < m_nb_images)
    {                                                                  
       // init subset description array
       int iDim[3];   // Image geometry
       iDim[0]=nbFrames;
-      iDim[1]=m_heigth;
+      iDim[1]=m_height;
       iDim[2]=m_width;
 
       int iStart[3]; // Start position in dataset
-      iStart[0]=m_imageIndex;
+      iStart[0]=m_image_index;
       iStart[1]=0;
       iStart[2]=0;
       
       try
       {
          // delete previous datasubset
-         if (NULL!=m_pSubsetNextImage) delete m_pSubsetNextImage;
+         if (NULL!=m_subset_next_image) delete m_subset_next_image;
 
          // Create the dataset to retreive one image
                        // NexusDataSet(NexusDataType eDataType, void *pData, int iRank, int *piDim, int *piStart=NULL);
-         m_pSubsetNextImage = new nxcpp::NexusDataSet(m_dataType, NULL,             3,       iDim,       iStart);
+         m_subset_next_image = new nxcpp::NexusDataSet(m_data_type, NULL,             3,       iDim,       iStart);
 
-         m_nxFile->GetDataSubSet(m_pSubsetNextImage, EIGER_HDF5_DATASET);
-         addr = (char*)m_pSubsetNextImage->Data();
+         m_nxs_file->GetDataSubSet(m_subset_next_image, EIGER_HDF5_DATASET);
+         addr = (char*)m_subset_next_image->Data();
 
       }
       catch(nxcpp::NexusException& e)
@@ -147,7 +153,7 @@ void* CFileImage_Nxs::getNextImage(const unsigned int nbFrames) /// [in] number 
          throw EigerException(e.what(), "", "CFileImage_Nxs::getNextImage" );   
       }
 
-      m_imageIndex += nbFrames;
+      m_image_index += nbFrames;
    }
    
    return (void*)addr;
@@ -160,11 +166,11 @@ void* CFileImage_Nxs::getNextImage(const unsigned int nbFrames) /// [in] number 
 void CFileImage_Nxs::closeFile()
 {
    ClearData();
-   if (NULL!=m_nxFile)
+   if (NULL!=m_nxs_file)
    {
-      m_nxFile->Close();
-      delete m_nxFile;
-      m_nxFile = NULL;
+      m_nxs_file->Close();
+      delete m_nxs_file;
+      m_nxs_file = NULL;
    }   
 }
 
@@ -177,8 +183,8 @@ void CFileImage_Nxs::GetSize(int& width,   ///< [out] images width
                              int& depth)   ///< [out] images pixel depth
 {
    width  = m_width;
-   height = m_heigth;
-   depth  = m_DatumSize;
+   height = m_height;
+   depth  = m_datum_size;
 }
 
 
@@ -187,18 +193,18 @@ void CFileImage_Nxs::GetSize(int& width,   ///< [out] images width
 //---------------------------------------------------------------------------
 void CFileImage_Nxs::ClearData()
 {
-   if (NULL!=m_pSubsetNextImage) 
+   if (NULL!=m_subset_next_image) 
    {
-      delete m_pSubsetNextImage;
-      m_pSubsetNextImage = NULL;
+      delete m_subset_next_image;
+      m_subset_next_image = NULL;
    }
    
-   m_dataSet.Clear();
+   m_dataset.Clear();
    
-   m_imageIndex = 0;
-   m_nbImages   = 0;
+   m_image_index = 0;
+   m_nb_images   = 0;
    m_width      = 0;
-   m_heigth     = 0;
-   m_DatumSize  = 0;
+   m_height     = 0;
+   m_datum_size  = 0;
 }
 }

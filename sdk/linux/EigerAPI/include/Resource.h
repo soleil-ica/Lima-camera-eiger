@@ -43,10 +43,10 @@ public:
 
    virtual void execute() { };
    
-   std::string getURL() { return m_URL; };
+   std::string getURL() { return m_url; };
    
 protected:
-   std::string m_URL;
+   std::string m_url;
 };
 
 } // namespace eigerapi

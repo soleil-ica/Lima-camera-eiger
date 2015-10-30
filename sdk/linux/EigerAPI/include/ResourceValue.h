@@ -48,7 +48,7 @@ public:
    void set(const T&);
    
 private:
-   bool m_bWritable;
+   bool m_is_writable;
 
 };
 

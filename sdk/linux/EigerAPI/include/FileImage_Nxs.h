@@ -46,15 +46,15 @@ public:
 private:
    void ClearData();
 
-   nxcpp::NexusFile* m_nxFile;
-   nxcpp::NexusDataSet m_dataSet;
-   nxcpp::NexusDataSet* m_pSubsetNextImage;
-   nxcpp::NexusDataType m_dataType;
+   nxcpp::NexusFile* m_nxs_file;
+   nxcpp::NexusDataSet m_dataset;
+   nxcpp::NexusDataSet* m_subset_next_image;
+   nxcpp::NexusDataType m_data_type;
    
-   long m_imageIndex;   
-   long m_nbImages;
-   int  m_width, m_heigth;
-   int  m_DatumSize;
+   long m_image_index;   
+   long m_nb_images;
+   int  m_width, m_height;
+   int  m_datum_size;
 };
 
 } // namespace eigerapi

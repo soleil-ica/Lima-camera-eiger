@@ -26,7 +26,7 @@ namespace eigerapi
 //---------------------------------------------------------------------------
 Resource::Resource(const std::string& url)
 {
-   m_URL = url;
+   m_url = url;
 }
 
 

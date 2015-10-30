@@ -26,39 +26,39 @@
 
 #include <string>
 
-#define CSTR_EIGERCONFIG         "config"
-#define CSTR_EIGERSTATUS         "status"
-#define CSTR_EIGERCOMMAND        "command"
-#define CSTR_SUBSYSTEMFILEWRITER "filewriter"
-#define CSTR_SUBSYSTEMDETECTOR   "detector"
-#define CSTR_DATA                "data"
-#define CSTR_EIGERVERSION        "version"
+#define STR_EIGER_CONFIG         "config"
+#define STR_EIGER_STATUS         "status"
+#define STR_EIGER_COMMAND        "command"
+#define STR_SUBSYSTEM_FILE_WRITER "filewriter"
+#define STR_SUBSYSTEM_DETECTOR   "detector"
+#define STR_DATA                "data"
+#define STR_EIGER_VERSION        "version"
 
 namespace eigerapi
 {
    typedef enum 
    {
-      ERESOURCETYPE_VALUE_READONLY = 0,
-      ERESOURCETYPE_VALUE_READWRITE,
-      ERESOURCETYPE_COMMAND,
-      ERESOURCETYPE_FILE
-   } ENUM_RESOURCETYPE;
+      RESOURCE_VALUE_RO = 0,
+      RESOURCE_VALUE_RW,
+      RESOURCE_COMMAND,
+      RESOURCE_FILE
+   } ENUM_RESOURCE_TYPE;
    
 class ResourceDescription
 {
    friend class ResourceFactory;
 
 public:                   
-   ResourceDescription(const ENUM_RESOURCETYPE eResourceType,
+   ResourceDescription(const ENUM_RESOURCE_TYPE eResourceType,
                        const std::string& name, 
-                       const std::string& subsystem=CSTR_SUBSYSTEMDETECTOR,
-                       const std::string& location=CSTR_EIGERCONFIG);
+                       const std::string& subsystem=STR_SUBSYSTEM_DETECTOR,
+                       const std::string& location=STR_EIGER_CONFIG);
                        
    ~ResourceDescription();
 
 private:   
    std::string       m_name;
-   ENUM_RESOURCETYPE m_eResourceType;
+   ENUM_RESOURCE_TYPE     m_resource_type;
    std::string       m_subsystem;   
    std::string       m_location;
 

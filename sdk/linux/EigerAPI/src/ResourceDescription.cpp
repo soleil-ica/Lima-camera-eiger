@@ -25,19 +25,19 @@ namespace eigerapi
 //---------------------------------------------------------------------------
 /// Constructor
 //---------------------------------------------------------------------------
-ResourceDescription::ResourceDescription(const ENUM_RESOURCETYPE eResourceType, ///< [in] resource type
+ResourceDescription::ResourceDescription(const ENUM_RESOURCE_TYPE eResourceType, ///< [in] resource type
                                          const std::string& name,               ///< [in] resource name                                         
                                          const std::string& subsystem,          ///< [in] subsystem 
                                          const std::string& location)           ///< [in] resource location
 {
    m_name          = name;
-   m_eResourceType = eResourceType;
+   m_resource_type = eResourceType;
    m_subsystem     = subsystem;
    
    switch (eResourceType)
    {
-      case ERESOURCETYPE_COMMAND: m_location = CSTR_EIGERCOMMAND; break;
-      case ERESOURCETYPE_FILE:    m_location = CSTR_DATA; break;
+      case RESOURCE_COMMAND: m_location = STR_EIGER_COMMAND; break;
+      case RESOURCE_FILE:    m_location = STR_DATA; break;
       default: m_location = location;
    }
 }

@@ -26,8 +26,8 @@ namespace eigerapi
 //---------------------------------------------------------------------------
 /// Constructor
 //---------------------------------------------------------------------------
-ResourceFile::ResourceFile(const std::string& url) ///< [in] url of the resource
-:Resource(url)
+ResourceFile::ResourceFile(const std::string& url, const std::string& file) ///< [in] url of the resource
+:Resource(url), m_file(file)
 {
 }
 
@@ -46,21 +46,21 @@ ResourceFile::~ResourceFile()
 @return true if success
  */
 //---------------------------------------------------------------------------
-bool ResourceFile::download(const std::string& destination) ///< [in] full path with file name where to save
+bool ResourceFile::download(const std::string& path) ///< [in] full path with file name where to save
 {
-   bool bResult = false;
-
-   try
-   {
-      RESTfulClient client;
-      client.get_file(Resource::m_URL, destination);
-      bResult = true;
-   }
-   catch (const EigerException& e)
-   {
-   	  e.dump();
-   }
-   return bResult;
+    bool bResult = false;
+    std::string destination = path+"/"+m_file;
+    try
+    {
+        RESTfulClient client;
+        client.get_file(Resource::m_url, destination);
+        bResult = true;
+    }
+    catch (const EigerException& e)
+    {
+        e.dump();
+    }
+    return bResult;
 }
 
 
@@ -72,20 +72,33 @@ bool ResourceFile::download(const std::string& destination) ///< [in] full path 
 //---------------------------------------------------------------------------
 bool ResourceFile::erase()
 {
-	bool bResult = false;
+    bool bResult = false;
 
-	RESTfulClient client;
-	try
-	{
-	 	client.delete_file(Resource::m_URL);
-		bResult = true;
-	}
-	catch (const EigerException& e)
-	{
-		e.dump();
-		bResult = false;
-	}
-	return bResult;
+    RESTfulClient client;
+    try
+    {
+        client.delete_file(Resource::m_url);
+        bResult = true;
+    }
+    catch (const EigerException& e)
+    {
+        e.dump();
+        bResult = false;
+    }
+    return bResult;
 }
+
+
+//---------------------------------------------------------------------------
+/// Get the file name
+/*!
+@return the file name
+ */
+//---------------------------------------------------------------------------
+const std::string& ResourceFile::getFileName()
+{
+    return m_file;
+}
+
 
 } // namespace eigerapi

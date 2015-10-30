@@ -27,15 +27,13 @@
 #include <string>
 #include <iostream>
 
-#ifdef COMPILATION_WITH_CURL
 #include <curl/curl.h>
-#endif
 
 #include <json/json.h>
 
 namespace eigerapi
 {
-
+#define LOG_STREAM if (RESTfulClient::m_is_verbose) std::cout
 class RESTfulClient
 {
 public:
@@ -53,17 +51,15 @@ public:
    
    void get_file(const std::string& url, const std::string& targetPath);
    void delete_file(const std::string& url);
-
+   static void set_verbosity(bool is_verbose){m_is_verbose = is_verbose;}
+   static bool m_is_verbose;   
 private:
     static size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
-    static size_t writeCallback(char* buf, size_t size, size_t nmemb, void* /*up*/);
+    static size_t write_callback(char* buf, size_t size, size_t nmemb, void* /*up*/);
     static size_t header_callback(char* buffer,   size_t size,   size_t nitems,   void* /*userdata*/);   
 
-   static std::string m_RESTfulClient_data;    
-    
-#ifdef COMPILATION_WITH_CURL    
+   static std::string m_client_data;    
    CURL* m_curl; //our curl object
-#endif   
    
 };
 

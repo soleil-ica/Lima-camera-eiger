@@ -34,13 +34,16 @@ class ResourceFile : public Resource
 friend class ResourceFactory;
 
 private:
-   ResourceFile(const std::string& url);   
+   ResourceFile(const std::string& url, const std::string& file);   
 
 public:    
    ~ResourceFile();
    
    bool erase();
-   bool download(const std::string& destination);   
+   bool download(const std::string& path);      
+   const std::string& getFileName();
+private:   
+   std::string m_file;
 };
 
 } // namespace eigerapi

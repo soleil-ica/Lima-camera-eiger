@@ -45,7 +45,7 @@ ResourceCommand::~ResourceCommand()
 void ResourceCommand::execute()
 {  
    RESTfulClient client;
-   client.send_command(Resource::m_URL);
+   client.send_command(Resource::m_url);
 }
 
 }

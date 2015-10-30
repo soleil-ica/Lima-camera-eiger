@@ -35,7 +35,7 @@ ResourceValue::ResourceValue(const std::string& url, ///< [in] resource url
 ///< false means read-only
 :Resource(url)
 {
-	m_bWritable = bWritable;
+	m_is_writable = bWritable;
 }
 
 //---------------------------------------------------------------------------
@@ -49,17 +49,17 @@ ResourceValue::~ResourceValue()
 void ResourceValue::get(std::string& value) ///< [out] value of the resource
 {
    RESTfulClient client;
-   value = client.get_parameter<std::string>(Resource::m_URL);
+   value = client.get_parameter<std::string>(Resource::m_url);
 }
 */
 
 template <>
 void ResourceValue::set(const std::string& value) ///< [in] value of the resource
 {
-   std::cout << "ResourceValue::setString " << value << std::endl;
-   if (!m_bWritable) throw ("Resource is read-only.");
+   LOG_STREAM << "ResourceValue::setString " << value << std::endl;
+   if (!m_is_writable) throw ("Resource is read-only.");
    RESTfulClient client;
-   client.set_parameter(m_URL, value);
+   client.set_parameter(m_url, value);
 }
 
 }

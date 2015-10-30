@@ -34,19 +34,18 @@ template <class T>
 void RESTfulClient::set_parameter(const std::string& url,   ///< [in] URL to write to
                                   const T& value)           ///< [in] value to write
 {
-   std::cout << "RESTfulClient::set_parameter(" << url << " , " << value << ")" << std::endl;
+   LOG_STREAM << "RESTfulClient::set_parameter(" << url << " , " << value << ")" << std::endl;
 
-   std::cout << "preparing json ..." << std::endl<<std::endl;
+   LOG_STREAM << "preparing json ..." << std::endl<<std::endl;
    Json::Value root;
    root["value"] = value;
    Json::FastWriter writer;
    std::string json_struct = writer.write(root);
-   std::cout << "json buffer: " << json_struct << std::endl << std::endl;
+   LOG_STREAM << "json buffer: " << json_struct << std::endl << std::endl;
    
    //--------------------------
-#ifdef COMPILATION_WITH_CURL   
    
-   std::cout << "preparing curl ..." << std::endl<<std::endl;
+   LOG_STREAM << "preparing curl ..." << std::endl<<std::endl;
    struct curl_slist *headers = NULL;
 
    headers = curl_slist_append(headers, "Accept: application/json");
@@ -67,14 +66,12 @@ void RESTfulClient::set_parameter(const std::string& url,   ///< [in] URL to wri
    
    if (result != CURLE_OK)
    {
-      std::cout << curl_easy_strerror(result) << std::endl;       
+      LOG_STREAM << curl_easy_strerror(result) << std::endl;       
       throw EigerException(curl_easy_strerror(result), "", "RESTfulClient::set_parameter");     
    }  
    
 //   curl_easy_cleanup(m_curl);
-#endif   
 
-   std::cout<<"set_parameter end"<<std::endl;
 }
 
 
@@ -87,20 +84,18 @@ void RESTfulClient::set_parameter(const std::string& url,   ///< [in] URL to wri
 template <class T>
 T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read from
 {
-   std::cout << "RESTfulClient::get_parameter(" << url << ")" << std::endl;
+   LOG_STREAM << "RESTfulClient::get_parameter(" << url << ")" << std::endl;
 
-   m_RESTfulClient_data = "";
-#ifdef COMPILATION_WITH_CURL
+   m_client_data = "";
    struct curl_slist *headers = NULL;
 
    headers = curl_slist_append(headers, "Accept: application/json");
    headers = curl_slist_append(headers, "Content-Type: application/json;charset=utf-8");
 
 
-   curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
-
+   curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());   
    curl_easy_setopt(m_curl, CURLOPT_PROXY, "");
-   curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, writeCallback);   
+   curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, write_callback);   
    curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L); //tell m_curl to output its progress
 
    CURLcode result =  curl_easy_perform(m_curl);
@@ -117,8 +112,8 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    Json::Value  root;
    Json::Reader reader;
 
-   //std::cout << "m_RESTfulClient_data = " << m_RESTfulClient_data << std::endl;
-   if (!reader.parse(m_RESTfulClient_data, root)) 
+   //LOG_STREAM << "m_client_data = " << m_client_data << std::endl;
+   if (!reader.parse(m_client_data, root)) 
    {
       throw EigerException(eigerapi::JSON_PARSE_FAILED, reader.getFormatedErrorMessages().c_str(),
                            "RESTfulClient::get_parameter");
@@ -152,10 +147,6 @@ T RESTfulClient::get_parameter(const std::string& url)   ///< [in] url to read f
    }
 
    return value;
-#else
-   T value = T();
-   return value;
-#endif   
 
 }
 

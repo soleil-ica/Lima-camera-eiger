@@ -32,9 +32,9 @@
 #include <list>
 
 #define HTTP_ROOT          "http://"
-#define CSTR_EIGERAPI      "api"
-#define CSTR_EIGERDATAFILE "lima_data_000001.h5"
-#define CSTR_EIGERMASTERFILE "lima_master.h5"
+#define STR_EIGER_API      "api"
+#define STR_EIGER_DATA_FILE "lima_data_000001.h5"
+#define STR_EIGER_MASTER_FILE "lima_master.h5"
 
 namespace eigerapi
 {
@@ -47,6 +47,7 @@ public:
     ResourceFactory(const std::string& strIP, const std::string& strAPIVersion);
    ~ResourceFactory();
   
+   void setFileNamePattern(const std::string& pattern);   
    Resource* getResource(const std::string& resourceName);
    void getResourceList(std::list<std::string>&);
 private:
@@ -54,8 +55,8 @@ private:
 
    tResourceMap m_resources;
 
-   std::string m_ipaddr;
-   std::string m_APIVersion;
+   std::string m_ip_addr;
+   std::string m_api_version;
 };
 
 } // namespace eigerapi

@@ -27,7 +27,7 @@
 #include "EigerDefines.h"
 #include "ResourceFactory.h"
 #include "IFileImage.h"
-
+#include "RESTfulClient.h"
 #include <vector>
 #include <string>
 
@@ -45,19 +45,22 @@ public:
    void arm();
    void disarm();
    void trigger();
+   void abort();
+   void cancel();
    void status_update();
 
 // Acquired data managenent
-   void setImagesPerFile(const int imagesPerFile);
-   void downloadAcquiredFile(const std::string& destination);
-   void deleteAcquiredFile();   
+   void setNbImagesPerFile(const int imagesPerFile);
+   void setFileNamePattern(const std::string& pattern);    
+   void downloadDataFile(const std::string& destination);
+   void deleteDataFile();   
    void downloadMasterFile(const std::string& destination);
    void deleteMasterFile();
    void openDataFile(const std::string& source);
    void* getFrame();
 
-// Detector Configuration
-   void setNbImagesToAcquire(const int);
+    // Detector Configuration
+   void setNbImages(const int);
 
    void setTriggerMode(const ENUM_TRIGGERMODE);
    ENUM_TRIGGERMODE getTriggerMode();
@@ -91,13 +94,13 @@ public:
    bool getCompression(void);
    void setCompression(const bool enabled);
 
-// Detector geometry and miscs
+    // Detector geometry and miscs
    int getBitDepthReadout();
    EigerSize getPixelSize(void);
    EigerSize getDetectorSize(void);
    std::string getDescription(void);
    std::string getDetectorNumber(void);
-
+   void setVerbosity(const bool verbose){RESTfulClient::set_verbosity(verbose);}
 
 private:
    int GetIndex(const std::vector<std::string>& vect,      ///< [in] vector to search into
@@ -106,18 +109,18 @@ private:
    double getReadoutTime();
    std::string GetAPIVersion();
                 
-   ResourceFactory* m_pFactory;   
+   ResourceFactory* m_factory;   
    
-   std::vector<std::string> m_vectTriggerModes;
-   std::vector<std::string> m_vectStatusString;
+   std::vector<std::string> m_vec_trigger_mode;
+   std::vector<std::string> m_vec_status;
    
-   IFileImage* m_fileImage;
+   IFileImage* m_file_image;
    double m_readout_time;
    double m_latency_time;
    double m_exposure_time;
    bool   m_compression;
    bool   m_auto_summation;
-   std::string m_ipaddr;
+   std::string m_ip_addr;
 };
 
 } // namespace eigerapi

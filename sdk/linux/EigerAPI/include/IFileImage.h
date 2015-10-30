@@ -43,6 +43,8 @@ namespace eigerapi
 {
    #define EIGER_HDF5_GROUP           "entry"
    #define EIGER_HDF5_CLASS           "NXEntry"
+   #define EIGER_HDF5_GROUP_NEXT      "data"
+   #define EIGER_HDF5_CLASS_NEXT      "NXdata"
    #define EIGER_HDF5_DATASET         "data"
    #define EIGER_HDF5_ATTR_NR_IMAGE_H "image_nr_high"
 

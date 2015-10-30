@@ -38,7 +38,7 @@ template <class T>
 void ResourceValue::get(T& value)
 {
    RESTfulClient client;
-   value = client.get_parameter<T>(Resource::m_URL);
+   value = client.get_parameter<T>(Resource::m_url);
 }
 
 
@@ -48,13 +48,13 @@ void ResourceValue::get(T& value)
 template <class T>
 void ResourceValue::set(const T& value)
 {
-   std::cout << "ResourceValue::set(" << value << ")" << std::endl;
-   if (!m_bWritable) 
+   LOG_STREAM << "ResourceValue::set(" << value << ")" << std::endl;
+   if (!m_is_writable) 
    {
-      throw EigerException(READONLY_RESOURCE, Resource::m_URL.c_str(), "ResourceValue::set");
+      throw EigerException(READONLY_RESOURCE, Resource::m_url.c_str(), "ResourceValue::set");
    } 
    RESTfulClient client;
-   client.set_parameter<T>(m_URL, value);
+   client.set_parameter<T>(m_url, value);
 }
 
 

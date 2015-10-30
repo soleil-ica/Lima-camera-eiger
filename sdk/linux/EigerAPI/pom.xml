@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>
@@ -41,6 +41,7 @@
            
     </dependencies>
    
+
     <build>
         <plugins>
             <plugin>
@@ -51,12 +52,21 @@
                         <sourceDirectory>src</sourceDirectory>
                         <includePaths>
                             <includePath>include</includePath>
+                            <includePath>/usr/include/curl</includePath>
                         </includePaths>
                         <defines>
-                            <define>COMPILATION_WITH_CURL</define>                              
+                            <!--<define>COMPILATION_WITH_CURL</define>--> 
                         </defines>                       
                     </cpp>
-
+<!--                    <linker>
+                        <libs>
+                            <lib>
+                                <name>curl</name>
+                                <type>shared</type>
+                                <directory>/usr/lib</directory>
+                            </lib>
+                        </libs>			
+                    </linker>-->
                 </configuration>
             </plugin>
             <plugin>

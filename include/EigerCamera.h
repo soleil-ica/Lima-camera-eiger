@@ -130,7 +130,7 @@ namespace lima
 			// -- Eiger specific
 			double getTemperature();
 			double getHumidity();
-         
+            void setFileNamePattern(const std::string& pattern);
 			void setCountrateCorrection(const bool);
 			void getCountrateCorrection(bool&);
 			void setFlatfieldCorrection(const bool);
@@ -151,7 +151,7 @@ namespace lima
             
             bool getReaderHDF5();
             void setReaderHDF5(const bool);
-
+            void setVerbosity(const bool verbose){m_eiger_adapter->setVerbosity(verbose);}
 		private:
 			class CameraThread: public CmdThread
 			{
@@ -194,8 +194,7 @@ namespace lima
 			
 			void initialiseController(); /// Used during plug-in initialization
 			eigerapi::ENUM_TRIGGERMODE getTriggerMode(const TrigMode trig_mode); ///< [in] lima trigger mode value
-			bool isBinningSupported(const int binValue);	/// Check if a binning value is supported
-            long getFileSize(const std::string& fullName); ///< [in] full file name (including path)
+			bool isBinningSupported(const int binValue);	/// Check if a binning value is supported            
             
             // Chronometers functions
             void    resetChrono();
@@ -203,7 +202,6 @@ namespace lima
         	Timestamp   m_chrono_0;
             Timestamp   m_chrono_1;  
             //////////////////////
-                        
 
 			//-----------------------------------------------------------------------------
 			//- lima stuff
@@ -231,8 +229,7 @@ namespace lima
 			double                    m_exp_time_max;
 			double                    m_x_pixel_size; 
             double                    m_y_pixel_size;
-            string                    m_target_data_file_name;
-            string                    m_target_master_file_name;
+            string                    m_target_path;            
             bool                      m_is_reader_hdf5_enabled;
 			CameraThread 			  m_thread;
 	};

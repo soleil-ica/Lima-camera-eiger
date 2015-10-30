@@ -37,61 +37,56 @@ namespace eigerapi
 //---------------------------------------------------------------------------
 EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the api on the server (ex: "0.6.1")
 {
-    std::cout << "create EigerAPI, IP= " << strIP << std::endl;
+    LOG_STREAM << "create EigerAPI, IP= " << strIP << std::endl;
 
-    m_ipaddr = strIP;
+    m_ip_addr = strIP;
 
     // Request the version of the API installed on the server
     std::string strAPIVersion = GetAPIVersion();
-    std::cout << "API version = " << strAPIVersion << std::endl;
+    LOG_STREAM << "API version = " << strAPIVersion << std::endl;
 
-    m_pFactory = new ResourceFactory(strIP, strAPIVersion);
+    m_factory = new ResourceFactory(strIP, strAPIVersion);
 
     // Detector trigger modes
-    m_vectTriggerModes.push_back("expo");
-    m_vectTriggerModes.push_back("extt");
-    m_vectTriggerModes.push_back("extm");
-    m_vectTriggerModes.push_back("exte");
+	m_vec_trigger_mode.push_back("ints"); // internal single
+    m_vec_trigger_mode.push_back("exts"); // external single
+    m_vec_trigger_mode.push_back("exte"); // external gate (number of image should be equal to the number of trigger)
 
     // Subsystems status strings
-    m_vectStatusString.push_back("na");         // ESTATE_NA
-    m_vectStatusString.push_back("disabled");   // ESTATE_DISABLED
-    m_vectStatusString.push_back("ready");      // ESTATE_READY
-    m_vectStatusString.push_back("idle");       // ESTATE_IDLE
-    m_vectStatusString.push_back("acquire");    // ESTATE_ACQUIRE
-    m_vectStatusString.push_back("error");      // ESTATE_ERROR
-    m_vectStatusString.push_back("initialize"); // ESTATE_INITIALIZE
-    m_vectStatusString.push_back("configure");  // ESTATE_CONFIGURE
-    m_vectStatusString.push_back("test");       // ESTATE_TEST
+    m_vec_status.push_back("na");         // ESTATE_NA
+    m_vec_status.push_back("disabled");   // ESTATE_DISABLED
+    m_vec_status.push_back("ready");      // ESTATE_READY
+    m_vec_status.push_back("idle");       // ESTATE_IDLE
+    m_vec_status.push_back("acquire");    // ESTATE_ACQUIRE
+    m_vec_status.push_back("error");      // ESTATE_ERROR
+    m_vec_status.push_back("initialize"); // ESTATE_INITIALIZE
+    m_vec_status.push_back("configure");  // ESTATE_CONFIGURE
+    m_vec_status.push_back("test");       // ESTATE_TEST
 
-    m_fileImage = NULL;
-
+    m_file_image = NULL;
+    
     // Send an "initialize" command
-    initialize();
+    // FL: no need to initialize for each start of the device (only for each start of the detector)
+	//initialize();
 
     // Init capture timings
-    m_readout_time = getReadoutTime(); // get the current readout time in the detector
-    // (this value could be improved with firmware update)
+    m_readout_time = getReadoutTime(); // get the current readout time in the detector. (this value could be improved with firmware update)
+    m_exposure_time = 0.0; 
+    m_latency_time  = 0.0;  
+    LOG_STREAM <<"m_readout_time = "<<m_readout_time<<std::endl;        
     
-    m_latency_time  = 0.0;  // init latency time
     
-    m_exposure_time = getExposureTime(); // get the current exposure time in the detector
-
-    // Set file name pattern
-    std::shared_ptr<ResourceValue> name_pattern (dynamic_cast<ResourceValue*> (m_pFactory->getResource("name_pattern")));
-    name_pattern->set(std::string(C_NAME_PATTERN));
-
     // Set LZ4 compression enabled by default
-    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
+    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_factory->getResource("compression")));
     compression->set(true);
     compression->get(m_compression); // store initial value
-    std::cout<<"m_compression = "<<m_compression<<std::endl;
+    LOG_STREAM<<"m_compression = "<<m_compression<<std::endl;
     // Disable auto_summation for now
-    std::shared_ptr<ResourceValue> autosummation (dynamic_cast<ResourceValue*> (m_pFactory->getResource("auto_summation")));
+    std::shared_ptr<ResourceValue> autosummation (dynamic_cast<ResourceValue*> (m_factory->getResource("auto_summation")));
     autosummation->set(false);
     m_auto_summation = false;
     ////autosummation->get(m_auto_summation);
-    std::cout<<"m_auto_summation = "<<m_auto_summation<<std::endl;
+    LOG_STREAM<<"m_auto_summation = "<<m_auto_summation<<std::endl;
 }
 
 
@@ -101,12 +96,12 @@ EigerAdapter::EigerAdapter(const std::string& strIP)  ///< [in] version of the a
 EigerAdapter::~EigerAdapter()
 {
     //delete Factory object
-    delete m_pFactory;
-    m_pFactory = NULL;
+    delete m_factory;
+    m_factory = NULL;
     
     //delete fileImage object
-    delete m_fileImage;
-    m_fileImage = NULL;
+    delete m_file_image;
+    m_file_image = NULL;
 }
 
 
@@ -115,7 +110,7 @@ EigerAdapter::~EigerAdapter()
 //---------------------------------------------------------------------------
 void EigerAdapter::initialize()
 {
-    std::shared_ptr<ResourceCommand> initCmd (dynamic_cast<ResourceCommand*> (m_pFactory->getResource("initialize")));  
+    std::shared_ptr<ResourceCommand> initCmd (dynamic_cast<ResourceCommand*> (m_factory->getResource("initialize")));  
     initCmd->execute();
 }
 
@@ -125,13 +120,8 @@ void EigerAdapter::initialize()
 //---------------------------------------------------------------------------
 void EigerAdapter::arm()
 {    
-    std::shared_ptr<Resource> armCmd (m_pFactory->getResource("arm"));
+    std::shared_ptr<Resource> armCmd (m_factory->getResource("arm"));
     armCmd->execute();
-
-#ifndef COMPILATION_WITH_CURL
-    usleep(1700000); // emulate the arm command duration when REST commands are not possible
-#endif
-
 }
 
 
@@ -140,17 +130,34 @@ void EigerAdapter::arm()
 //---------------------------------------------------------------------------
 void EigerAdapter::disarm()
 {
-    std::shared_ptr<Resource> disarmCmd (m_pFactory->getResource("disarm"));
+    std::shared_ptr<Resource> disarmCmd (m_factory->getResource("disarm"));
     disarmCmd->execute();
 }
 
+//---------------------------------------------------------------------------
+/// Run the abort command
+//---------------------------------------------------------------------------
+void EigerAdapter::abort()
+{
+    std::shared_ptr<Resource> abortCmd (m_factory->getResource("abort"));
+    abortCmd->execute();
+}
+
+//---------------------------------------------------------------------------
+/// Run the cancel command
+//---------------------------------------------------------------------------
+void EigerAdapter::cancel()
+{
+    std::shared_ptr<Resource> cancelCmd (m_factory->getResource("cancel"));
+    cancelCmd->execute();
+}
 
 //---------------------------------------------------------------------------
 /// Run the trigger command
 //---------------------------------------------------------------------------
 void EigerAdapter::trigger()
 {
-    std::shared_ptr<Resource> triggerCmd (m_pFactory->getResource("trigger"));
+    std::shared_ptr<Resource> triggerCmd (m_factory->getResource("trigger"));
     triggerCmd->execute();
 }
 
@@ -160,16 +167,26 @@ void EigerAdapter::trigger()
 //---------------------------------------------------------------------------
 void EigerAdapter::status_update()
 {
-    std::shared_ptr<Resource> statusUpdateCmd (m_pFactory->getResource("status_update"));
+    std::shared_ptr<Resource> statusUpdateCmd (m_factory->getResource("status_update"));
     statusUpdateCmd->execute();
 }
 
 //---------------------------------------------------------------------------
+/// set name_pattern
+//---------------------------------------------------------------------------
+void EigerAdapter::setFileNamePattern(const std::string& pattern) 
+{
+//    std::shared_ptr<ResourceValue> name_pattern (dynamic_cast<ResourceValue*> (m_factory->getResource("name_pattern")));
+//    name_pattern->set(pattern);
+    m_factory->setFileNamePattern(pattern);    
+} 
+    
+//---------------------------------------------------------------------------
 /// Download the last acquired data file
 //---------------------------------------------------------------------------
-void EigerAdapter::downloadAcquiredFile(const std::string& destination) ///< [in] full destination path+name where to download the data file                                                                        
+void EigerAdapter::downloadDataFile(const std::string& destination) ///< [in] full destination path+name where to download the data file                                                                        
 {
-    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
+    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_factory->getResource("datafile")));
 
     serverFile->download(destination);
 }
@@ -177,9 +194,9 @@ void EigerAdapter::downloadAcquiredFile(const std::string& destination) ///< [in
 //---------------------------------------------------------------------------
 /// Delete the last acquired data file
 //---------------------------------------------------------------------------
-void EigerAdapter::deleteAcquiredFile()
+void EigerAdapter::deleteDataFile()
 {
-    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("datafile")));
+    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_factory->getResource("datafile")));
     resFile->erase();
 }
 
@@ -189,7 +206,7 @@ void EigerAdapter::deleteAcquiredFile()
 //---------------------------------------------------------------------------
 void EigerAdapter::downloadMasterFile(const std::string& destination) ///< [in] full destination path+name where to download the master file                                                                      
 {
-    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("masterfile")));
+    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_factory->getResource("masterfile")));
 
     serverFile->download(destination);
 }
@@ -200,7 +217,7 @@ void EigerAdapter::downloadMasterFile(const std::string& destination) ///< [in] 
 //---------------------------------------------------------------------------
 void EigerAdapter::deleteMasterFile()
 {
-    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_pFactory->getResource("masterfile")));
+    std::shared_ptr<ResourceFile> resFile (dynamic_cast<ResourceFile*> (m_factory->getResource("masterfile")));
     resFile->erase();
 }
 
@@ -210,25 +227,26 @@ void EigerAdapter::deleteMasterFile()
 void EigerAdapter::openDataFile(const std::string& source) ///< [in] the data file name to open
 {
     //delete previous object
-    delete m_fileImage;
-    m_fileImage = NULL;
+    delete m_file_image;
+    m_file_image = NULL;
 
     //instantiate a new fileImage object
-    m_fileImage = new CFileImage_Nxs();
-    m_fileImage->openFile(source);
+    std::shared_ptr<ResourceFile> serverFile (dynamic_cast<ResourceFile*> (m_factory->getResource("datafile")));
+    m_file_image = new CFileImage_Nxs();        
+    m_file_image->openFile(source + std::string("/") + serverFile->getFileName());
 }
 
 //---------------------------------------------------------------------------
 /// Get a frame from the last opened data file
 /*!
-@return pointer to valid image data buffer (valid until next call to getFrame() or deleteAcquiredFile())
+@return pointer to valid image data buffer (valid until next call to getFrame() or deleteDataFile())
  */
 //---------------------------------------------------------------------------
 void* EigerAdapter::getFrame()
 {
-    if (NULL != m_fileImage)
+    if (NULL != m_file_image)
     {
-        return m_fileImage->getNextImage();
+        return m_file_image->getNextImage();
     }
     else
     {
@@ -241,8 +259,8 @@ void* EigerAdapter::getFrame()
 //---------------------------------------------------------------------------
 void EigerAdapter::setTriggerMode(const ENUM_TRIGGERMODE eTrigMode)   ///< [in] trigger mode
 {
-    std::shared_ptr<ResourceValue> resValue (dynamic_cast<ResourceValue*> (m_pFactory->getResource("trigger_mode")));
-    resValue->set(m_vectTriggerModes.at(int(eTrigMode)));
+    std::shared_ptr<ResourceValue> resValue (dynamic_cast<ResourceValue*> (m_factory->getResource("trigger_mode")));
+    resValue->set(m_vec_trigger_mode.at(int(eTrigMode)));
 }
 
 
@@ -255,12 +273,12 @@ void EigerAdapter::setTriggerMode(const ENUM_TRIGGERMODE eTrigMode)   ///< [in] 
 //---------------------------------------------------------------------------
 ENUM_TRIGGERMODE EigerAdapter::getTriggerMode()
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("trigger_mode")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("trigger_mode")));
     std::string strTriggerMode;
     value->get(strTriggerMode);
 
     // search the index of the trigger mode
-    return ENUM_TRIGGERMODE(GetIndex(m_vectTriggerModes, strTriggerMode));
+    return ENUM_TRIGGERMODE(GetIndex(m_vec_trigger_mode, strTriggerMode));
 }
 
 
@@ -269,14 +287,15 @@ ENUM_TRIGGERMODE EigerAdapter::getTriggerMode()
 //---------------------------------------------------------------------------
 void EigerAdapter::setExposureTime(const double exposureTime) ///< [in] exposure time value to set
 {
-    // set exposure time (Eiger API "count_time" )
-    std::shared_ptr<ResourceValue> valueExpo (dynamic_cast<ResourceValue*> (m_pFactory->getResource("exposure")));
+    LOG_STREAM << "EigerAdapter::setExposureTime("<<exposureTime<<")"<<std::endl;     
+    // set exposure time (Eiger API "count_time" )       
+    std::shared_ptr<ResourceValue> valueExpo (dynamic_cast<ResourceValue*> (m_factory->getResource("exposure")));
     valueExpo->set(exposureTime);
     m_exposure_time = exposureTime;
 
-    // Update frame time accordingly (frame_time = exposure + readout +latency )
-    std::shared_ptr<ResourceValue> valueFrametime (dynamic_cast<ResourceValue*> (m_pFactory->getResource("frame_time")));
-    valueFrametime->set(exposureTime + m_readout_time + m_latency_time);
+    // Update frame time accordingly (frame_time = exposure + readout +latency )    
+    std::shared_ptr<ResourceValue> valueFrameTime (dynamic_cast<ResourceValue*> (m_factory->getResource("frame_time")));
+    valueFrameTime->set(m_exposure_time + m_readout_time + m_latency_time);
 }
 
 
@@ -288,16 +307,10 @@ void EigerAdapter::setExposureTime(const double exposureTime) ///< [in] exposure
 //---------------------------------------------------------------------------
 double EigerAdapter::getExposureTime()
 {
-#ifdef COMPILATION_WITH_CURL
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("exposure")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("exposure")));
     double exposureTime = 0.0;
     value->get(exposureTime);
-    m_exposure_time = exposureTime;
-
     return exposureTime;
-#else
-    return 1.0;
-#endif
 }
 
 
@@ -309,7 +322,7 @@ double EigerAdapter::getExposureTime()
 //---------------------------------------------------------------------------
 double EigerAdapter::getReadoutTime()
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_readout_time")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("detector_readout_time")));
     double readoutTime = 0.0;
     value->get(readoutTime);
 
@@ -334,11 +347,8 @@ double EigerAdapter::getLatencyTime()
 //---------------------------------------------------------------------------
 void EigerAdapter::setLatencyTime(const double latency)
 {
+    LOG_STREAM << "EigerAdapter::setLatencyTime("<<latency<<")"<<std::endl;    
     m_latency_time = latency;
-
-    // Update frame time accordingly (frame_time = exposure + readout +latency )
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("frame_time")));
-    value->set(m_exposure_time + m_readout_time + m_latency_time);  
 }
 
 
@@ -359,18 +369,18 @@ ENUM_STATE EigerAdapter::getState(const ENUM_SUBSYSTEM eDevice) ///< [in] subsys
     std::string resourceName;
     switch (eDevice)
     {
-        case ESUBSYSTEM_DETECTOR:   resourceName = "detector_status"; break;
-        case ESUBSYSTEM_FILEWRITER: resourceName = "filewriter_status"; break;
+        case SUBSYSTEM_DETECTOR:   resourceName = "detector_status"; break;
+        case SUBSYSTEM_FILEWRITER: resourceName = "filewriter_status"; break;
         default: resourceName = "unknown_subsystem";
     }
 
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource(resourceName)));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource(resourceName)));
     std::string strStatus;
     value->get(strStatus);
-    std::cout << " " << resourceName << " : " << strStatus << std::endl;
+    LOG_STREAM << " " << resourceName << " : " << strStatus << std::endl;
 
     // Return the index of the status string
-    return ENUM_STATE(GetIndex(m_vectStatusString, strStatus));
+    return ENUM_STATE(GetIndex(m_vec_status, strStatus));
 }
 
 
@@ -382,7 +392,7 @@ ENUM_STATE EigerAdapter::getState(const ENUM_SUBSYSTEM eDevice) ///< [in] subsys
 //---------------------------------------------------------------------------
 double EigerAdapter::getTemperature()
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("temp")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("temp")));
     double temperature = 0.0;
     value->get(temperature);
 
@@ -398,7 +408,7 @@ double EigerAdapter::getTemperature()
 //---------------------------------------------------------------------------
 double EigerAdapter::getHumidity()
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("humidity")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("humidity")));
     double humidity = 0.0;
     value->get(humidity);
 
@@ -414,14 +424,10 @@ double EigerAdapter::getHumidity()
 //---------------------------------------------------------------------------
 int EigerAdapter::getBitDepthReadout()
 {
-#ifdef COMPILATION_WITH_CURL
     int pixelDepth = 0;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("pixeldepth")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("pixeldepth")));
     value->get(pixelDepth);
     return pixelDepth;
-#else
-    return 12;
-#endif
 }
 
 //---------------------------------------------------------------------------
@@ -429,7 +435,7 @@ int EigerAdapter::getBitDepthReadout()
 //---------------------------------------------------------------------------
 void EigerAdapter::setCountrateCorrection(const bool enabled) ///< [in] true:enabled, false:disabled
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("countrate_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("countrate_correction")));
     value->set(enabled);
 }
 
@@ -443,7 +449,7 @@ void EigerAdapter::setCountrateCorrection(const bool enabled) ///< [in] true:ena
 bool EigerAdapter::getCountrateCorrection()
 {
     bool countrateCorrection = false;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("countrate_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("countrate_correction")));
     value->get(countrateCorrection);
 
     return countrateCorrection;
@@ -455,7 +461,7 @@ bool EigerAdapter::getCountrateCorrection()
 //---------------------------------------------------------------------------
 void EigerAdapter::setFlatfieldCorrection(const bool enabled) ///< [in] true:enabled, false:disabled
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("flatfield_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("flatfield_correction")));
     value->set(enabled);
 }
 
@@ -469,7 +475,7 @@ void EigerAdapter::setFlatfieldCorrection(const bool enabled) ///< [in] true:ena
 bool EigerAdapter::getFlatfieldCorrection()
 {
     bool flatfieldCorrection = false;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("flatfield_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("flatfield_correction")));
     value->get(flatfieldCorrection);
 
     return flatfieldCorrection;
@@ -481,9 +487,9 @@ bool EigerAdapter::getFlatfieldCorrection()
 //---------------------------------------------------------------------------
 void EigerAdapter::setPixelMask(const bool enabled) ///< [in] true:enabled, false:disabled
 {
-    std::cout << "EigerAdapter::setPixelMask " << enabled << std::endl;
+    LOG_STREAM << "EigerAdapter::setPixelMask " << enabled << std::endl;
 
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("pixel_mask")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("pixel_mask")));
     value->set(enabled);
 }
 
@@ -497,7 +503,7 @@ void EigerAdapter::setPixelMask(const bool enabled) ///< [in] true:enabled, fals
 bool EigerAdapter::getPixelMask()
 {
     bool pixelMask = false;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("pixel_mask")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("pixel_mask")));
     value->get(pixelMask);
 
     return pixelMask;
@@ -509,7 +515,7 @@ bool EigerAdapter::getPixelMask()
 //---------------------------------------------------------------------------
 void EigerAdapter::setThresholdEnergy(const double thresholdEnergy) ///< [in] energy value
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("threshold_energy")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("threshold_energy")));
     value->set(thresholdEnergy);
 }
 
@@ -523,7 +529,7 @@ void EigerAdapter::setThresholdEnergy(const double thresholdEnergy) ///< [in] en
 double EigerAdapter::getThresholdEnergy()
 {
     double thresholdEnergy = 0.0;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("threshold_energy")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("threshold_energy")));
     value->get(thresholdEnergy);
 
     return thresholdEnergy;
@@ -535,7 +541,7 @@ double EigerAdapter::getThresholdEnergy()
 //---------------------------------------------------------------------------
 void EigerAdapter::setVirtualPixelCorrection(const bool enabled) ///< [in] true:enabled, false:disabled
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("virtual_pixel_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("virtual_pixel_correction")));
     value->set(enabled);
 }
 
@@ -549,7 +555,7 @@ void EigerAdapter::setVirtualPixelCorrection(const bool enabled) ///< [in] true:
 bool EigerAdapter::getVirtualPixelCorrection()
 {
     bool virtualPixelCorrection = false;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("virtual_pixel_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("virtual_pixel_correction")));
     value->get(virtualPixelCorrection);
 
     return virtualPixelCorrection;
@@ -561,7 +567,7 @@ bool EigerAdapter::getVirtualPixelCorrection()
 //---------------------------------------------------------------------------
 void EigerAdapter::setEfficiencyCorrection(const bool enabled)
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("efficiency_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("efficiency_correction")));
     value->set(enabled);
 }
 
@@ -575,7 +581,7 @@ void EigerAdapter::setEfficiencyCorrection(const bool enabled)
 bool EigerAdapter::getEfficiencyCorrection()
 {
     bool efficiencyCorrection = false;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("efficiency_correction")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("efficiency_correction")));
     value->get(efficiencyCorrection);
 
     return efficiencyCorrection;
@@ -586,7 +592,7 @@ bool EigerAdapter::getEfficiencyCorrection()
 //---------------------------------------------------------------------------
 void EigerAdapter::setPhotonEnergy(const double photonEnergy) ///< [in] energy value
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("photon_energy")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("photon_energy")));
     value->set(photonEnergy);
 }
 
@@ -600,7 +606,7 @@ void EigerAdapter::setPhotonEnergy(const double photonEnergy) ///< [in] energy v
 double EigerAdapter::getPhotonEnergy()
 {
     double photonEnergy = 0.0;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("photon_energy")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("photon_energy")));
     value->get(photonEnergy);
 
     return photonEnergy;
@@ -625,16 +631,12 @@ int EigerAdapter::getLastError(std::string& msg) ///< [out] error message
 //---------------------------------------------------------------------------
 std::string EigerAdapter::getDescription()
 {
-#ifdef COMPILATION_WITH_CURL
     std::string descriptionStr;
 
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("description")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("description")));
     value->get(descriptionStr);
 
     return descriptionStr;
-#else
-    return "EigerAdapter test";
-#endif
 }
 
 
@@ -647,7 +649,7 @@ std::string EigerAdapter::getDescription()
 std::string EigerAdapter::getDetectorNumber()
 {
     std::string numberStr;
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_number")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("detector_number")));
     value->get(numberStr);
 
     return numberStr;
@@ -664,10 +666,10 @@ EigerSize EigerAdapter::getPixelSize(void)
 {
     int sizex, sizey;
 
-    std::shared_ptr<ResourceValue> valueXsize (dynamic_cast<ResourceValue*> (m_pFactory->getResource("x_pixel_size")));
+    std::shared_ptr<ResourceValue> valueXsize (dynamic_cast<ResourceValue*> (m_factory->getResource("x_pixel_size")));
     valueXsize->get(sizex);
 
-    std::shared_ptr<ResourceValue> valueYsize (dynamic_cast<ResourceValue*> (m_pFactory->getResource("y_pixel_size")));
+    std::shared_ptr<ResourceValue> valueYsize (dynamic_cast<ResourceValue*> (m_factory->getResource("y_pixel_size")));
     valueYsize->get(sizey);
 
     return EigerSize(sizex, sizey);
@@ -682,28 +684,24 @@ EigerSize EigerAdapter::getPixelSize(void)
 //-----------------------------------------------------------------------------
 EigerSize EigerAdapter::getDetectorSize(void)
 {
-#ifdef COMPILATION_WITH_CURL
     int width, height;
 
-    std::shared_ptr<ResourceValue> valueWidth (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_witdh")));
+    std::shared_ptr<ResourceValue> valueWidth (dynamic_cast<ResourceValue*> (m_factory->getResource("detector_witdh")));
     valueWidth->get(width);
 
-    std::shared_ptr<ResourceValue> valueHeight (dynamic_cast<ResourceValue*> (m_pFactory->getResource("detector_height")));
+    std::shared_ptr<ResourceValue> valueHeight (dynamic_cast<ResourceValue*> (m_factory->getResource("detector_height")));
     valueHeight->get(height);
 
     return EigerSize(width, height);
-#else
-    return EigerSize(1065, 1030);
-#endif
 }
 
 
 //-----------------------------------------------------------------------------
 /// Set the number of images per file
 //-----------------------------------------------------------------------------
-void EigerAdapter::setImagesPerFile(const int imagesPerFile)
+void EigerAdapter::setNbImagesPerFile(const int imagesPerFile)
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("nimages_per_file")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("nimages_per_file")));
     value->set(imagesPerFile);
 }
 
@@ -711,13 +709,13 @@ void EigerAdapter::setImagesPerFile(const int imagesPerFile)
 //-----------------------------------------------------------------------------
 /// Set the number of images to acquire
 //-----------------------------------------------------------------------------
-void EigerAdapter::setNbImagesToAcquire(const int nimages)
+void EigerAdapter::setNbImages(const int nimages)
 {
-    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_pFactory->getResource("nimages")));
+    std::shared_ptr<ResourceValue> value (dynamic_cast<ResourceValue*> (m_factory->getResource("nimages")));
     value->set(nimages);
 
     // Update images per file accordingly
-    setImagesPerFile(nimages);
+    setNbImagesPerFile(nimages);
 }
 
 
@@ -729,16 +727,19 @@ void EigerAdapter::setNbImagesToAcquire(const int nimages)
 //---------------------------------------------------------------------------
 std::string EigerAdapter::GetAPIVersion()
 {
-#ifdef COMPILATION_WITH_CURL
-  std::string url = std::string(HTTP_ROOT) + m_ipaddr + std::string("/") + CSTR_SUBSYSTEMDETECTOR + std::string("/")
-   + std::string(CSTR_EIGERAPI) + std::string("/") + CSTR_EIGERVERSION + std::string("/");
+  std::string url = std::string(HTTP_ROOT) +
+                    m_ip_addr + 
+                    std::string("/") + 
+                    STR_SUBSYSTEM_DETECTOR + 
+                    std::string("/") + 
+                    std::string(STR_EIGER_API) + 
+                    std::string("/") + 
+                    STR_EIGER_VERSION + 
+                    std::string("/");  
 
   RESTfulClient client;
   std::string value = client.get_parameter<std::string>(url);
   return value;
-#else
-  return "#ApiVersion#";
-#endif
 }
 
 
@@ -750,7 +751,7 @@ std::string EigerAdapter::GetAPIVersion()
 //---------------------------------------------------------------------------
 bool EigerAdapter::getCompression(void)
 {
-    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
+    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_factory->getResource("compression")));
     bool bCompression;
     compression->get(bCompression);
 
@@ -763,7 +764,7 @@ bool EigerAdapter::getCompression(void)
 //---------------------------------------------------------------------------
 void EigerAdapter::setCompression(const bool enabled)  ///< [in] true:enabled, false:disabled
 {
-    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_pFactory->getResource("compression")));
+    std::shared_ptr<ResourceValue> compression (dynamic_cast<ResourceValue*> (m_factory->getResource("compression")));
     compression->set(enabled);
 }
 
