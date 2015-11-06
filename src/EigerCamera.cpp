@@ -477,16 +477,23 @@ void Camera::getExposureTimeRange(double& min_expo,	///< [out] minimum exposure 
 const
 {
   DEB_MEMBER_FUNCT();
+  std::shared_ptr<Requests::Param> exp_time = 
+    m_requests->get_param(Requests::EXPOSURE);
+  try
+    {
+      exp_time->wait();
+    }
+  catch(const eigerapi::EigerException &e)
+    {
+      m_requests->cancel(exp_time);
+      HANDLE_EIGERERROR(e.what());
+    }
 
-   // get exposure time range using EigerAPI
-  min_expo = 0.0001;
-  max_expo = 10.0;
-	/*if(  )
-	{
-        HANDLE_EIGERERROR("Failed to get exposure time");
-	}
-   */
-
+  Requests::Param::Value min_val = exp_time->get_min();
+  Requests::Param::Value max_val = exp_time->get_max();
+  
+  min_expo = min_val.data.double_val;
+  max_expo = max_val.data.double_val;
   DEB_RETURN() << DEB_VAR2(min_expo, max_expo);
 }
 
@@ -501,10 +508,10 @@ const
   DEB_MEMBER_FUNCT();
 
     // --- no info on min latency
-  min_lat = 0.;
-
-    // --- do not know how to get the max_lat, fix it as the max exposure time
-  max_lat = m_exp_time_max;
+  min_lat = m_readout_time;
+  double min_exp,max_exp;
+  getExposureTimeRange(min_exp,max_exp);
+  max_lat = max_exp;
 
   DEB_RETURN() << DEB_VAR2(min_lat, max_lat);
 }
@@ -660,8 +667,6 @@ void Camera::initialiseController()
 
         HANDLE_EIGERERROR(e.what());
     }
-
-  m_exp_time_max = 10.0; // TODO: implement the getminmax in RestFul client/ ResourceValue
 
   m_detectorImageType = Bpp32;
 

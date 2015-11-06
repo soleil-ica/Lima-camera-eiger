@@ -168,7 +168,6 @@ namespace lima
 			double                    m_temperature;
 			double                    m_humidity;
 			double                    m_exp_time;
-			double                    m_exp_time_max;
 			double		          m_readout_time;
 			double                    m_x_pixelsize, m_y_pixelsize;
 			Cond			  m_cond;
