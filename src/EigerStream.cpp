@@ -57,7 +57,8 @@ struct Stream::Message
 class Stream::_BufferCallback : public HwBufferCtrlObj::Callback
 {
   DEB_CLASS_NAMESPC(DebModCamera,"Stream","_BufferCallback");
-  typedef std::map<void*,std::shared_ptr<Stream::Message>> Data2Message;
+  typedef std::pair<std::shared_ptr<Stream::Message>,int> MessageNDepth;
+  typedef std::map<void*,MessageNDepth> Data2Message;
   typedef std::multiset<void *> BufferList;
 public:
   _BufferCallback() : HwBufferCtrlObj::Callback() {}
@@ -94,15 +95,15 @@ public:
     m_data_2_msg.clear();
   }
   
-  void register_new_msg(std::shared_ptr<Stream::Message>& msg,void* aDataBuffer)
+  void register_new_msg(std::shared_ptr<Stream::Message>& msg,void* aDataBuffer,int depth)
   {
     DEB_MEMBER_FUNCT();
     DEB_PARAM() << DEB_VAR1(aDataBuffer);
 
     AutoMutex lock(m_mutex);
-    m_data_2_msg[aDataBuffer] = msg;
+    m_data_2_msg[aDataBuffer] = MessageNDepth(msg,depth);
   }
-  bool get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size)
+  bool get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size,int& depth)
   {
     DEB_MEMBER_FUNCT();
     DEB_PARAM() << DEB_VAR1(aDataBuffer);
@@ -111,8 +112,10 @@ public:
     Data2Message::iterator it = m_data_2_msg.find(aDataBuffer);
     if(it == m_data_2_msg.end())
       return false;
-
-    std::shared_ptr<Stream::Message> message = it->second;
+    
+    MessageNDepth message_depth = it->second;
+    std::shared_ptr<Stream::Message> message = message_depth.first;
+    depth = message_depth.second;
     msg_data = zmq_msg_data(message->get_msg());
     msg_size = zmq_msg_size(message->get_msg());
     DEB_RETURN() << DEB_VAR2(msg_data,msg_size);
@@ -272,9 +275,9 @@ HwBufferCtrlObj* Stream::getBufferCtrlObj()
   return m_buffer_ctrl_obj;
 }
 
-bool Stream::get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size)
+bool Stream::get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size,int &depth)
 {
-  return m_buffer_cbk->get_msg(aDataBuffer,msg_data,msg_size);
+  return m_buffer_cbk->get_msg(aDataBuffer,msg_data,msg_size,depth);
 }
 
 void* Stream::_runFunc(void *streamPt)
@@ -454,7 +457,8 @@ void Stream::_run()
 			      HwFrameInfoType frame_info;
 			      frame_info.acq_frame_nb = frameid;
 			      void* buffer_ptr = buffer_mgr.getFrameBufferPtr(frameid);
-			      m_buffer_cbk->register_new_msg(pending_messages[2],buffer_ptr);
+			      m_buffer_cbk->register_new_msg(pending_messages[2],buffer_ptr,
+							     anImageDim.getDepth());
 #ifdef READ_HEADER
 			      if(nb_messages == 5)
 				{

@@ -41,20 +41,52 @@ private:
   Stream& m_stream;
 };
 
+void _expend(void *src,Data& dst)
+{
+  int nbItems = dst.size() / dst.depth();
+  unsigned short* src_data = (unsigned short*)src;
+  unsigned int* dst_data = (unsigned int*)dst.data();
+  while(nbItems)
+    {
+      *dst_data = unsigned(*src_data);
+      ++dst_data,++src_data,--nbItems;
+    }
+  dst.type = Data::UINT32;
+}
+
 Data _DecompressTask::process(Data& src)
 {
   void *msg_data;
   size_t msg_size;
-  if(!m_stream.get_msg(src.data(),msg_data,msg_size))
+  int depth;
+  if(!m_stream.get_msg(src.data(),msg_data,msg_size,depth))
     throw ProcessException("_DecompressTask: can't find compressed message");
-  int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)src.data(),src.size());
+  void* dst;
+  int size;
+  if(depth == 2)
+    {
+    if(posix_memalign(&dst,16,src.size() / 2))
+	throw ProcessException("Can't allocate temporary memory");
+    size = src.size() / 2;
+    }
+  else
+    dst = src.data(),size = src.size();
+
+  int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
   if(return_code < 0)
     {
+      if(depth == 2) free(dst);
+
       char ErrorBuff[1024];
       snprintf(ErrorBuff,sizeof(ErrorBuff),
 	       "_DecompressTask: decompression failed, (error code: %d) (data size %d)",
 	       return_code,src.size());
       throw ProcessException(ErrorBuff);
+    }
+  if(depth == 2)
+    {
+      _expend(dst,src);
+      free(dst);
     }
   return src;
 }

@@ -52,7 +52,8 @@ namespace lima
       bool isActive() const;
 
       HwBufferCtrlObj* getBufferCtrlObj();
-      bool get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size);
+      bool get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size,
+		   int& depth);
     private:
       class _BufferCallback;
       class _BufferCtrlObj;
