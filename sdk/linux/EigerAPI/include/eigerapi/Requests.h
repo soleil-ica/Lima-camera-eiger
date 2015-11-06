@@ -134,6 +134,7 @@ namespace eigerapi
 		     VIRTUAL_PIXEL_CORRECTION,
 		     PHOTON_ENERGY,
 		     NIMAGES,
+		     NTRIGGER,
 		     AUTO_SUMMATION,
 		     FILEWRITER_MODE,
 		     FILEWRITER_COMPRESSION,

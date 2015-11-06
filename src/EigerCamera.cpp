@@ -199,6 +199,36 @@ void Camera::prepareAcq()
   AutoMutex aLock(m_cond.mutex());
   if(m_trigger_state != IDLE)
     EIGER_SYNC_CMD(Requests::DISARM);
+  
+  int nb_frames;
+  unsigned nb_trigger;
+  switch(m_trig_mode)
+    {
+    case IntTrig:
+    case ExtTrigSingle:
+      nb_frames = m_nb_frames,nb_trigger = 1;break;
+    case IntTrigMult:
+    case ExtTrigMult:
+    case ExtGate:
+      nb_frames = 1,nb_trigger = m_nb_frames;break;
+    default:
+      THROW_HW_ERROR(Error) << "Very weird can't be in this case";
+    }
+
+  std::shared_ptr<Requests::Param> nimages_req =
+    m_requests->set_param(Requests::NIMAGES,nb_frames);
+  std::shared_ptr<Requests::Param> ntrigger_req =
+    m_requests->set_param(Requests::NTRIGGER,nb_trigger);
+
+  try
+    {
+      nimages_req->wait();
+      ntrigger_req->wait();
+    }
+  catch(const eigerapi::EigerException &e)
+    {
+      HANDLE_EIGERERROR(e.what());
+    }
 
   double timeout = 5 * 60.; // 5 min timeout
   std::shared_ptr<Requests::Command> arm_cmd =
@@ -333,6 +363,7 @@ bool Camera::checkTrigMode(TrigMode trig_mode) ///< [in] trigger mode to check
   switch(trig_mode)
     {
     case IntTrig:
+    case IntTrigMult:
     case ExtTrigSingle:
     case ExtTrigMult:
     case ExtGate:
@@ -355,11 +386,11 @@ void Camera::setTrigMode(TrigMode trig_mode) ///< [in] lima trigger mode to set
   switch(trig_mode)
     {
     case IntTrig:
+    case IntTrigMult:
       trig_name = "ints";break;
     case ExtTrigSingle:
-      trig_name = "exts";break;
     case ExtTrigMult:
-      trig_name = "extm";break;
+      trig_name = "exts";break;
     case ExtGate:
       trig_name = "exte";break;
     default:
@@ -492,7 +523,6 @@ void Camera::setNbFrames(int nb_frames) ///< [in] number of frames to take
         HANDLE_EIGERERROR("video mode is not supported.");
     }
 
-    EIGER_SYNC_SET_PARAM(Requests::NIMAGES,nb_frames);
     m_nb_frames = nb_frames;
 }
 
@@ -611,6 +641,9 @@ void Camera::initialiseController()
   synchro_list.push_back(m_requests->get_param(Requests::DESCRIPTION,m_detector_model));
   synchro_list.push_back(m_requests->get_param(Requests::DETECTOR_NUMBER,m_detector_type));
   synchro_list.push_back(m_requests->get_param(Requests::EXPOSURE,m_exp_time));
+  
+  unsigned nb_trigger;
+  synchro_list.push_back(m_requests->get_param(Requests::NTRIGGER,nb_trigger));
 
   //Synchro
   try
@@ -634,11 +667,9 @@ void Camera::initialiseController()
 
   //Trigger mode
   if(trig_name == "ints")
-    m_trig_mode = IntTrig;
+    m_trig_mode = nb_trigger > 1 ? IntTrigMult : IntTrig;
   else if(trig_name == "exts")
-    m_trig_mode = ExtTrigSingle;
-  else if(trig_name == "extm")
-    m_trig_mode = ExtTrigMult;
+    m_trig_mode = nb_trigger > 1 ? ExtTrigMult : ExtTrigSingle;
   else if(trig_name == "exte")
     m_trig_mode = ExtGate;
   else

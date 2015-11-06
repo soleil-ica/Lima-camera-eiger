@@ -146,6 +146,7 @@ ParamIndex ParamDescription[] = {
   {Requests::VIRTUAL_PIXEL_CORRECTION,	{"virtual_pixel_correction_applied"}},
   {Requests::PHOTON_ENERGY,		{"photon_energy"}},
   {Requests::NIMAGES,			{"nimages"}},
+  {Requests::NTRIGGER,			{"ntrigger"}},
   {Requests::AUTO_SUMMATION,		{"auto_summation"}},
   // Filewriter settings
   {Requests::FILEWRITER_MODE,		{"mode",CSTR_SUBSYSTEMFILEWRITER}},
