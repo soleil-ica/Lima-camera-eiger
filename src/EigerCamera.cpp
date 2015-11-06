@@ -215,6 +215,17 @@ void Camera::prepareAcq()
       THROW_HW_ERROR(Error) << "Very weird can't be in this case";
     }
 
+  double frame_time = m_exp_time + m_readout_time + m_latency_time;
+  if(frame_time < m_min_frame_time)
+    {    
+      if(m_latency_time <= m_readout_time)
+	frame_time = m_min_frame_time;
+      else
+	THROW_HW_ERROR(Error) << "This detector can't go at this frame rate (" << 1 / frame_time
+			      << ") is limited to (" << 1 / m_min_frame_time << ")";
+    }
+  std::shared_ptr<Requests::Param> frame_time_req=
+    m_requests->set_param(Requests::FRAME_TIME,frame_time);
   std::shared_ptr<Requests::Param> nimages_req =
     m_requests->set_param(Requests::NIMAGES,nb_frames);
   std::shared_ptr<Requests::Param> ntrigger_req =
@@ -222,6 +233,7 @@ void Camera::prepareAcq()
 
   try
     {
+      frame_time_req->wait();
       nimages_req->wait();
       ntrigger_req->wait();
     }
@@ -424,9 +436,6 @@ void Camera::setExpTime(double exp_time) ///< [in] exposure time to set
 
   EIGER_SYNC_SET_PARAM(Requests::EXPOSURE,exp_time);
   m_exp_time = exp_time;
-
-  double frame_time = exp_time + m_readout_time + m_latency_time;
-  EIGER_SYNC_SET_PARAM(Requests::FRAME_TIME,frame_time);
 }
 
 
@@ -652,6 +661,9 @@ void Camera::initialiseController()
   unsigned nb_trigger;
   synchro_list.push_back(m_requests->get_param(Requests::NTRIGGER,nb_trigger));
 
+  std::shared_ptr<Requests::Param> frame_time_req = m_requests->get_param(Requests::FRAME_TIME);
+  synchro_list.push_back(frame_time_req);
+  
   //Synchro
   try
     {
@@ -680,6 +692,8 @@ void Camera::initialiseController()
   else
     THROW_HW_ERROR(InvalidValue) << "Unexpected trigger mode: " << DEB_VAR1(trig_name);
   
+  Requests::Param::Value min_frame_time = frame_time_req->get_min();
+  m_min_frame_time = min_frame_time.data.double_val;
  }
 /*----------------------------------------------------------------------------
 	This method is called when the acquisition is finished

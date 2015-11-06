@@ -67,6 +67,10 @@ namespace eigerapi
       virtual ~Param();
       Value get(double timeout = CurlLoop::FutureRequest::TIMEOUT,
 		bool lock = true);
+      Value get_min(double timeout = CurlLoop::FutureRequest::TIMEOUT,
+		    bool lock = true);
+      Value get_max(double timeout = CurlLoop::FutureRequest::TIMEOUT,
+		    bool lock = true);
     private:
       void _fill_get_request();
       template <class T>
@@ -82,6 +86,8 @@ namespace eigerapi
 
       static size_t _write_callback(char*, size_t, size_t, void*);
 
+      Value _get(double timeout,bool lock,const char*);
+      
       char*			m_data_buffer;
       int			m_data_size;
       int			m_data_memorysize;

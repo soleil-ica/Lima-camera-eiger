@@ -447,7 +447,9 @@ Requests::Param::~Param()
   if(m_headers)
     curl_slist_free_all(m_headers);
 }
-Requests::Param::Value Requests::Param::get(double timeout,bool lock)
+
+Requests::Param::Value Requests::Param::_get(double timeout,bool lock,
+					     const char* param_name)
 {
   wait(timeout,lock);
   //check rx data
@@ -485,28 +487,28 @@ Requests::Param::Value Requests::Param::get(double timeout,bool lock)
       if (json_type == "bool")
 	{
 	  value.type = Requests::Param::BOOL;
-	  value.data.bool_val = root.get("value", "no_value").asBool();
+	  value.data.bool_val = root.get(param_name, "no_value").asBool();
 	}
       else if (json_type == "float")
 	{
 	  //- asFloat is not supported by jsoncpp
 	  value.type = Requests::Param::DOUBLE;
-	  value.data.double_val = root.get("value", -1.0).asDouble();
+	  value.data.double_val = root.get(param_name, -1.0).asDouble();
 	}
       else if (json_type == "int")
 	{
 	  value.type = Requests::Param::INT;
-	  value.data.int_val = root.get("value", -1).asInt();
+	  value.data.int_val = root.get(param_name, -1).asInt();
 	}
       else if (json_type == "uint")
 	{
 	  value.type = Requests::Param::UNSIGNED;
-	  value.data.unsigned_val = (int) root.get("value", -1).asInt();
+	  value.data.unsigned_val = (int) root.get(param_name, -1).asInt();
 	}
       else if (json_type == "string")
 	{
 	  value.type = Requests::Param::STRING;
-	  value.string_val = root.get("value","no_value").asString();
+	  value.string_val = root.get(param_name,"no_value").asString();
 	}
       else
 	{
@@ -515,6 +517,21 @@ Requests::Param::Value Requests::Param::get(double timeout,bool lock)
 	}
     }
   return value;
+}
+
+Requests::Param::Value Requests::Param::get(double timeout,bool lock)
+{
+  return _get(timeout,lock,"value");
+}
+
+Requests::Param::Value Requests::Param::get_min(double timeout,bool lock)
+{
+  return _get(timeout,lock,"min");
+}
+
+Requests::Param::Value Requests::Param::get_max(double timeout,bool lock)
+{
+  return _get(timeout,lock,"max");
 }
 
 void Requests::Param::_fill_get_request()

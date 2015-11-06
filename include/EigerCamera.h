@@ -172,6 +172,7 @@ namespace lima
 			double                    m_x_pixelsize, m_y_pixelsize;
 			Cond			  m_cond;
 			std::string		  m_detector_ip;
+			double			  m_min_frame_time;
 			
 	};
 	} // namespace Eiger
