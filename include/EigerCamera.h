@@ -58,7 +58,7 @@ namespace lima
    * \class Camera
    * \brief object controlling the Eiger camera via EigerAPI
    *******************************************************************/
-	class LIBEIGER Camera
+     class LIBEIGER Camera : public HwMaxImageSizeCallbackGen
 	{
 		DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Eiger");
 		friend class Interface;
@@ -121,6 +121,8 @@ namespace lima
 			void getCountrateCorrection(bool&);
 			void setFlatfieldCorrection(bool);
 			void getFlatfieldCorrection(bool&);
+			void setAutoSummation(bool);
+			void getAutoSummation(bool&);
 		    void setEfficiencyCorrection(bool);
 		    void getEfficiencyCorrection(bool& value);
 			void setPixelMask(bool);

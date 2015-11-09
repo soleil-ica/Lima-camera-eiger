@@ -63,7 +63,7 @@ Data _DecompressTask::process(Data& src)
     throw ProcessException("_DecompressTask: can't find compressed message");
   void* dst;
   int size;
-  if(depth == 2)
+  if(src.depth() == 4 && depth == 2)
     {
     if(posix_memalign(&dst,16,src.size() / 2))
 	throw ProcessException("Can't allocate temporary memory");
@@ -75,7 +75,7 @@ Data _DecompressTask::process(Data& src)
   int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
   if(return_code < 0)
     {
-      if(depth == 2) free(dst);
+      if(src.depth() == 4 && depth == 2) free(dst);
 
       char ErrorBuff[1024];
       snprintf(ErrorBuff,sizeof(ErrorBuff),
@@ -83,7 +83,7 @@ Data _DecompressTask::process(Data& src)
 	       return_code,src.size());
       throw ProcessException(ErrorBuff);
     }
-  if(depth == 2)
+  if(src.depth() == 4 && depth == 2)
     {
       _expend(dst,src);
       free(dst);

@@ -82,6 +82,8 @@ namespace Eiger
     void getCountrateCorrection(bool& /Out/);
     void setFlatfieldCorrection(const bool);
     void getFlatfieldCorrection(bool& /Out/);
+    void setAutoSummation(bool);
+    void getAutoSummation(bool& /Out/);
     void setEfficiencyCorrection(const bool);
     void getEfficiencyCorrection(bool& value /Out/);
     void setPixelMask(const bool);

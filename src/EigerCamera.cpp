@@ -663,6 +663,10 @@ void Camera::initialiseController()
 
   std::shared_ptr<Requests::Param> frame_time_req = m_requests->get_param(Requests::FRAME_TIME);
   synchro_list.push_back(frame_time_req);
+
+  bool auto_summation;
+  synchro_list.push_back(m_requests->get_param(Requests::AUTO_SUMMATION,
+					       auto_summation));
   
   //Synchro
   try
@@ -680,7 +684,7 @@ void Camera::initialiseController()
         HANDLE_EIGERERROR(e.what());
     }
 
-  m_detectorImageType = Bpp32;
+  m_detectorImageType = auto_summation ? Bpp32 : Bpp16;
 
   //Trigger mode
   if(trig_name == "ints")
@@ -780,7 +784,26 @@ void Camera::getFlatfieldCorrection(bool& value) ///< [out] true:enabled, false:
     EIGER_SYNC_GET_PARAM(Requests::COUNTRATE_CORRECTION,value);
 }
 
+//----------------------------------------------------------------------------
+// Auto Summation
+//----------------------------------------------------------------------------
+void Camera::setAutoSummation(bool value)
+{
+  DEB_MEMBER_FUNCT();
+  DEB_PARAM() << DEB_VAR1(value);
+  EIGER_SYNC_SET_PARAM(Requests::AUTO_SUMMATION,value);
 
+  Size image_size;
+  getDetectorImageSize(image_size);
+  m_detectorImageType = value ? Bpp32 : Bpp16;
+  maxImageSizeChanged(image_size,m_detectorImageType);
+}
+void Camera::getAutoSummation(bool& value)
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::AUTO_SUMMATION,value);
+  DEB_RETURN() << DEB_VAR1(value);
+}
 //-----------------------------------------------------------------------------
 ///  PixelMask setter
 //-----------------------------------------------------------------------------
