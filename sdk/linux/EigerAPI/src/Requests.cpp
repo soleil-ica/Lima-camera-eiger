@@ -103,6 +103,7 @@ static CommandIndex CommandsDescription[] = {
   {Requests::TRIGGER,		{"trigger",CSTR_SUBSYSTEMDETECTOR,CSTR_EIGERCOMMAND}},
   {Requests::CANCEL,		{"cancel",CSTR_SUBSYSTEMDETECTOR,CSTR_EIGERCOMMAND}},
   {Requests::ABORT,		{"abort",CSTR_SUBSYSTEMDETECTOR,CSTR_EIGERCOMMAND}},
+  {Requests::FILEWRITER_CLEAR,  {"clear",CSTR_SUBSYSTEMFILEWRITER,CSTR_EIGERCOMMAND}},
 };
 
 const char* get_cmd_name(Requests::COMMAND_NAME cmd_name)

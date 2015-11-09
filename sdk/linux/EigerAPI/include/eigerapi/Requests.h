@@ -117,7 +117,8 @@ namespace eigerapi
       void*	m_buffer;
     };
 
-    enum COMMAND_NAME {INITIALIZE,ARM, DISARM,TRIGGER,CANCEL,ABORT};
+    enum COMMAND_NAME {INITIALIZE,ARM, DISARM,TRIGGER,CANCEL,ABORT,
+		       FILEWRITER_CLEAR};
     enum PARAM_NAME {TEMP,
 		     HUMIDITY,
 		     DETECTOR_STATUS,

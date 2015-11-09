@@ -930,24 +930,7 @@ void Camera::getSerieId(int& serie_id)
 void Camera::deleteMemoryFiles()
 {
   DEB_MEMBER_FUNCT();
-  std::shared_ptr<Requests::Param> files_req = 
-    m_requests->get_param(Requests::FILEWRITER_LS);
-  Requests::Param::Value value;
- try
-  {
-    value = files_req->get();
-  }
- catch(const eigerapi::EigerException &e)
-   {
-     HANDLE_EIGERERROR(e.what());
-   }
-
- for(std::vector<std::string>::iterator i = value.string_array.begin();
-     i != value.string_array.end();++i)
-   {
-     DEB_TRACE() << "delete file: " << *i;
-     m_requests->delete_file(*i);
-   }
+  EIGER_SYNC_CMD(Requests::FILEWRITER_CLEAR);
 }
 
 const std::string& Camera::getDetectorIp() const
