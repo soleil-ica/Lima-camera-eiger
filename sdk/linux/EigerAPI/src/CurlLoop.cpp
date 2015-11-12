@@ -185,13 +185,17 @@ void CurlLoop::_run()
 
       //get curl timeout
       struct timeval timeout{1,0};
+      struct timeval* timeoutPt;
       long curl_timeout = -1;
       curl_multi_timeout(multi_handle,&curl_timeout);
       if(curl_timeout >=0)
 	{
 	  timeout.tv_sec = curl_timeout / 1000;
 	  timeout.tv_usec = (curl_timeout % 1000) * 1000;
+	  timeoutPt = &timeout;
 	}
+      else
+	timeoutPt = NULL;
 
       int max_fd = -1;
       CURLMcode mc = curl_multi_fdset(multi_handle,
@@ -208,7 +212,7 @@ void CurlLoop::_run()
       if(max_fd == -1)
 	usleep(100 * 1000);
       else
-	nb_event = select(max_fd + 1,&fdread,&fdwrite,&fdexcep,&timeout);
+	nb_event = select(max_fd + 1,&fdread,&fdwrite,&fdexcep,timeoutPt);
 	
       if(nb_event == -1)
 	{
@@ -219,7 +223,7 @@ void CurlLoop::_run()
 	      break;
 	    }
 	}
-      else if(nb_event > 0 || max_fd == -1)
+      else if(nb_event >= 0 || max_fd == -1)
 	{
 	  // flush pipe
 	  char buffer[1024];
@@ -286,6 +290,7 @@ void CurlLoop::_run()
 		  m_pending_requests.erase(request);
 		}
 	    }
+	  m_cancel_requests.clear();
 	}
     }
   //cleanup
