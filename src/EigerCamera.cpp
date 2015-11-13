@@ -933,6 +933,12 @@ void Camera::deleteMemoryFiles()
   EIGER_SYNC_CMD(Requests::FILEWRITER_CLEAR);
 }
 
+void Camera::disarm()
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_CMD(Requests::DISARM);
+}
+
 const std::string& Camera::getDetectorIp() const
 {
   return m_detector_ip;

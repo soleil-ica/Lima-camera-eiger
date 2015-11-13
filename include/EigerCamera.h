@@ -138,6 +138,7 @@ namespace lima
    			void setCompression(bool);
 			void getSerieId(int&);
 			void deleteMemoryFiles();
+			void disarm();
 
 			const std::string& getDetectorIp() const;
 		private:

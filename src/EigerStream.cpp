@@ -356,6 +356,11 @@ void Stream::_run()
 	  DEB_TRACE() << "Running";
 	}
       if(m_stop) break;
+      int nb_frames;
+      m_cam.getNbFrames(nb_frames);
+      TrigMode trigger_mode;
+      m_cam.getTrigMode(trigger_mode);
+
       bool continue_flag = true;
       //open stream socket
       char stream_endpoint[256];
@@ -468,6 +473,8 @@ void Stream::_run()
 				}
 #endif
 			      continue_flag = buffer_mgr.newFrameReady(frame_info);
+			      if(trigger_mode != IntTrig && trigger_mode != IntTrigMult && !--nb_frames)
+				m_cam.disarm();
 			    }
 			    else if(htype.find("dseries_end-") != std::string::npos)
 			      continue_flag = false;
