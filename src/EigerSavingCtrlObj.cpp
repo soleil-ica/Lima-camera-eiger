@@ -31,6 +31,37 @@ using namespace eigerapi;
 
 const int MAX_SIMULTANEOUS_DOWNLOAD = 4;
 /*----------------------------------------------------------------------------
+			     HDF5 HEADER
+----------------------------------------------------------------------------*/
+struct HeaderKey2Index
+{
+  const char*		key_name;
+  Requests::PARAM_NAME	param_name;
+};
+
+static HeaderKey2Index available_header[] = {
+  {"beam_center_x",Requests::HEADER_BEAM_CENTER_X},
+  {"beam_center_y",Requests::HEADER_BEAM_CENTER_Y},
+  {"chi",Requests::HEADER_CHI},
+  {"chi_end",Requests::HEADER_CHI_END},
+  {"chi_range_average",Requests::HEADER_CHI_RANGE_AVERAGE},
+  {"chi_range_total",Requests::HEADER_CHI_RANGE_TOTAL},
+  {"detector_distance",Requests::HEADER_DETECTOR_DISTANCE},
+  {"kappa",Requests::HEADER_KAPPA},
+  {"kappa_end",Requests::HEADER_KAPPA_END},
+  {"kappa_range_average",Requests::HEADER_KAPPA_RANGE_AVERAGE},
+  {"kappa_range_total",Requests::HEADER_KAPPA_RANGE_TOTAL},
+  {"omega",Requests::HEADER_OMEGA},
+  {"omega_end",Requests::HEADER_OMEGA_END},
+  {"omega_range_average",Requests::HEADER_OMEGA_RANGE_AVERAGE},
+  {"omega_range_total",Requests::HEADER_OMEGA_RANGE_TOTAL},
+  {"phi",Requests::HEADER_PHI},
+  {"phi_end",Requests::HEADER_PHI_END},
+  {"phi_range_average",Requests::HEADER_PHI_RANGE_AVERAGE},
+  {"phi_range_total",Requests::HEADER_PHI_RANGE_TOTAL},
+  {"wavelength",Requests::HEADER_WAVELENGTH},
+};
+/*----------------------------------------------------------------------------
 			    Polling thread
 ----------------------------------------------------------------------------*/
 class SavingCtrlObj::_PollingThread : public Thread
@@ -47,7 +78,7 @@ private:
 };
 
 SavingCtrlObj::SavingCtrlObj(Camera& cam) :
-  HwSavingCtrlObj(0,false),
+  HwSavingCtrlObj(HwSavingCtrlObj::COMMON_HEADER,false),
   m_cam(cam),
   m_nb_file_to_watch(0),
   m_nb_file_transfer_started(0),
@@ -57,7 +88,13 @@ SavingCtrlObj::SavingCtrlObj(Camera& cam) :
 {
   m_polling_thread = new _PollingThread(*this,this->m_cam.m_requests);
   m_polling_thread->start();
-  
+  // Known keys for common header
+  int nb_header_key = sizeof(available_header) / sizeof(HeaderKey2Index);
+  for(int i = 0;i < nb_header_key;++i)
+    {
+      HeaderKey2Index& index = available_header[i];
+      m_availables_header_keys[index.key_name] = index.param_name;
+    }
 }
 
 /*----------------------------------------------------------------------------
@@ -86,6 +123,41 @@ SavingCtrlObj::~SavingCtrlObj()
 void SavingCtrlObj::getPossibleSaveFormat(std::list<std::string> &format_list) const
 {
   format_list.push_back(HwSavingCtrlObj::HDF5_FORMAT_STR);
+}
+
+void SavingCtrlObj::setCommonHeader(const HwSavingCtrlObj::HeaderMap& header)
+{
+  DEB_MEMBER_FUNCT();
+
+  std::list<std::shared_ptr<Requests::Param>> pending_request;
+  for(HwSavingCtrlObj::HeaderMap::const_iterator i = header.begin();
+      i != header.end();++i)
+    {
+      std::map<std::string,int>::iterator header_index = m_availables_header_keys.find(i->first);
+      if(header_index == m_availables_header_keys.end())
+	THROW_HW_ERROR(Error) << "Header key: " << i->first << " not yet managed ";
+      pending_request.push_back(m_cam.m_requests->set_param(Requests::PARAM_NAME(header_index->second),
+							    i->second));
+    }
+
+  try
+    {
+      for(std::list<std::shared_ptr<Requests::Param>>::iterator i = pending_request.begin();
+	  i != pending_request.end();++i)
+	(*i)->wait();
+    }
+  catch(const eigerapi::EigerException &e)
+    {
+       for(std::list<std::shared_ptr<Requests::Param>>::iterator i = pending_request.begin();
+	  i != pending_request.end();++i)
+	 m_cam.m_requests->cancel(*i);
+       THROW_HW_ERROR(Error) << e.what();
+    }
+}
+
+void SavingCtrlObj::resetCommonHeader()
+{
+  // todo
 }
 
 void SavingCtrlObj::setSerieId(int value)

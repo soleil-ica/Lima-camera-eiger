@@ -918,7 +918,7 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
 void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::WAVELENGTH,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_WAVELENGTH,value);
 }
 
 
@@ -928,7 +928,7 @@ void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
 void Camera::getWavelength(double& value) ///< [out] true:enabled, false:disabled
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::WAVELENGTH,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_WAVELENGTH,value);
 }
 
 
@@ -938,7 +938,7 @@ void Camera::getWavelength(double& value) ///< [out] true:enabled, false:disable
 void Camera::setBeamCenterX(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_X,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_BEAM_CENTER_X,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -947,7 +947,7 @@ void Camera::setBeamCenterX(double value) ///< [in]
 void Camera::getBeamCenterX(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_X,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_BEAM_CENTER_X,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -956,7 +956,7 @@ void Camera::getBeamCenterX(double& value) ///< [out]
 void Camera::setBeamCenterY(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_Y,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_BEAM_CENTER_Y,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -965,7 +965,7 @@ void Camera::setBeamCenterY(double value) ///< [in]
 void Camera::getBeamCenterY(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_Y,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_BEAM_CENTER_Y,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -974,7 +974,7 @@ void Camera::getBeamCenterY(double& value) ///< [out]
 void Camera::setDetectorDistance(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::DETECTOR_DISTANCE,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_DETECTOR_DISTANCE,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -983,7 +983,7 @@ void Camera::setDetectorDistance(double value) ///< [in]
 void Camera::getDetectorDistance(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::DETECTOR_DISTANCE,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_DETECTOR_DISTANCE,value);
 }
 
 //-----------------------------------------------------------------------------
