@@ -1,5 +1,5 @@
-DECTRIS EIGER 1M Detector System
-================================
+DECTRIS EIGER Detector System
+=============================
 
 .. image:: EIGER_1M_432x206.jpg
 
@@ -93,7 +93,7 @@ Std capabilities
 Optional capabilities
 ---------------------
 
-* Cooling
+* **Cooling**
 
  * The detector uses liquid cooling.
  * The API allows accessing the temperature and humidity as read-only values.
@@ -105,17 +105,17 @@ Optional capabilities
   Actually it's an helper which set the threshold
 * **Threshold energy**: This parameter will set the camera detection threshold.
   This should be set between 50 to 60 % of the incoming beam energy.
-* Auto Summation (if activate image depth is 32 and, if not image depth is 16)
-* HwSaving:
+* **Auto Summation** (if activate image depth is 32 and, if not image depth is 16)
+* **HwSaving**:
   This detector can directly generate hd5f, if this feature is used.
   Internally Lima control the file writer Eiger module.
   This capability can be activated though the control part with CtSaving object with setManagedMode method. 
-* Countrate correction
-* Efficiency correction
-* Flatfield correction
-* LZ4 Compression
-* Virtual pixel correction
-* Pixelmask
+* **Countrate correction**
+* **Efficiency correction**
+* **Flatfield correction**
+* **LZ4 Compression**
+* **Virtual pixel correction**
+* **Pixelmask**
 
 Configuration
 -------------
