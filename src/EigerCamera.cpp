@@ -187,6 +187,7 @@ void Camera::initialize()
   m_initilize_state = RUNNING;
   std::shared_ptr<Requests::Command> async_initialise =
     m_requests->get_command(Requests::INITIALIZE);
+  lock.unlock();
 
   std::shared_ptr<CurlLoop::FutureRequest::Callback> cbk(new InitCallback(*this));
   async_initialise->register_callback(cbk);
@@ -276,9 +277,11 @@ void Camera::startAcq()
     {
       std::shared_ptr<Requests::Command> trigger =
 	m_requests->get_command(Requests::TRIGGER);
+      m_trigger_state = RUNNING;
+      lock.unlock();
+
       std::shared_ptr<CurlLoop::FutureRequest::Callback> cbk(new AcqCallback(*this));
       trigger->register_callback(cbk);
-      m_trigger_state = RUNNING;
     }
   
 }
