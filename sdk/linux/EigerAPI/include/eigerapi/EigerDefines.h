@@ -31,6 +31,9 @@
 namespace eigerapi
 {
 
+//#define C_EIGERAPI_EIGER1M_WIDTH  1030
+//#define C_EIGERAPI_EIGER1M_HEIGHT 1065
+#define C_NAME_PATTERN "lima"
 
 const char RESOURCE_NOT_FOUND[]    = "Resource not found: ";
 const char JSON_PARSE_FAILED[]     = "Json parse failed: ";
@@ -43,34 +46,34 @@ const char BAD_REQUEST[]           = "Command failed (HTTP 400): ";
 // Trigger modes
 typedef enum
 {
-   TRIGMODE_UNKNOWN = -1,
-   TRIGMODE_INTS = 0,
-   TRIGMODE_EXTS,
-   TRIGMODE_EXTM,       
-   TRIGMODE_EXTE
+   ETRIGMODE_UNKNOWN = -1,
+   ETRIGMODE_EXPO = 0,
+   ETRIGMODE_EXTT,
+   ETRIGMODE_EXTM,
+   ETRIGMODE_EXTE
 } ENUM_TRIGGERMODE;
 
 
 // Server subsystems
 typedef enum
 {
-   SUBSYSTEM_DETECTOR,
-   SUBSYSTEM_FILEWRITER
+   ESUBSYSTEM_DETECTOR,
+   ESUBSYSTEM_FILEWRITER
 } ENUM_SUBSYSTEM;
 
 // Subsystem states
 typedef enum
 {
-   STATE_UNKNOWN = -1,  
-   STATE_NA = 0, 
-   STATE_DISABLED,
-   STATE_READY,
-   STATE_IDLE, 
-   STATE_ACQUIRE,
-   STATE_ERROR,
-   STATE_INITIALIZE,
-   STATE_CONFIGURE,
-   STATE_TEST
+   ESTATE_UNKNOWN = -1,  
+   ESTATE_NA = 0, 
+   ESTATE_DISABLED,
+   ESTATE_READY,
+   ESTATE_IDLE, 
+   ESTATE_ACQUIRE,
+   ESTATE_ERROR,
+   ESTATE_INITIALIZE,
+   ESTATE_CONFIGURE,
+   ESTATE_TEST
 } ENUM_STATE;
 
 
@@ -109,15 +112,19 @@ public:
 class EigerException: public std::exception
 {
 public:
-  EigerException(const char *szDesc, const char* szArg, const char *szOrigin)
+  EigerException(const char *pcszDesc, const char* pcszArg, const char *pcszOrigin,
+		 const char *filename = NULL)
   {
     std::ostringstream oss;
     oss << std::endl
         << "--------------------------------------------------------------------------------------------" << std::endl
         << "EigerException " << std::endl 
-        << "Description: "   << szDesc << szArg << std::endl 
-        << "Origin     : "   << szOrigin << std::endl 
-        << "--------------------------------------------------------------------------------------------" << std::endl;
+        << "Description: "   << pcszDesc << ":" << pcszArg << std::endl 
+        << "Origin     : "   << pcszOrigin << std::endl;
+      if(filename)
+        oss << "Location   : "   << filename << std::endl;
+
+      oss << "--------------------------------------------------------------------------------------------" << std::endl;
 
     msg = oss.str();
   }
@@ -143,5 +150,13 @@ private:
 };
 
 } // namespace eigerapi
+
+
+#define EIGER_EXPEND_LINE__SUB(x) #x
+#define EIGER_EXPEND_LINE_(x) EIGER_EXPEND_LINE__SUB(x)
+#define EIGER_LOCATION __FILE__ " line " EIGER_EXPEND_LINE_(__LINE__)
+
+#define THROW_EIGER_EXCEPTION(pcszDesc,pcszArg) \
+  throw eigerapi::EigerException(pcszDesc,pcszArg,__PRETTY_FUNCTION__,EIGER_LOCATION)
 
 #endif

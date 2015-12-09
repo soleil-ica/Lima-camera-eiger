@@ -23,6 +23,9 @@
 #include "EigerCamera.h"
 #include "EigerDetInfoCtrlObj.h"
 #include "EigerSyncCtrlObj.h"
+#include "EigerSavingCtrlObj.h"
+#include "EigerStream.h"
+#include "EigerDecompress.h"
 
 using namespace lima;
 using namespace lima::Eiger;
@@ -34,16 +37,23 @@ using namespace std;
 //-----------------------------------------------------
 Interface::Interface(Camera& cam) : m_cam(cam) 
 {
-    DEB_CONSTRUCTOR();
-    m_det_info = new DetInfoCtrlObj(cam);
-	m_sync     = new SyncCtrlObj(cam);
-	
-    m_cap_list.push_back(HwCap(m_det_info));
-    
-	HwBufferCtrlObj* buffer = m_cam.getBufferCtrlObj();
-	m_cap_list.push_back(HwCap(buffer));	
-    
-	m_cap_list.push_back(HwCap(m_sync));
+  DEB_CONSTRUCTOR();
+  m_det_info = new DetInfoCtrlObj(cam);
+  m_cap_list.push_back(HwCap(m_det_info));
+
+  m_sync     = new SyncCtrlObj(cam);
+  m_cap_list.push_back(HwCap(m_sync));
+
+  m_saving = new SavingCtrlObj(cam);
+  m_cap_list.push_back(HwCap(m_saving));
+
+  m_stream = new Stream(cam);
+  
+  HwBufferCtrlObj* buffer = m_stream->getBufferCtrlObj();
+  m_cap_list.push_back(HwCap(buffer));	
+
+  m_decompress = new Decompress(*m_stream);
+  m_cap_list.push_back(HwCap(m_decompress));
 }
 
 //-----------------------------------------------------
@@ -52,8 +62,11 @@ Interface::Interface(Camera& cam) : m_cam(cam)
 Interface::~Interface()
 {
     DEB_DESTRUCTOR();
-	delete m_det_info;
-	delete m_sync;	
+    delete m_det_info;
+    delete m_sync;
+    delete m_saving;
+    delete m_stream;
+    delete m_decompress;
 }
 
 //-----------------------------------------------------
@@ -82,7 +95,12 @@ void Interface::reset(ResetLevel reset_level)
 void Interface::prepareAcq()
 {
     DEB_MEMBER_FUNCT();
-	m_cam.prepareAcq();
+    m_stream->setActive(!m_saving->isActive());
+    m_decompress->setActive(!m_saving->isActive());
+    
+    m_cam.prepareAcq();
+    int serie_id; m_cam.getSerieId(serie_id);
+    m_saving->setSerieId(serie_id);
 }
 
 //-----------------------------------------------------
@@ -91,6 +109,11 @@ void Interface::prepareAcq()
 void Interface::startAcq()
 {
     DEB_MEMBER_FUNCT();
+    // either we use eiger saving or the raw stream
+    if(m_saving->isActive())
+      m_saving->start();
+    else
+      m_stream->start();
     m_cam.startAcq();
 }
 
@@ -101,6 +124,8 @@ void Interface::stopAcq()
 {
   DEB_MEMBER_FUNCT();
   m_cam.stopAcq();
+  m_saving->stop();
+  m_stream->stop();
 }
 
 //-----------------------------------------------------
@@ -110,17 +135,25 @@ void Interface::getStatus(StatusType& status)
 {
     DEB_MEMBER_FUNCT();
     
-    Camera::Status Eiger_status = Camera::Ready;
+    Camera::Status Eiger_status;
+      
     Eiger_status = m_cam.getStatus();
     switch (Eiger_status)
     {
       case Camera::Ready:
-        status.set(HwInterface::StatusType::Ready);
+	{
+	  SavingCtrlObj::Status saving_status = m_saving->getStatus();
+	  switch(saving_status)
+	    {
+	    case SavingCtrlObj::IDLE:
+	      status.set(HwInterface::StatusType::Ready);break;
+	    case SavingCtrlObj::RUNNING:
+	      status.set(HwInterface::StatusType::Readout);break;
+	    default:
+	      status.set(HwInterface::StatusType::Fault);break;
+	    }
+	}
         break;
-
-      case Camera::Armed:
-        status.set(HwInterface::StatusType::Ready);
-        break;      
 
       case Camera::Exposure:
         status.set(HwInterface::StatusType::Exposure);
@@ -130,16 +163,13 @@ void Interface::getStatus(StatusType& status)
         status.set(HwInterface::StatusType::Readout);
         break;
 
-      case Camera::Latency:
-        status.set(HwInterface::StatusType::Latency);
-        break;
-
       case Camera::Fault:
         status.set(HwInterface::StatusType::Fault);
         break;
         
-      case Camera::Preparing:
-         status.set(HwInterface::StatusType::Exposure);
+      case Camera::Initialising:
+	status.set(HwInterface::StatusType::Config);
+	break;
     }
     
     DEB_RETURN() << DEB_VAR1(status);
