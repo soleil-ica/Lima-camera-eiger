@@ -26,6 +26,7 @@
         <dependency>
             <groupId>se.haxx.lib</groupId>
             <artifactId>curl-${aol}-static-${mode}</artifactId>
+            <version>7.37.0</version>
         </dependency>      
                                                             
         <dependency>
