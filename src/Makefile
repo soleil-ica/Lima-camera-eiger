@@ -2,10 +2,12 @@ eiger-objs = EigerCamera.o EigerInterface.o EigerDetInfoCtrlObj.o EigerSyncCtrlO
 
 SRCS = $(eiger-objs:.o=.cpp)
 
+JSON_INCLUDES = $(shell pkg-config --cflags jsoncpp)
 
 CXXFLAGS += -std=c++11 -I../include -I../../../hardware/include -I../../../common/include\
 	-I../sdk/linux/EigerAPI/include \
 	-I../../../third-party/Processlib/core/include \
+	$(JSON_INCLUDES) \
 	-Wall -pthread -fPIC -g 
 
 all:	Eiger.o

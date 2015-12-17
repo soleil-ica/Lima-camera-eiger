@@ -25,7 +25,7 @@
 
 #include <sstream>
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 
 #include "eigerapi/Requests.h"
 #include "eigerapi/EigerDefines.h"
@@ -135,6 +135,10 @@ ParamIndex ParamDescription[] = {
   {Requests::DESCRIPTION,		{"description"}},
   {Requests::DETECTOR_NUMBER,		{"detector_number"}},
   {Requests::DETECTOR_READOUT_TIME,	{"detector_readout_time"}},
+  {Requests::DATA_COLLECTION_DATE,	{"data_collection_date"}},
+  {Requests::SOFTWARE_VERSION,	{"software_version"}},
+  
+  
   // Detector Read/Write settings
   {Requests::EXPOSURE,			{"count_time"}},
   {Requests::FRAME_TIME,		{"frame_time"}},
@@ -146,6 +150,12 @@ ParamIndex ParamDescription[] = {
   {Requests::THRESHOLD_ENERGY,		{"threshold_energy"}},
   {Requests::VIRTUAL_PIXEL_CORRECTION,	{"virtual_pixel_correction_applied"}},
   {Requests::PHOTON_ENERGY,		{"photon_energy"}},
+  {Requests::WAVELENGTH,		{"wavelength"}},  
+  
+  {Requests::BEAM_CENTER_X,		{"beam_center_x"}},  
+  {Requests::BEAM_CENTER_Y,		{"beam_center_y"}},  
+  {Requests::DETECTOR_DISTANCE, {"detector_distance"}},  
+  
   {Requests::NIMAGES,			{"nimages"}},
   {Requests::NTRIGGER,			{"ntrigger"}},
   {Requests::AUTO_SUMMATION,		{"auto_summation"}},
