@@ -27,7 +27,7 @@
 
 #include <zmq.h>
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 
 #include <eigerapi/Requests.h>
 #include <eigerapi/EigerDefines.h>
@@ -444,7 +444,7 @@ void Stream::_run()
 			      Json::Value shape = data_header.get("shape","");
 			      if(!shape.isArray() || shape.size() != 2) break;
 			      FrameDim anImageDim;
-			      anImageDim.setSize(Size(shape[0].asInt(),shape[1].asInt()));
+			      anImageDim.setSize(Size(shape[0u].asInt(),shape[1u].asInt()));
 			      //data type
 			      std::string dtype = data_header.get("type","none").asString();
 			      if(dtype == "int32")
@@ -484,7 +484,12 @@ void Stream::_run()
 	    }
 	}
       else
+	{
+	  char error_buffer[256];
+	  char* error_msg = strerror_r(errno,error_buffer,sizeof(error_buffer));
+	  DEB_ERROR() << "Connection error: " << DEB_VAR2(errno,error_msg);
 	aLock.unlock();
+	}
 
       if(stream_socket) zmq_close(stream_socket);
       DEB_TRACE() << "disconnected from " << stream_endpoint;

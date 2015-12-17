@@ -902,7 +902,98 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
   EIGER_SYNC_GET_PARAM(Requests::PHOTON_ENERGY,value);
 }
 
+//-----------------------------------------------------------------------------
+///  Wavelength setter
+//-----------------------------------------------------------------------------
+void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::WAVELENGTH,value);
+}
 
+
+//-----------------------------------------------------------------------------
+///  Wavelength getter
+//-----------------------------------------------------------------------------
+void Camera::getWavelength(double& value) ///< [out] true:enabled, false:disabled
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::WAVELENGTH,value);
+}
+
+
+//-----------------------------------------------------------------------------
+///  BeamCenterX setter
+//-----------------------------------------------------------------------------
+void Camera::setBeamCenterX(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_X,value);
+}
+
+//-----------------------------------------------------------------------------
+///  BeamCenterX getter
+//-----------------------------------------------------------------------------
+void Camera::getBeamCenterX(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_X,value);
+}
+
+//-----------------------------------------------------------------------------
+///  BeamCenterY setter
+//-----------------------------------------------------------------------------
+void Camera::setBeamCenterY(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_Y,value);
+}
+
+//-----------------------------------------------------------------------------
+///  BeamCenterY getter
+//-----------------------------------------------------------------------------
+void Camera::getBeamCenterY(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_Y,value);
+}
+
+//-----------------------------------------------------------------------------
+///  DetectorDistance setter
+//-----------------------------------------------------------------------------
+void Camera::setDetectorDistance(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::DETECTOR_DISTANCE,value);
+}
+
+//-----------------------------------------------------------------------------
+///  DetectorDistance getter
+//-----------------------------------------------------------------------------
+void Camera::getDetectorDistance(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::DETECTOR_DISTANCE,value);
+}
+
+//-----------------------------------------------------------------------------
+///  DataCollectionDate getter
+//-----------------------------------------------------------------------------
+void Camera::getDataCollectionDate(std::string& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::DATA_COLLECTION_DATE,value);
+}
+
+//-----------------------------------------------------------------------------
+///  SoftwareVersion getter
+//-----------------------------------------------------------------------------
+void Camera::getSoftwareVersion(std::string& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::DATA_COLLECTION_DATE,value);
+}
+            
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled

@@ -132,8 +132,18 @@ namespace lima
 			void setVirtualPixelCorrection(bool);
 			void getVirtualPixelCorrection(bool&);
 			void setPhotonEnergy(double);
-			void getPhotonEnergy(double&);			
-
+            void getPhotonEnergy(double&);		
+            void setWavelength(double);
+            void getWavelength(double&);
+            void setBeamCenterX(double);
+            void getBeamCenterX(double&);
+            void setBeamCenterY(double);
+            void getBeamCenterY(double&);
+            void setDetectorDistance(double);
+            void getDetectorDistance(double&);            
+            void getDataCollectionDate(std::string&);                        
+            void getSoftwareVersion(std::string&);
+            
 			void getCompression(bool&);
    			void setCompression(bool);
 			void getSerieId(int&);
