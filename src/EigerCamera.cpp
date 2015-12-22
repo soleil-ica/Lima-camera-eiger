@@ -785,7 +785,7 @@ void Camera::getFlatfieldCorrection(bool& value) ///< [out] true:enabled, false:
 }
 
 //----------------------------------------------------------------------------
-// Auto Summation
+// Auto Summation setter
 //----------------------------------------------------------------------------
 void Camera::setAutoSummation(bool value)
 {
@@ -798,6 +798,10 @@ void Camera::setAutoSummation(bool value)
   m_detectorImageType = value ? Bpp32 : Bpp16;
   maxImageSizeChanged(image_size,m_detectorImageType);
 }
+
+//----------------------------------------------------------------------------
+// Auto Summation getter
+//----------------------------------------------------------------------------
 void Camera::getAutoSummation(bool& value)
 {
   DEB_MEMBER_FUNCT();
@@ -991,7 +995,7 @@ void Camera::getDataCollectionDate(std::string& value) ///< [out]
 void Camera::getSoftwareVersion(std::string& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::DATA_COLLECTION_DATE,value);
+  EIGER_SYNC_GET_PARAM(Requests::SOFTWARE_VERSION,value);
 }
             
 //-----------------------------------------------------------------------------
