@@ -28,12 +28,7 @@
             <artifactId>curl-${aol}-static-${mode}</artifactId>
             <version>7.37.0</version>
         </dependency>      
-                                                            
-        <dependency>
-            <groupId>fr.soleil.lib</groupId>
-            <artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
-        </dependency>    
-            
+
         <dependency>
             <groupId>ncsa.uiuc.edu</groupId>
             <artifactId>HDF5-${aol}-shared-release</artifactId>
