@@ -774,7 +774,7 @@ void Camera::getCountrateCorrection(bool& value)  ///< [out] true:enabled, false
 void Camera::setFlatfieldCorrection(bool value) ///< [in] true:enabled, false:disabled
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_SET_PARAM(Requests::COUNTRATE_CORRECTION,value);
+  EIGER_SYNC_SET_PARAM(Requests::FLATFIELD_CORRECTION,value);
 }
 
 
@@ -784,7 +784,7 @@ void Camera::setFlatfieldCorrection(bool value) ///< [in] true:enabled, false:di
 void Camera::getFlatfieldCorrection(bool& value) ///< [out] true:enabled, false:disabled
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_GET_PARAM(Requests::COUNTRATE_CORRECTION,value);
+    EIGER_SYNC_GET_PARAM(Requests::FLATFIELD_CORRECTION,value);
 }
 
 //----------------------------------------------------------------------------
