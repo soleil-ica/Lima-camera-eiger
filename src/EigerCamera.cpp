@@ -181,6 +181,7 @@ Camera::~Camera()
 //----------------------------------------------------------------------------
 void Camera::initialize()
 {
+  DEB_MEMBER_FUNCT();
   // Finally initialize the detector
   AutoMutex lock(m_cond.mutex());
   m_initilize_state = RUNNING;
@@ -242,12 +243,14 @@ void Camera::prepareAcq()
       HANDLE_EIGERERROR(e.what());
     }
 
+  DEB_TRACE() << "Arm start";
   double timeout = 5 * 60.; // 5 min timeout
   std::shared_ptr<Requests::Command> arm_cmd =
     m_requests->get_command(Requests::ARM);
   try
     {
       arm_cmd->wait(timeout);
+      DEB_TRACE() << "Arm end";
       m_serie_id = arm_cmd->get_serie_id();
     }
   catch(const eigerapi::EigerException &e)
