@@ -164,7 +164,7 @@ void SavingCtrlObj::_start()
   m_nb_file_to_watch = nb_frames / m_frames_per_file;
   if(nb_frames % m_frames_per_file) ++m_nb_file_to_watch;
 
-  m_waiting_time = (expo_time * m_frames_per_file) / 2.;
+  m_waiting_time = (expo_time * std::min(nb_frames,int(m_frames_per_file))) / 2.;
   
   m_cond.broadcast();
   
