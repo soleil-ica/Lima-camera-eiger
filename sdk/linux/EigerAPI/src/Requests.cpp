@@ -743,6 +743,15 @@ Requests::Transfer::Transfer(Requests& requests,
   if(posix_memalign(&m_buffer,4*1024,buffer_write_size))
     THROW_EIGER_EXCEPTION("Can't allocate write buffer memory","");
   m_target_file = fopen(target_path.c_str(),"w+");
+  if(!m_target_file)
+    {
+      char str_errno[1024];
+      strerror_r(errno,str_errno,sizeof(str_errno));
+      char error_buffer[1024];
+      snprintf(error_buffer,sizeof(error_buffer),
+	       "Can't open destination file : %s",str_errno);
+      THROW_EIGER_EXCEPTION(error_buffer,"");
+    }
   setbuffer(m_target_file,(char*)m_buffer,buffer_write_size);
   if(!m_target_file)
     THROW_EIGER_EXCEPTION("Can't open target file",target_path.c_str());

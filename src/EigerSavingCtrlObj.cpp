@@ -251,8 +251,22 @@ void SavingCtrlObj::_PollingThread::threadFunction()
 	    {
 	      std::string master_file_name = prefix + "_master.h5";
 	      std::string dest_path = directory + "/" + master_file_name;
-	      std::shared_ptr<Requests::Transfer> master_file_req = 
-		m_requests->start_transfer(src_file_name.str(),dest_path);
+	      std::shared_ptr<Requests::Transfer> master_file_req;
+	      try
+		{
+		  master_file_req = m_requests->start_transfer(src_file_name.str(),dest_path);
+		}
+	      catch(eigerapi::EigerException& e)
+		{
+		  Event *event = new Event(Hardware,Event::Error, Event::Saving,
+					   Event::SaveOpenError,e.what());
+		  lock.unlock();
+		  m_saving.m_cam.reportEvent(event);
+		  lock.lock();
+		  // stop the loop
+		  m_saving.m_nb_file_to_watch = m_saving.m_nb_file_transfer_started = 0;
+		  continue;
+		}
 	      std::shared_ptr<CurlLoop::FutureRequest::Callback>
 		end_cbk(new _EndDownloadCallback(m_saving,src_file_name.str()));
 	      lock.unlock();
@@ -299,8 +313,23 @@ void SavingCtrlObj::_PollingThread::threadFunction()
 
 		  DEB_TRACE() << "Start transfer file: " << DEB_VAR1(*file_name);
 		  std::string dest_path = directory + "/" + src_file_name.str();
-		  std::shared_ptr<Requests::Transfer> file_req = 
-		    m_requests->start_transfer(src_file_name.str(),dest_path);
+		  std::shared_ptr<Requests::Transfer> file_req;
+		  try
+		    {
+		      file_req = m_requests->start_transfer(src_file_name.str(),dest_path);
+		    }
+		  catch(eigerapi::EigerException& e)
+		    {
+		      Event *event = new Event(Hardware,Event::Error, Event::Saving,
+					       Event::SaveOpenError,e.what());
+		      lock.unlock();
+		      m_saving.m_cam.reportEvent(event);
+		      lock.lock();
+		      // stop the loop
+		      m_saving.m_nb_file_to_watch = m_saving.m_nb_file_transfer_started = 0;
+		      break;
+		    }
+
 		  ++m_saving.m_nb_file_transfer_started,++m_saving.m_concurrent_download;
 		  std::shared_ptr<CurlLoop::FutureRequest::Callback>
 		    end_cbk(new _EndDownloadCallback(m_saving,src_file_name.str()));

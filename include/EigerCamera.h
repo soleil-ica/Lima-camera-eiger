@@ -33,6 +33,7 @@
 #include <limits>
 #include "lima/HwMaxImageSizeCallback.h"
 #include "lima/ThreadUtils.h"
+#include "lima/Event.h"
 
 #include <eigerapi/EigerDefines.h>
 
@@ -53,7 +54,7 @@ namespace lima
    * \class Camera
    * \brief object controlling the Eiger camera via EigerAPI
    *******************************************************************/
-     class LIBEIGER Camera : public HwMaxImageSizeCallbackGen
+     class LIBEIGER Camera : public HwMaxImageSizeCallbackGen, public EventCallbackGen
 	{
 		DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Eiger");
 		friend class Interface;
