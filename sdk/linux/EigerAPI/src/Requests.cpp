@@ -585,6 +585,9 @@ void Requests::Param::_fill_set_request(const T& value)
   m_data_buffer = strdup(json_struct.c_str()),m_data_memorysize = json_struct.length();
   curl_easy_setopt(m_handle, CURLOPT_POSTFIELDS, m_data_buffer); // data goes here
   curl_easy_setopt(m_handle, CURLOPT_POSTFIELDSIZE,json_struct.length()); // data length
+
+  curl_easy_setopt(m_handle,CURLOPT_WRITEFUNCTION,_write_callback);
+  curl_easy_setopt(m_handle,CURLOPT_WRITEDATA,this);
 }
 
 void Requests::Param::_set_return_value(bool& ret_value)
