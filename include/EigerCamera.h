@@ -38,11 +38,6 @@
 
 #include <ostream>
 
-
-// Delay between two getStatus calls
-#define C_DETECTOR_POLL_TIME 2  // second
-#define C_DETECTOR_MAX_TIME  60 // seconds
-
 namespace eigerapi
 {
   class Requests;
