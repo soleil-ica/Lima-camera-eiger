@@ -564,6 +564,7 @@ void Requests::Param::_fill_set_request(const T& value)
 
   curl_easy_setopt(m_handle, CURLOPT_HTTPHEADER, m_headers);
   curl_easy_setopt(m_handle, CURLOPT_CUSTOMREQUEST, "PUT"); 
+  curl_easy_setopt(m_handle, CURLOPT_FAILONERROR, true);
 
   m_data_buffer = strdup(json_struct.c_str()),m_data_memorysize = json_struct.length();
   curl_easy_setopt(m_handle, CURLOPT_POSTFIELDS, m_data_buffer); // data goes here
