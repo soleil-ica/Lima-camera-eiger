@@ -216,8 +216,7 @@ void Camera::prepareAcq()
     default:
       THROW_HW_ERROR(Error) << "Very weird can't be in this case";
     }
-
-  double frame_time = m_exp_time + m_readout_time + m_latency_time;
+  double frame_time = m_exp_time + m_latency_time;
   if(frame_time < m_min_frame_time)
     {    
       if(m_latency_time <= m_readout_time)
@@ -226,6 +225,7 @@ void Camera::prepareAcq()
 	THROW_HW_ERROR(Error) << "This detector can't go at this frame rate (" << 1 / frame_time
 			      << ") is limited to (" << 1 / m_min_frame_time << ")";
     }
+  DEB_PARAM() << DEB_VAR1(frame_time);
   std::shared_ptr<Requests::Param> frame_time_req=
     m_requests->set_param(Requests::FRAME_TIME,frame_time);
   std::shared_ptr<Requests::Param> nimages_req =
