@@ -179,6 +179,8 @@ ParamIndex ParamDescription[] = {
   {Requests::HEADER_PHI_INCREMENT,		{"phi_increment"}},
   {Requests::HEADER_PHI_START,			{"phi_start"}},
   {Requests::HEADER_WAVELENGTH,			{"wavelength"}},
+  // Compression
+  {Requests::COMPRESSION_TYPE,			{"compression"}},
 };
 
 const char* get_param_name(Requests::PARAM_NAME param_name)

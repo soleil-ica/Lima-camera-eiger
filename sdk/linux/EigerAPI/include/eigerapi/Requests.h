@@ -168,6 +168,7 @@ namespace eigerapi
 		     HEADER_PHI_INCREMENT,
 		     HEADER_PHI_START,
 		     HEADER_WAVELENGTH,
+		     COMPRESSION_TYPE,
     };
 
     Requests(const std::string& address);

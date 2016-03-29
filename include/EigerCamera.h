@@ -64,6 +64,7 @@ namespace lima
 		public:
 
 		enum Status { Ready, Initialising, Exposure, Readout, Fault };
+		enum CompressionType {LZ4,BSLZ4};
 
 			Camera(const std::string& detector_ip);
 			~Camera();
@@ -142,6 +143,8 @@ namespace lima
             
 			void getCompression(bool&);
    			void setCompression(bool);
+			void getCompressionType(CompressionType&) const;
+			void setCompressionType(CompressionType);
 			void getSerieId(int&);
 			void deleteMemoryFiles();
 			void disarm();

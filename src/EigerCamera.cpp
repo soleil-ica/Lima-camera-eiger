@@ -1021,6 +1021,21 @@ void Camera::setCompression(bool value)
   EIGER_SYNC_SET_PARAM(Requests::FILEWRITER_COMPRESSION,value);
 }
 
+void Camera::getCompressionType(Camera::CompressionType& type) const
+{
+  DEB_MEMBER_FUNCT();
+  std::string compression_type;
+  EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,compression_type);
+  DEB_RETURN() << DEB_VAR1(compression_type);
+  type = compression_type == "lz4" ? LZ4 : BSLZ4;
+}
+
+void Camera::setCompressionType(Camera::CompressionType type)
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,
+		       type == LZ4 ? "lz4" : "bslz4");
+}
 void Camera::getSerieId(int& serie_id)
 {
   DEB_MEMBER_FUNCT();
