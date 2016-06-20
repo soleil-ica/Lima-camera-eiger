@@ -31,6 +31,29 @@ using namespace eigerapi;
 
 const int MAX_SIMULTANEOUS_DOWNLOAD = 4;
 /*----------------------------------------------------------------------------
+			     HDF5 HEADER
+----------------------------------------------------------------------------*/
+struct HeaderKey2Index
+{
+  const char*		key_name;
+  Requests::PARAM_NAME	param_name;
+};
+
+static HeaderKey2Index available_header[] = {
+  {"beam_center_x",Requests::HEADER_BEAM_CENTER_X},
+  {"beam_center_y",Requests::HEADER_BEAM_CENTER_Y},
+  {"chi_increment",Requests::HEADER_CHI_INCREMENT},
+  {"chi_start",Requests::HEADER_CHI_START},
+  {"detector_distance",Requests::HEADER_DETECTOR_DISTANCE},
+  {"kappa_increment",Requests::HEADER_KAPPA_INCREMENT},
+  {"kappa_start",Requests::HEADER_KAPPA_START},
+  {"omega_increment",Requests::HEADER_OMEGA_INCREMENT},
+  {"omega_start",Requests::HEADER_OMEGA_START},
+  {"phi_increment",Requests::HEADER_PHI_INCREMENT},
+  {"phi_start",Requests::HEADER_PHI_START},
+  {"wavelength",Requests::HEADER_WAVELENGTH},
+};
+/*----------------------------------------------------------------------------
 			    Polling thread
 ----------------------------------------------------------------------------*/
 class SavingCtrlObj::_PollingThread : public Thread
@@ -47,7 +70,7 @@ private:
 };
 
 SavingCtrlObj::SavingCtrlObj(Camera& cam) :
-  HwSavingCtrlObj(0,false),
+  HwSavingCtrlObj(HwSavingCtrlObj::COMMON_HEADER,false),
   m_cam(cam),
   m_nb_file_to_watch(0),
   m_nb_file_transfer_started(0),
@@ -57,7 +80,13 @@ SavingCtrlObj::SavingCtrlObj(Camera& cam) :
 {
   m_polling_thread = new _PollingThread(*this,this->m_cam.m_requests);
   m_polling_thread->start();
-  
+  // Known keys for common header
+  int nb_header_key = sizeof(available_header) / sizeof(HeaderKey2Index);
+  for(int i = 0;i < nb_header_key;++i)
+    {
+      HeaderKey2Index& index = available_header[i];
+      m_availables_header_keys[index.key_name] = index.param_name;
+    }
 }
 
 /*----------------------------------------------------------------------------
@@ -86,6 +115,41 @@ SavingCtrlObj::~SavingCtrlObj()
 void SavingCtrlObj::getPossibleSaveFormat(std::list<std::string> &format_list) const
 {
   format_list.push_back(HwSavingCtrlObj::HDF5_FORMAT_STR);
+}
+
+void SavingCtrlObj::setCommonHeader(const HwSavingCtrlObj::HeaderMap& header)
+{
+  DEB_MEMBER_FUNCT();
+
+  std::list<std::shared_ptr<Requests::Param>> pending_request;
+  for(HwSavingCtrlObj::HeaderMap::const_iterator i = header.begin();
+      i != header.end();++i)
+    {
+      std::map<std::string,int>::iterator header_index = m_availables_header_keys.find(i->first);
+      if(header_index == m_availables_header_keys.end())
+	THROW_HW_ERROR(Error) << "Header key: " << i->first << " not yet managed ";
+      pending_request.push_back(m_cam.m_requests->set_param(Requests::PARAM_NAME(header_index->second),
+							    i->second));
+    }
+
+  try
+    {
+      for(std::list<std::shared_ptr<Requests::Param>>::iterator i = pending_request.begin();
+	  i != pending_request.end();++i)
+	(*i)->wait();
+    }
+  catch(const eigerapi::EigerException &e)
+    {
+       for(std::list<std::shared_ptr<Requests::Param>>::iterator i = pending_request.begin();
+	  i != pending_request.end();++i)
+	 m_cam.m_requests->cancel(*i);
+       THROW_HW_ERROR(Error) << e.what();
+    }
+}
+
+void SavingCtrlObj::resetCommonHeader()
+{
+  // todo
 }
 
 void SavingCtrlObj::setSerieId(int value)
@@ -164,7 +228,7 @@ void SavingCtrlObj::_start()
   m_nb_file_to_watch = nb_frames / m_frames_per_file;
   if(nb_frames % m_frames_per_file) ++m_nb_file_to_watch;
 
-  m_waiting_time = (expo_time * m_frames_per_file) / 2.;
+  m_waiting_time = (expo_time * std::min(nb_frames,int(m_frames_per_file))) / 2.;
   
   m_cond.broadcast();
   
@@ -251,8 +315,22 @@ void SavingCtrlObj::_PollingThread::threadFunction()
 	    {
 	      std::string master_file_name = prefix + "_master.h5";
 	      std::string dest_path = directory + "/" + master_file_name;
-	      std::shared_ptr<Requests::Transfer> master_file_req = 
-		m_requests->start_transfer(src_file_name.str(),dest_path);
+	      std::shared_ptr<Requests::Transfer> master_file_req;
+	      try
+		{
+		  master_file_req = m_requests->start_transfer(src_file_name.str(),dest_path);
+		}
+	      catch(eigerapi::EigerException& e)
+		{
+		  Event *event = new Event(Hardware,Event::Error, Event::Saving,
+					   Event::SaveOpenError,e.what());
+		  lock.unlock();
+		  m_saving.m_cam.reportEvent(event);
+		  lock.lock();
+		  // stop the loop
+		  m_saving.m_nb_file_to_watch = m_saving.m_nb_file_transfer_started = 0;
+		  continue;
+		}
 	      std::shared_ptr<CurlLoop::FutureRequest::Callback>
 		end_cbk(new _EndDownloadCallback(m_saving,src_file_name.str()));
 	      lock.unlock();
@@ -299,8 +377,23 @@ void SavingCtrlObj::_PollingThread::threadFunction()
 
 		  DEB_TRACE() << "Start transfer file: " << DEB_VAR1(*file_name);
 		  std::string dest_path = directory + "/" + src_file_name.str();
-		  std::shared_ptr<Requests::Transfer> file_req = 
-		    m_requests->start_transfer(src_file_name.str(),dest_path);
+		  std::shared_ptr<Requests::Transfer> file_req;
+		  try
+		    {
+		      file_req = m_requests->start_transfer(src_file_name.str(),dest_path);
+		    }
+		  catch(eigerapi::EigerException& e)
+		    {
+		      Event *event = new Event(Hardware,Event::Error, Event::Saving,
+					       Event::SaveOpenError,e.what());
+		      lock.unlock();
+		      m_saving.m_cam.reportEvent(event);
+		      lock.lock();
+		      // stop the loop
+		      m_saving.m_nb_file_to_watch = m_saving.m_nb_file_transfer_started = 0;
+		      break;
+		    }
+
 		  ++m_saving.m_nb_file_transfer_started,++m_saving.m_concurrent_download;
 		  std::shared_ptr<CurlLoop::FutureRequest::Callback>
 		    end_cbk(new _EndDownloadCallback(m_saving,src_file_name.str()));

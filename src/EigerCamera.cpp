@@ -181,11 +181,13 @@ Camera::~Camera()
 //----------------------------------------------------------------------------
 void Camera::initialize()
 {
+  DEB_MEMBER_FUNCT();
   // Finally initialize the detector
   AutoMutex lock(m_cond.mutex());
   m_initilize_state = RUNNING;
   std::shared_ptr<Requests::Command> async_initialise =
     m_requests->get_command(Requests::INITIALIZE);
+  lock.unlock();
 
   std::shared_ptr<CurlLoop::FutureRequest::Callback> cbk(new InitCallback(*this));
   async_initialise->register_callback(cbk);
@@ -214,8 +216,7 @@ void Camera::prepareAcq()
     default:
       THROW_HW_ERROR(Error) << "Very weird can't be in this case";
     }
-
-  double frame_time = m_exp_time + m_readout_time + m_latency_time;
+  double frame_time = m_exp_time + m_latency_time;
   if(frame_time < m_min_frame_time)
     {    
       if(m_latency_time <= m_readout_time)
@@ -224,6 +225,7 @@ void Camera::prepareAcq()
 	THROW_HW_ERROR(Error) << "This detector can't go at this frame rate (" << 1 / frame_time
 			      << ") is limited to (" << 1 / m_min_frame_time << ")";
     }
+  DEB_PARAM() << DEB_VAR1(frame_time);
   std::shared_ptr<Requests::Param> frame_time_req=
     m_requests->set_param(Requests::FRAME_TIME,frame_time);
   std::shared_ptr<Requests::Param> nimages_req =
@@ -242,12 +244,14 @@ void Camera::prepareAcq()
       HANDLE_EIGERERROR(e.what());
     }
 
+  DEB_TRACE() << "Arm start";
   double timeout = 5 * 60.; // 5 min timeout
   std::shared_ptr<Requests::Command> arm_cmd =
     m_requests->get_command(Requests::ARM);
   try
     {
       arm_cmd->wait(timeout);
+      DEB_TRACE() << "Arm end";
       m_serie_id = arm_cmd->get_serie_id();
     }
   catch(const eigerapi::EigerException &e)
@@ -273,9 +277,11 @@ void Camera::startAcq()
     {
       std::shared_ptr<Requests::Command> trigger =
 	m_requests->get_command(Requests::TRIGGER);
+      m_trigger_state = RUNNING;
+      lock.unlock();
+
       std::shared_ptr<CurlLoop::FutureRequest::Callback> cbk(new AcqCallback(*this));
       trigger->register_callback(cbk);
-      m_trigger_state = RUNNING;
     }
   
 }
@@ -771,7 +777,7 @@ void Camera::getCountrateCorrection(bool& value)  ///< [out] true:enabled, false
 void Camera::setFlatfieldCorrection(bool value) ///< [in] true:enabled, false:disabled
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_SET_PARAM(Requests::COUNTRATE_CORRECTION,value);
+  EIGER_SYNC_SET_PARAM(Requests::FLATFIELD_CORRECTION,value);
 }
 
 
@@ -781,7 +787,7 @@ void Camera::setFlatfieldCorrection(bool value) ///< [in] true:enabled, false:di
 void Camera::getFlatfieldCorrection(bool& value) ///< [out] true:enabled, false:disabled
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_GET_PARAM(Requests::COUNTRATE_CORRECTION,value);
+  EIGER_SYNC_GET_PARAM(Requests::FLATFIELD_CORRECTION,value);
 }
 
 //----------------------------------------------------------------------------
@@ -912,7 +918,7 @@ void Camera::getPhotonEnergy(double& value) ///< [out] true:enabled, false:disab
 void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::WAVELENGTH,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_WAVELENGTH,value);
 }
 
 
@@ -922,7 +928,7 @@ void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
 void Camera::getWavelength(double& value) ///< [out] true:enabled, false:disabled
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::WAVELENGTH,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_WAVELENGTH,value);
 }
 
 
@@ -932,7 +938,7 @@ void Camera::getWavelength(double& value) ///< [out] true:enabled, false:disable
 void Camera::setBeamCenterX(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_X,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_BEAM_CENTER_X,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -941,7 +947,7 @@ void Camera::setBeamCenterX(double value) ///< [in]
 void Camera::getBeamCenterX(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_X,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_BEAM_CENTER_X,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -950,7 +956,7 @@ void Camera::getBeamCenterX(double& value) ///< [out]
 void Camera::setBeamCenterY(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::BEAM_CENTER_Y,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_BEAM_CENTER_Y,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -959,7 +965,7 @@ void Camera::setBeamCenterY(double value) ///< [in]
 void Camera::getBeamCenterY(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::BEAM_CENTER_Y,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_BEAM_CENTER_Y,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -968,7 +974,7 @@ void Camera::getBeamCenterY(double& value) ///< [out]
 void Camera::setDetectorDistance(double value) ///< [in] 
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::DETECTOR_DISTANCE,value);
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_DETECTOR_DISTANCE,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -977,7 +983,153 @@ void Camera::setDetectorDistance(double value) ///< [in]
 void Camera::getDetectorDistance(double& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::DETECTOR_DISTANCE,value);
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_DETECTOR_DISTANCE,value);
+}
+
+//-----------------------------------------------------------------------------
+///  ChiIncrement setter
+//-----------------------------------------------------------------------------
+void Camera::setChiIncrement(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_CHI_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  ChiIncrement getter
+//-----------------------------------------------------------------------------
+void Camera::getChiIncrement(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_CHI_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  ChiStart setter
+//-----------------------------------------------------------------------------
+void Camera::setChiStart(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_CHI_START,value);
+}
+
+//-----------------------------------------------------------------------------
+///  ChiStart getter
+//-----------------------------------------------------------------------------
+void Camera::getChiStart(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_CHI_START,value);
+}
+
+
+//-----------------------------------------------------------------------------
+///  KappaIncrement setter
+//-----------------------------------------------------------------------------
+void Camera::setKappaIncrement(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_KAPPA_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  KappaIncrement getter
+//-----------------------------------------------------------------------------
+void Camera::getKappaIncrement(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_KAPPA_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  KappaStart setter
+//-----------------------------------------------------------------------------
+void Camera::setKappaStart(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_KAPPA_START,value);
+}
+
+//-----------------------------------------------------------------------------
+///  KappaStart getter
+//-----------------------------------------------------------------------------
+void Camera::getKappaStart(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_KAPPA_START,value);
+}
+
+
+//-----------------------------------------------------------------------------
+///  OmegaIncrement setter
+//-----------------------------------------------------------------------------
+void Camera::setOmegaIncrement(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_OMEGA_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  OmegaIncrement getter
+//-----------------------------------------------------------------------------
+void Camera::getOmegaIncrement(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_OMEGA_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  OmegaStart setter
+//-----------------------------------------------------------------------------
+void Camera::setOmegaStart(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_OMEGA_START,value);
+}
+
+//-----------------------------------------------------------------------------
+///  OmegaStart getter
+//-----------------------------------------------------------------------------
+void Camera::getOmegaStart(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_OMEGA_START,value);
+}
+
+//-----------------------------------------------------------------------------
+///  PhiIncrement setter
+//-----------------------------------------------------------------------------
+void Camera::setPhiIncrement(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_PHI_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  PhiIncrement getter
+//-----------------------------------------------------------------------------
+void Camera::getPhiIncrement(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_PHI_INCREMENT,value);
+}
+
+//-----------------------------------------------------------------------------
+///  PhiStart setter
+//-----------------------------------------------------------------------------
+void Camera::setPhiStart(double value) ///< [in] 
+{
+    DEB_MEMBER_FUNCT();
+    EIGER_SYNC_SET_PARAM(Requests::HEADER_PHI_START,value);
+}
+
+//-----------------------------------------------------------------------------
+///  PhiStart getter
+//-----------------------------------------------------------------------------
+void Camera::getPhiStart(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::HEADER_PHI_START,value);
 }
 
 //-----------------------------------------------------------------------------
@@ -1015,6 +1167,21 @@ void Camera::setCompression(bool value)
   EIGER_SYNC_SET_PARAM(Requests::FILEWRITER_COMPRESSION,value);
 }
 
+void Camera::getCompressionType(Camera::CompressionType& type) const
+{
+  DEB_MEMBER_FUNCT();
+  std::string compression_type;
+  EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,compression_type);
+  DEB_RETURN() << DEB_VAR1(compression_type);
+  type = compression_type == "lz4" ? LZ4 : BSLZ4;
+}
+
+void Camera::setCompressionType(Camera::CompressionType type)
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,
+		       type == LZ4 ? "lz4" : "bslz4");
+}
 void Camera::getSerieId(int& serie_id)
 {
   DEB_MEMBER_FUNCT();

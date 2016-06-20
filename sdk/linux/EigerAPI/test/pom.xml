@@ -58,7 +58,7 @@
         <dependency>
           <groupId>ncsa.uiuc.edu</groupId>
           <artifactId>HDF5-${aol}-shared-release</artifactId>
-          <version>1.8.13</version>
+          <version>1.8.16</version>
         </dependency>  
 
 		<dependency>

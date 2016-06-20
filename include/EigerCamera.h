@@ -33,15 +33,11 @@
 #include <limits>
 #include "lima/HwMaxImageSizeCallback.h"
 #include "lima/ThreadUtils.h"
+#include "lima/Event.h"
 
 #include <eigerapi/EigerDefines.h>
 
 #include <ostream>
-
-
-// Delay between two getStatus calls
-#define C_DETECTOR_POLL_TIME 2  // second
-#define C_DETECTOR_MAX_TIME  60 // seconds
 
 namespace eigerapi
 {
@@ -58,7 +54,7 @@ namespace lima
    * \class Camera
    * \brief object controlling the Eiger camera via EigerAPI
    *******************************************************************/
-     class LIBEIGER Camera : public HwMaxImageSizeCallbackGen
+     class LIBEIGER Camera : public HwMaxImageSizeCallbackGen, public EventCallbackGen
 	{
 		DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Eiger");
 		friend class Interface;
@@ -68,6 +64,7 @@ namespace lima
 		public:
 
 		enum Status { Ready, Initialising, Exposure, Readout, Fault };
+		enum CompressionType {LZ4,BSLZ4};
 
 			Camera(const std::string& detector_ip);
 			~Camera();
@@ -144,8 +141,27 @@ namespace lima
             void getDataCollectionDate(std::string&);                        
             void getSoftwareVersion(std::string&);
             
+            void setChiIncrement(double);
+            void getChiIncrement(double&);
+            void setChiStart(double);
+            void getChiStart(double&);
+            void setKappaIncrement(double);
+            void getKappaIncrement(double&);
+            void setKappaStart(double);
+            void getKappaStart(double&);
+            void setOmegaIncrement(double);
+            void getOmegaIncrement(double&);
+            void setOmegaStart(double);
+            void getOmegaStart(double&);
+            void setPhiIncrement(double);
+            void getPhiIncrement(double&);
+            void setPhiStart(double);
+            void getPhiStart(double&);
+            
 			void getCompression(bool&);
    			void setCompression(bool);
+			void getCompressionType(CompressionType&) const;
+			void setCompressionType(CompressionType);
 			void getSerieId(int&);
 			void deleteMemoryFiles();
 			void disarm();

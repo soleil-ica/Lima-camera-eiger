@@ -19,6 +19,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //###########################################################################
+#include <map>
 #include "lima/Debug.h"
 #include "lima/HwSavingCtrlObj.h"
 
@@ -37,6 +38,9 @@ namespace lima
       virtual ~SavingCtrlObj();
 
       virtual void getPossibleSaveFormat(std::list<std::string> &format_list) const;
+      
+      virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
+      virtual void resetCommonHeader();
       
       void setSerieId(int value);
       Status getStatus();
@@ -63,6 +67,7 @@ namespace lima
       Cond			m_cond;
       bool			m_quit;
       _PollingThread*		m_polling_thread;
+      std::map<std::string,int>	m_availables_header_keys;
     };
   }
 }

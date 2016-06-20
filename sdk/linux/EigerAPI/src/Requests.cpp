@@ -138,7 +138,6 @@ ParamIndex ParamDescription[] = {
   {Requests::DATA_COLLECTION_DATE,	{"data_collection_date"}},
   {Requests::SOFTWARE_VERSION,	{"software_version"}},
   
-  
   // Detector Read/Write settings
   {Requests::EXPOSURE,			{"count_time"}},
   {Requests::FRAME_TIME,		{"frame_time"}},
@@ -150,12 +149,6 @@ ParamIndex ParamDescription[] = {
   {Requests::THRESHOLD_ENERGY,		{"threshold_energy"}},
   {Requests::VIRTUAL_PIXEL_CORRECTION,	{"virtual_pixel_correction_applied"}},
   {Requests::PHOTON_ENERGY,		{"photon_energy"}},
-  {Requests::WAVELENGTH,		{"wavelength"}},  
-  
-  {Requests::BEAM_CENTER_X,		{"beam_center_x"}},  
-  {Requests::BEAM_CENTER_Y,		{"beam_center_y"}},  
-  {Requests::DETECTOR_DISTANCE, {"detector_distance"}},  
-  
   {Requests::NIMAGES,			{"nimages"}},
   {Requests::NTRIGGER,			{"ntrigger"}},
   {Requests::AUTO_SUMMATION,		{"auto_summation"}},
@@ -169,8 +162,24 @@ ParamIndex ParamDescription[] = {
   {Requests::FILEWRITER_TIME,		{"time", CSTR_SUBSYSTEMFILEWRITER, CSTR_EIGERSTATUS}},
   {Requests::FILEWRITER_BUFFER_FREE,	{"buffer_free", CSTR_SUBSYSTEMFILEWRITER, CSTR_EIGERSTATUS}},
   {Requests::FILEWRITER_LS,		{"files", CSTR_SUBSYSTEMFILEWRITER,NULL}},
+  // Stream settings
   {Requests::STREAM_MODE,		{"mode", CSTR_SUBSYSTEMSTREAM}},
   {Requests::STREAM_HEADER_DETAIL,	{"header_detail", CSTR_SUBSYSTEMSTREAM}},
+  // Saving Header
+  {Requests::HEADER_BEAM_CENTER_X,		{"beam_center_x"}},
+  {Requests::HEADER_BEAM_CENTER_Y,		{"beam_center_y"}},
+  {Requests::HEADER_CHI_INCREMENT,		{"chi_increment"}},
+  {Requests::HEADER_CHI_START,			{"chi_start"}},
+  {Requests::HEADER_DETECTOR_DISTANCE,		{"detector_distance"}},
+  {Requests::HEADER_KAPPA_INCREMENT,		{"kappa_increment"}},
+  {Requests::HEADER_KAPPA_START,		{"kappa_start"}},
+  {Requests::HEADER_OMEGA_INCREMENT,		{"omega_increment"}},
+  {Requests::HEADER_OMEGA_START,		{"omega_start"}},
+  {Requests::HEADER_PHI_INCREMENT,		{"phi_increment"}},
+  {Requests::HEADER_PHI_START,			{"phi_start"}},
+  {Requests::HEADER_WAVELENGTH,			{"wavelength"}},
+  // Compression
+  {Requests::COMPRESSION_TYPE,			{"compression"}},
 };
 
 const char* get_param_name(Requests::PARAM_NAME param_name)
@@ -564,10 +573,14 @@ void Requests::Param::_fill_set_request(const T& value)
 
   curl_easy_setopt(m_handle, CURLOPT_HTTPHEADER, m_headers);
   curl_easy_setopt(m_handle, CURLOPT_CUSTOMREQUEST, "PUT"); 
+  curl_easy_setopt(m_handle, CURLOPT_FAILONERROR, true);
 
   m_data_buffer = strdup(json_struct.c_str()),m_data_memorysize = json_struct.length();
   curl_easy_setopt(m_handle, CURLOPT_POSTFIELDS, m_data_buffer); // data goes here
   curl_easy_setopt(m_handle, CURLOPT_POSTFIELDSIZE,json_struct.length()); // data length
+
+  curl_easy_setopt(m_handle,CURLOPT_WRITEFUNCTION,_write_callback);
+  curl_easy_setopt(m_handle,CURLOPT_WRITEDATA,this);
 }
 
 void Requests::Param::_set_return_value(bool& ret_value)
@@ -742,6 +755,15 @@ Requests::Transfer::Transfer(Requests& requests,
   if(posix_memalign(&m_buffer,4*1024,buffer_write_size))
     THROW_EIGER_EXCEPTION("Can't allocate write buffer memory","");
   m_target_file = fopen(target_path.c_str(),"w+");
+  if(!m_target_file)
+    {
+      char str_errno[1024];
+      strerror_r(errno,str_errno,sizeof(str_errno));
+      char error_buffer[1024];
+      snprintf(error_buffer,sizeof(error_buffer),
+	       "Can't open destination file : %s",str_errno);
+      THROW_EIGER_EXCEPTION(error_buffer,"");
+    }
   setbuffer(m_target_file,(char*)m_buffer,buffer_write_size);
   if(!m_target_file)
     THROW_EIGER_EXCEPTION("Can't open target file",target_path.c_str());
