@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>
@@ -32,9 +32,8 @@
         <dependency>
             <groupId>ncsa.uiuc.edu</groupId>
             <artifactId>HDF5-${aol}-shared-release</artifactId>
-            <version>1.8.13</version>
+            <version>1.8.16</version>
         </dependency>
-           
     </dependencies>
    
 
