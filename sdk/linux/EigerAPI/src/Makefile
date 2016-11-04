@@ -2,8 +2,10 @@ sdk-objs = CurlLoop.o Requests.o
 
 SRCS = $(sdk-objs:.o=.cpp)
 
+JSON_INCLUDES = $(shell pkg-config --cflags jsoncpp)
 
 CXXFLAGS += -std=c++11 -I../include -Wall -DCOMPILATION_WITH_CURL \
+	$(JSON_INCLUDES) \
 	-pthread -fPIC -g
 
 all:	EigerSDK.o

@@ -142,7 +142,7 @@ namespace eigerapi
 		     THRESHOLD_ENERGY,
 		     VIRTUAL_PIXEL_CORRECTION,
 		     PHOTON_ENERGY,
-		     NIMAGES,
+ 		     NIMAGES,
 		     NTRIGGER,
 		     AUTO_SUMMATION,
 		     FILEWRITER_MODE,

@@ -38,6 +38,9 @@ namespace lima
       virtual ~SavingCtrlObj();
 
       virtual void getPossibleSaveFormat(std::list<std::string> &format_list) const;
+
+      virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
+      virtual void resetCommonHeader();
       
       virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
       virtual void resetCommonHeader();
