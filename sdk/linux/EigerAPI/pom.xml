@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>

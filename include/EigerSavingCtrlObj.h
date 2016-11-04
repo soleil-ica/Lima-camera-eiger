@@ -42,9 +42,6 @@ namespace lima
       virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
       virtual void resetCommonHeader();
       
-      virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
-      virtual void resetCommonHeader();
-      
       void setSerieId(int value);
       Status getStatus();
       void stop();
