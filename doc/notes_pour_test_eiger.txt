@@ -1,0 +1,24 @@
+Sources Lima:
+partage smb
+httpserver
+
+TangoBox Linux
+- sudo : root / guest_test (le _ via shift)
+- guest / guest_test
+mount du partage samba
+script: ~/soleil/_mount
+lancer: . _mount
+
+mvn 
+
+start
+
+
+Autre truc: pour "patcher" un bug de montage CIFS dans la VM du dossier partagé sous Windows (via le script que je t'ai montré l'autre jour), il y'a une clé de registre à ajouter.
+Voir le script cmd ci-dessous (il faut probablement lancer "cmd" en mode administrateur).
+
+reg add HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters /v Size /t REG_DWORD /d 3 /f
+sc stop  LanmanServer
+sc start LanmanServer
+
+William.
