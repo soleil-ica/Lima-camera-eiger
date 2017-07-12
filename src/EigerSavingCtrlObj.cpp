@@ -182,7 +182,7 @@ void SavingCtrlObj::stop()
   m_poll_master_file = false;
 }
 
-void SavingCtrlObj::_setActive(bool active)
+void SavingCtrlObj::_setActive(bool active,int stream_idx)
 {
   DEB_MEMBER_FUNCT();
 
@@ -194,7 +194,7 @@ void SavingCtrlObj::_setActive(bool active)
   active_req->wait();
 }
 
-void SavingCtrlObj::_prepare()
+void SavingCtrlObj::_prepare(int stream_idx)
 {
   DEB_MEMBER_FUNCT();
 
@@ -215,7 +215,7 @@ void SavingCtrlObj::_prepare()
   m_poll_master_file = true;
 }
 
-void SavingCtrlObj::_start()
+void SavingCtrlObj::_start(int stream_idx)
 {
   DEB_MEMBER_FUNCT();
   DEB_PARAM() << DEB_VAR1(m_active);
