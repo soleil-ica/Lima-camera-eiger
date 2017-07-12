@@ -45,15 +45,15 @@ namespace lima
       void setSerieId(int value);
       Status getStatus();
       void stop();
-    private:
+    protected:
       class _PollingThread;
       friend class _PollingThread;
       class _EndDownloadCallback;
       friend class _EndDownloadCallback;
 
-      virtual void _prepare();
-      virtual void _start();
-      virtual void _setActive(bool);
+      virtual void _prepare(int=0);
+      virtual void _start(int=0);
+      virtual void _setActive(bool,int=0);
 
       Camera&			m_cam;
       int			m_serie_id;
