@@ -275,6 +275,13 @@ HwBufferCtrlObj* Stream::getBufferCtrlObj()
   return m_buffer_ctrl_obj;
 }
 
+enum Camera::CompressionType Stream::getCompressionType(void) const
+{
+  enum Camera::CompressionType compression_type;
+  m_cam.getCompressionType(compression_type);
+  return compression_type;
+}
+
 bool Stream::get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size,int &depth)
 {
   return m_buffer_cbk->get_msg(aDataBuffer,msg_data,msg_size,depth);
@@ -457,6 +464,9 @@ void Stream::_run()
 				anImageDim.setImageType(Bpp16);
 			      else
 				break;
+                  // encoding
+			      std::string encoding = data_header.get("encoding","none").asString();
+                  DEB_TRACE() << "Stream Encoding type : " << encoding;
 			      
 			      DEB_TRACE() << DEB_VAR1(anImageDim);
 			      HwFrameInfoType frame_info;
@@ -473,6 +483,9 @@ void Stream::_run()
 				}
 #endif
 			      continue_flag = buffer_mgr.newFrameReady(frame_info);
+				  
+                m_cam.m_image_number++;
+				  
 			      if(trigger_mode != IntTrig && trigger_mode != IntTrigMult && !--nb_frames)
 				m_cam.disarm();
 			    }

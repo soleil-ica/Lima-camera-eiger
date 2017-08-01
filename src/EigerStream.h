@@ -51,6 +51,8 @@ namespace lima
       void setActive(bool);
       bool isActive() const;
 
+      enum Camera::CompressionType getCompressionType(void) const;
+
       HwBufferCtrlObj* getBufferCtrlObj();
       bool get_msg(void* aDataBuffer,void*& msg_data,size_t& msg_size,
 		   int& depth);

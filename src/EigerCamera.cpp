@@ -674,6 +674,8 @@ void Camera::initialiseController()
   synchro_list.push_back(m_requests->get_param(Requests::AUTO_SUMMATION,
 					       auto_summation));
   
+  synchro_list.push_back(m_requests->get_param(Requests::SOFTWARE_VERSION,m_software_version));
+
   //Synchro
   try
     {
@@ -1147,7 +1149,7 @@ void Camera::getDataCollectionDate(std::string& value) ///< [out]
 void Camera::getSoftwareVersion(std::string& value) ///< [out] 
 {
   DEB_MEMBER_FUNCT();
-  EIGER_SYNC_GET_PARAM(Requests::SOFTWARE_VERSION,value);
+  value = m_software_version;
 }
             
 //-----------------------------------------------------------------------------
@@ -1169,6 +1171,8 @@ void Camera::setCompression(bool value)
 
 void Camera::getCompressionType(Camera::CompressionType& type) const
 {
+type = BSLZ4;
+return;
   DEB_MEMBER_FUNCT();
   std::string compression_type;
   EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,compression_type);

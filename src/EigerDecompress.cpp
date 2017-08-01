@@ -20,6 +20,7 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //###########################################################################
 #include "lz4.h"
+#include "bitshuffle-master/bitshuffle.h"
 
 #include "EigerDecompress.h"
 #include "EigerStream.h"
@@ -32,63 +33,115 @@ using namespace lima::Eiger;
 
 class _DecompressTask : public LinkTask
 {
-  DEB_CLASS_NAMESPC(DebModCamera,"_DecompressTask","Eiger");
+    DEB_CLASS_NAMESPC(DebModCamera,"_DecompressTask","Eiger");
 public:
-  _DecompressTask(Stream& stream) : m_stream(stream) {}
-  virtual Data process(Data&);
+    _DecompressTask(Stream& stream) : m_stream(stream) {}
+    virtual Data process(Data&);
 
 private:
-  Stream& m_stream;
+    Stream& m_stream;
 };
 
 void _expend(void *src,Data& dst)
 {
-  int nbItems = dst.size() / dst.depth();
-  unsigned short* src_data = (unsigned short*)src;
-  unsigned int* dst_data = (unsigned int*)dst.data();
-  while(nbItems)
+    int nbItems = dst.size() / dst.depth();
+    unsigned short* src_data = (unsigned short*)src;
+    unsigned int* dst_data = (unsigned int*)dst.data();
+    while(nbItems)
     {
-      *dst_data = unsigned(*src_data);
-      ++dst_data,++src_data,--nbItems;
+        *dst_data = unsigned(*src_data);
+        ++dst_data,++src_data,--nbItems;
     }
-  dst.type = Data::UINT32;
+    dst.type = Data::UINT32;
 }
 
 Data _DecompressTask::process(Data& src)
 {
-  void *msg_data;
-  size_t msg_size;
-  int depth;
-  if(!m_stream.get_msg(src.data(),msg_data,msg_size,depth))
-    throw ProcessException("_DecompressTask: can't find compressed message");
-  void* dst;
-  int size;
-  if(src.depth() == 4 && depth == 2)
-    {
-    if(posix_memalign(&dst,16,src.size() / 2))
-	throw ProcessException("Can't allocate temporary memory");
-    size = src.size() / 2;
-    }
-  else
-    dst = src.data(),size = src.size();
+    DEB_MEMBER_FUNCT();
 
-  int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
-  if(return_code < 0)
-    {
-      if(src.depth() == 4 && depth == 2) free(dst);
+    void *msg_data;
+    size_t msg_size;
+    int depth;
 
-      char ErrorBuff[1024];
-      snprintf(ErrorBuff,sizeof(ErrorBuff),
-	       "_DecompressTask: decompression failed, (error code: %d) (data size %d)",
-	       return_code,src.size());
-      throw ProcessException(ErrorBuff);
-    }
-  if(src.depth() == 4 && depth == 2)
+    if(!m_stream.get_msg(src.data(),msg_data,msg_size,depth))
+        throw ProcessException("_DecompressTask: can't find compressed message");
+
+    void* dst;
+    int size;
+
+    if(src.depth() == 4 && depth == 2)
     {
-      _expend(dst,src);
-      free(dst);
+        if(posix_memalign(&dst,16,src.size() / 2))
+        throw ProcessException("Can't allocate temporary memory");
+        size = src.size() / 2;
     }
-  return src;
+    else
+        dst = src.data(),size = src.size();
+
+    // Checking the compression type
+    enum Camera::CompressionType compression_type = m_stream.getCompressionType();
+
+    DEB_TRACE() << "decompression : compression type : " << compression_type;
+
+    if(compression_type == Camera::CompressionType::LZ4)
+    {
+    DEB_TRACE() << "decompression : Camera::CompressionType::LZ4";
+
+        int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
+
+        if(return_code < 0)
+        {
+            if(src.depth() == 4 && depth == 2) free(dst);
+
+            char ErrorBuff[1024];
+            snprintf(ErrorBuff,sizeof(ErrorBuff),
+            "_DecompressTask: lz4 decompression failed, (error code: %d) (data size %d)",
+            return_code,src.size());
+            throw ProcessException(ErrorBuff);
+        }
+    }
+    else
+    if(compression_type == Camera::CompressionType::BSLZ4)
+    {
+    DEB_TRACE() << "decompression : Camera::CompressionType::BSLZ4";
+
+        const size_t elem_size = src.depth();
+        const size_t elem_nb   = size / elem_size;
+
+    DEB_TRACE() << "msg_size : "  << msg_size;
+    DEB_TRACE() << "size : "      << size;
+    DEB_TRACE() << "elem_size : " << elem_size;
+    DEB_TRACE() << "elem_nb : "   << elem_nb;
+
+    DEB_TRACE() << "bshuf_decompress_lz4 : before";
+
+        // block_size = 0 -> automatically selected
+        int64_t return_code = bshuf_decompress_lz4((const char*)msg_data,(char*)dst, elem_nb, elem_size, 0);
+
+    DEB_TRACE() << "bshuf_decompress_lz4 : after";
+
+        if(return_code < 0) 
+        {
+            if(src.depth() == 4 && depth == 2) free(dst);
+
+            char ErrorBuff[1024];
+            snprintf(ErrorBuff,sizeof(ErrorBuff),
+            "_DecompressTask: bslz4 decompression failed, (error code: %d) (data size %d)",
+            return_code,src.size());
+            throw ProcessException(ErrorBuff);
+        }
+    }
+    else
+    {
+        throw ProcessException("_DecompressTask: unknown compression type!");
+    }
+
+    if(src.depth() == 4 && depth == 2)
+    {
+        _expend(dst,src);
+        free(dst);
+    }
+    return src;
 }
 
 Decompress::Decompress(Stream& stream) :
@@ -98,15 +151,15 @@ Decompress::Decompress(Stream& stream) :
 
 Decompress::~Decompress()
 {
-  m_decompress_task->unref();
+    m_decompress_task->unref();
 }
 
 LinkTask* Decompress::getReconstructionTask()
 {
-  return m_decompress_task;
+    return m_decompress_task;
 }
 
 void Decompress::setActive(bool active)
 {
-  reconstructionChange(active ? m_decompress_task : NULL);
+    reconstructionChange(active ? m_decompress_task : NULL);
 }

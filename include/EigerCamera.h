@@ -175,7 +175,8 @@ namespace lima
 			friend class InitCallback;
 			void initialiseController(); /// Used during plug-in initialization
 			void _acquisition_finished(bool);
-			//-----------------------------------------------------------------------------
+
+            //-----------------------------------------------------------------------------
 			//- lima stuff
 			int                       m_nb_frames;
 			int                       m_image_number;
@@ -185,23 +186,25 @@ namespace lima
 			//- camera stuff
 			std::string               m_detector_model;
 			std::string               m_detector_type;
-			unsigned int		  m_maxImageWidth, m_maxImageHeight;
+			unsigned int              m_maxImageWidth, m_maxImageHeight;
             ImageType                 m_detectorImageType;  
+            std::string               m_software_version;
 
-                        InternalStatus m_initilize_state;
-			InternalStatus m_trigger_state;
-			int	       m_serie_id;
-			//- EigerAPI stuff
-			eigerapi::Requests*	  m_requests;
+            InternalStatus            m_initilize_state;
+			InternalStatus            m_trigger_state;
+			int                       m_serie_id;
+
+            //- EigerAPI stuff
+			eigerapi::Requests*	      m_requests;
          
 			double                    m_temperature;
 			double                    m_humidity;
 			double                    m_exp_time;
-			double		          m_readout_time;
+			double                    m_readout_time;
 			double                    m_x_pixelsize, m_y_pixelsize;
-			Cond			  m_cond;
-			std::string		  m_detector_ip;
-			double			  m_min_frame_time;
+			Cond                      m_cond;
+			std::string               m_detector_ip;
+			double                    m_min_frame_time;
 			
 	};
 	} // namespace Eiger
