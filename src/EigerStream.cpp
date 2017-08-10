@@ -467,7 +467,11 @@ void Stream::_run()
                   // encoding
 			      std::string encoding = data_header.get("encoding","none").asString();
                   DEB_TRACE() << "Stream Encoding type : " << encoding;
-			      
+
+                  // blob size
+			      int blob_size = data_header.get("size",-1).asInt();
+                  DEB_TRACE() << "Stream Blob size : " << blob_size;
+
 			      DEB_TRACE() << DEB_VAR1(anImageDim);
 			      HwFrameInfoType frame_info;
 			      frame_info.acq_frame_nb = frameid;

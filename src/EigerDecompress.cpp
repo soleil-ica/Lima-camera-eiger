@@ -76,16 +76,17 @@ Data _DecompressTask::process(Data& src)
         size = src.size() / 2;
     }
     else
-        dst = src.data(),size = src.size();
+    {
+        dst  = src.data();
+        size = src.size();
+    }
 
     // Checking the compression type
     enum Camera::CompressionType compression_type = m_stream.getCompressionType();
 
-    DEB_TRACE() << "decompression : compression type : " << compression_type;
-
     if(compression_type == Camera::CompressionType::LZ4)
     {
-    DEB_TRACE() << "decompression : Camera::CompressionType::LZ4";
+        DEB_TRACE() << "decompression : Camera::CompressionType::LZ4";
 
         int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
 
@@ -103,25 +104,26 @@ Data _DecompressTask::process(Data& src)
     else
     if(compression_type == Camera::CompressionType::BSLZ4)
     {
-    DEB_TRACE() << "decompression : Camera::CompressionType::BSLZ4";
+        DEB_TRACE() << "decompression : Camera::CompressionType::BSLZ4";
 
-        const size_t elem_size = src.depth();
-        const size_t elem_nb   = size / elem_size;
+        const size_t elem_size  = depth;
+        // the blocksize is defined big endian uint32 starting at byte 8, divided by element size.
+        const size_t block_size = __builtin_bswap32(*((unsigned long *)(((char *)(msg_data)) + 8)) / elem_size); 
+        const size_t elem_nb    = size / elem_size;
 
-    DEB_TRACE() << "msg_size : "  << msg_size;
-    DEB_TRACE() << "size : "      << size;
-    DEB_TRACE() << "elem_size : " << elem_size;
-    DEB_TRACE() << "elem_nb : "   << elem_nb;
+        DEB_TRACE() << "size       : " << src.size();
+        DEB_TRACE() << "msg_size   : " << msg_size  ;
+        DEB_TRACE() << "elem_size  : " << elem_size ;
+        DEB_TRACE() << "block_size : " << block_size;
+        DEB_TRACE() << "elem_nb    : " << elem_nb   ;
 
-    DEB_TRACE() << "bshuf_decompress_lz4 : before";
-
-        // block_size = 0 -> automatically selected
-        int64_t return_code = bshuf_decompress_lz4((const char*)msg_data,(char*)dst, elem_nb, elem_size, 0);
-
-    DEB_TRACE() << "bshuf_decompress_lz4 : after";
+        // The data blob starts at bit 12
+        int64_t return_code = bshuf_decompress_lz4((const char*)(((char *)msg_data) + 12),(char*)dst, elem_nb, elem_size, block_size);
 
         if(return_code < 0) 
         {
+            DEB_TRACE() << "return_code : " << return_code;
+
             if(src.depth() == 4 && depth == 2) free(dst);
 
             char ErrorBuff[1024];

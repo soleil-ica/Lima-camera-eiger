@@ -1171,11 +1171,9 @@ void Camera::setCompression(bool value)
 
 void Camera::getCompressionType(Camera::CompressionType& type) const
 {
-type = BSLZ4;
-return;
   DEB_MEMBER_FUNCT();
   std::string compression_type;
-  EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,compression_type);
+  EIGER_SYNC_GET_PARAM(Requests::COMPRESSION_TYPE,compression_type);
   DEB_RETURN() << DEB_VAR1(compression_type);
   type = compression_type == "lz4" ? LZ4 : BSLZ4;
 }
