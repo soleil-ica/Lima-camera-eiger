@@ -403,14 +403,22 @@ void SavingCtrlObj::_PollingThread::threadFunction()
 
 		  if(m_saving.m_callback)
 		    {
-		      int written_frame = m_saving.m_nb_file_transfer_started * frames_per_file;
-		      if(written_frame > total_nb_frames)
+                int written_frame = m_saving.m_nb_file_transfer_started * frames_per_file;
+		        if(written_frame > total_nb_frames)
 			written_frame = total_nb_frames;
 		      
 		      //lima index start at 0
 		      --written_frame;
 		      lock.unlock();
-		      bool continueFlag = m_saving.m_callback->newFrameWritten(written_frame);
+              bool continueFlag = false;
+
+              for(int frame_index = (written_frame - frames_per_file + 1) ; frame_index <= written_frame ; frame_index++)
+              {
+		        continueFlag = m_saving.m_callback->newFrameWritten(frame_index);
+              }
+
+              m_saving.m_cam.m_image_number = written_frame + 1;
+
 		      lock.lock();
 		      if(!continueFlag) // stop the loop
 			m_saving.m_nb_file_to_watch = m_saving.m_nb_file_transfer_started = 0;
