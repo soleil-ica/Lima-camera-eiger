@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fr.soleil</groupId>
+        <artifactId>super-pom-C-CPP</artifactId>
+        <version>RELEASE</version>
+    </parent>
+	
+    <groupId>fr.soleil.lib</groupId>
+    <artifactId>EigerAPI-amd64-Linux-gcc-${mode}</artifactId>
+    <version>1.0.6</version>
+	
+    <packaging>nar</packaging>
+    <name>EigerAPI</name>
+    <description>Eiger detector control library</description>
+    
+    <properties>
+		<!-- path to the 64 bits libs ${FL-64bits-libs} -->
+		<FL-64bits-libs>/home/informatique/ica/langlois/binaries-backup/el6-64</FL-64bits-libs>
+	</properties>
+
+    <dependencies>
+        
+  <!--       <dependency>
+            <groupId>net.sf.lib</groupId>
+            <artifactId>json-${aol}-static-${mode}</artifactId>
+            <version>0.5.0</version>
+        </dependency>    -->
+        
+        <!-- <dependency>
+            <groupId>se.haxx.lib</groupId>
+            <artifactId>curl-${aol}-static-${mode}</artifactId>
+            <version>7.37.0</version>
+        </dependency>       -->
+
+        <!-- <dependency>
+            <groupId>ncsa.uiuc.edu</groupId>
+            <artifactId>HDF5-${aol}-shared-release</artifactId>
+        </dependency> -->
+    </dependencies>
+   
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.freehep</groupId>
+                <artifactId>freehep-nar-plugin</artifactId>
+                <configuration>
+                    <cpp>
+                        <sourceDirectory>src</sourceDirectory>
+                        <includePaths>
+                            <includePath>include</includePath>
+                            <includePath>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/include/</includePath>
+                        </includePaths>
+                        <defines>
+                            
+                        </defines>                       
+                    </cpp>
+                    <linker>
+                        <libs>
+                            <lib>
+                                <name>curl</name>
+                                <type>shared</type>
+                                <directory>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/lib/.libs</directory>
+                            </lib>
+                            <lib>
+                                <!-- hdf5 (1.8.16) 64 -->
+                                <name>hdf5</name>
+                                <type>shared</type>
+                                <directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+                            </lib>
+                            <lib>
+                                <!-- hdf5 (1.8.16) 64 -->
+                                <name>hdf5_cpp</name>
+                                <type>shared</type>
+                                <directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+                            </lib>
+                            <lib>
+                                <!-- hdf5 (1.8.16) 64 -->
+                                <name>hdf5_hl</name>
+                                <type>shared</type>
+                                <directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+                            </lib>
+                            <lib>
+                                <!-- hdf5 (1.8.16) 64 -->
+                                <name>hdf5_hl_cpp</name>
+                                <type>shared</type>
+                                <directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+                            </lib>
+                        </libs>			
+                    </linker>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>fr.soleil.maven.plugins</groupId>
+                <artifactId>maven-check-plugin</artifactId>
+                <configuration>
+                    <enable>false</enable>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <connection>${scm.connection.cvs.tango-ds}:Libraries/EigerCPP</connection>
+        <developerConnection>${scm.developerConnection.cvs.tango-ds}:Libraries/EigerCPP</developerConnection>
+        <url>${scm.url.cvs.tango-ds}/Libraries/EigerCPP</url>
+    </scm>
+   
+    <developers>
+        <developer>
+            <id>bouladoux</id>
+            <name>bouladoux</name>
+            <url>http://controle/</url>
+            <organization>Synchrotron Soleil</organization>
+            <organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+            <roles>
+                <role>developper</role>
+            </roles>
+            <timezone>1</timezone>
+        </developer>
+    </developers>
+</project>
