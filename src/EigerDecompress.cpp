@@ -58,7 +58,7 @@ void _expend(void *src,Data& dst)
 Data _DecompressTask::process(Data& src)
 {
     DEB_MEMBER_FUNCT();
-
+	clock_t begin_global = clock();
     void *msg_data;
     size_t msg_size;
     int depth;
@@ -81,55 +81,66 @@ Data _DecompressTask::process(Data& src)
         size = src.size();
     }
 
+//	DEB_TRACE() << "src size\t: " << src.size();
+//	DEB_TRACE() << "msg size\t: " << msg_size  ;
+//	DEB_TRACE() << "depth\t: " << depth ;	
+	
     // Checking the compression type
     enum Camera::CompressionType compression_type = m_stream.getCompressionType();
 
     if(compression_type == Camera::CompressionType::LZ4)
-    {
-        DEB_TRACE() << "decompression : Camera::CompressionType::LZ4";
-
-        int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
+    {        
+		clock_t begin = clock();
+		int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
+		clock_t end = clock();			
+		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+		DEB_TRACE()<<"Decompression duration = "<<elapsed_secs*1000<<" (ms)";			
 
         if(return_code < 0)
         {
-            if(src.depth() == 4 && depth == 2) free(dst);
+            if(src.depth() == 4 && depth == 2) 
+				free(dst);
 
             char ErrorBuff[1024];
-            snprintf(ErrorBuff,sizeof(ErrorBuff),
-            "_DecompressTask: lz4 decompression failed, (error code: %d) (data size %d)",
-            return_code,src.size());
+            snprintf(	ErrorBuff,
+						sizeof(ErrorBuff),
+						"_DecompressTask: lz4 decompression failed, (error code: %d) (data size %d)",
+						return_code,
+						src.size());
             throw ProcessException(ErrorBuff);
         }
     }
     else
     if(compression_type == Camera::CompressionType::BSLZ4)
     {
-        DEB_TRACE() << "decompression : Camera::CompressionType::BSLZ4";
-
+		clock_t begin = clock();		
         const size_t elem_size  = depth;
         // the blocksize is defined big endian uint32 starting at byte 8, divided by element size.
         const size_t block_size = __builtin_bswap32(*((unsigned long *)(((char *)(msg_data)) + 8)) / elem_size); 
         const size_t elem_nb    = size / elem_size;
 
-        DEB_TRACE() << "size       : " << src.size();
-        DEB_TRACE() << "msg_size   : " << msg_size  ;
-        DEB_TRACE() << "elem_size  : " << elem_size ;
-        DEB_TRACE() << "block_size : " << block_size;
-        DEB_TRACE() << "elem_nb    : " << elem_nb   ;
-
         // The data blob starts at bit 12
         int64_t return_code = bshuf_decompress_lz4((const char*)(((char *)msg_data) + 12),(char*)dst, elem_nb, elem_size, block_size);
+		clock_t end = clock();			
+		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+		DEB_TRACE()<<"Decompression duration = "<<elapsed_secs*1000<<" (ms)";			
+		
+//        DEB_TRACE() << "block_size : " << block_size;
+//        DEB_TRACE() << "elem_nb    : " << elem_nb   ;		
 
         if(return_code < 0) 
         {
             DEB_TRACE() << "return_code : " << return_code;
 
-            if(src.depth() == 4 && depth == 2) free(dst);
+            if(src.depth() == 4 && depth == 2) 
+				free(dst);
 
             char ErrorBuff[1024];
-            snprintf(ErrorBuff,sizeof(ErrorBuff),
-            "_DecompressTask: bslz4 decompression failed, (error code: %d) (data size %d)",
-            return_code,src.size());
+            snprintf(	ErrorBuff,
+						sizeof(ErrorBuff),
+						"_DecompressTask: bslz4 decompression failed, (error code: %d) (data size %d)",
+						return_code,
+						src.size());
             throw ProcessException(ErrorBuff);
         }
     }
@@ -143,6 +154,9 @@ Data _DecompressTask::process(Data& src)
         _expend(dst,src);
         free(dst);
     }
+	clock_t end_global = clock();	
+	double elapsed_secs_global = double(end_global - begin_global) / CLOCKS_PER_SEC;
+	DEB_TRACE()<<"Process duration = "<<elapsed_secs_global*1000<<" (ms)";	
     return src;
 }
 
