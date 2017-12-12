@@ -719,8 +719,11 @@ void Camera::_acquisition_finished(bool ok)
 
   //First we will disarm
   if(ok)
+  {
+	  DEB_TRACE()<<"Camera::_acquisition_finished() : DISARM";
     std::shared_ptr<Requests::Command> disarm = 
       m_requests->get_command(Requests::DISARM);
+  }
 
   AutoMutex lock(m_cond.mutex());
   m_trigger_state = ok ? IDLE : ERROR;
@@ -1200,6 +1203,7 @@ void Camera::deleteMemoryFiles()
 void Camera::disarm()
 {
   DEB_MEMBER_FUNCT();
+  DEB_TRACE()<<"Camera::disarm() : DISARM";
   EIGER_SYNC_CMD(Requests::DISARM);
 }
 

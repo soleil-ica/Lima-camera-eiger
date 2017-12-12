@@ -16,9 +16,9 @@
     <description>This module controls the LimaEiger Camera</description>
 	
 	<properties>
-		<!-- path to the 64 bits libs ${FL-64bits-libs} -->
-		<!-- <FL-64bits-libs>/home/informatique/ica/langlois/compil_64</FL-64bits-libs> -->
-        <FL-64bits-libs>/home/informatique/ica/langlois/binaries-backup/el6-64</FL-64bits-libs>
+		<!-- path to the 64 bits libs ${libs-64bits} -->
+		<!-- <libs-64bits>/home/informatique/ica/langlois/compil_64</libs-64bits> -->
+        <libs-64bits>/home/informatique/ica/noureddine/DeviceSources/lib-el6-64</libs-64bits>
 	</properties>
     
     <scm>
@@ -129,7 +129,7 @@
                             <includePath>include</includePath>
                             <includePath>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/include/</includePath>
                             <includePath>/home/informatique/ica/langlois/DEV/dev/lz4-r131/lib/</includePath>
-                            <includePath>${FL-64bits-libs}/zeromq-3.2.5/include/</includePath>
+                            <includePath>${libs-64bits}/zeromq-3.2.5/include/</includePath>
                         </includePaths>
                         
                     </cpp>
@@ -139,7 +139,7 @@
                             <!-- zmq 3.2.5 64 -->
                             <name>zmq</name>
                             <type>shared</type>
-                            <directory>${FL-64bits-libs}/zeromq-3.2.5/lib/</directory>
+                            <directory>${libs-64bits}/zeromq-3.2.5/lib/</directory>
                         </lib>
                         <lib>
                             <!-- lz4 131 (1.7.1) 64 -->
@@ -157,25 +157,25 @@
 							<!-- hdf5 (1.8.16) 64 -->
 							<name>hdf5</name>
 							<type>shared</type>
-							<directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
 						</lib>
 						<lib>
 							<!-- hdf5 (1.8.16) 64 -->
 							<name>hdf5_cpp</name>
 							<type>shared</type>
-							<directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
 						</lib>
 						<lib>
 							<!-- hdf5 (1.8.16) 64 -->
 							<name>hdf5_hl</name>
 							<type>shared</type>
-							<directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
 						</lib>
 						<lib>
 							<!-- hdf5 (1.8.16) 64 -->
 							<name>hdf5_hl_cpp</name>
 							<type>shared</type>
-							<directory>${FL-64bits-libs}/hdf5-1.8.16/lib</directory>
+							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
 						</lib>
 					</libs>
 				   </linker>

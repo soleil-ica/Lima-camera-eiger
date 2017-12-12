@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-${aol}-${library}-${mode}</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>
@@ -43,11 +43,19 @@
                 <artifactId>freehep-nar-plugin</artifactId>
                 <configuration>
                     <cpp>
-                        <sourceDirectory>src</sourceDirectory>
+                        <sourceDirectory>${project.basedir}</sourceDirectory>
+                        <includes>
+                            <include>src/CurlLoop.cpp</include>
+                            <include>src/Requests.cpp</include>
+                        </includes>                        
                         <includePaths>
                             <includePath>include</includePath>
                             <includePath>/usr/include/curl</includePath>
                         </includePaths>
+                        <excludes>
+                            <exclude>include/json/*</exclude>
+                            <exclude>src/jsoncpp.cpp</exclude>
+                        </excludes>                        
                         <defines>
                             <!--<define>COMPILATION_WITH_CURL</define>--> 
                         </defines>                       

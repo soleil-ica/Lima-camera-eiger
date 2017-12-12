@@ -81,21 +81,20 @@ Data _DecompressTask::process(Data& src)
         size = src.size();
     }
 
-	DEB_TRACE() << "src size\t: " << src.size();
-	DEB_TRACE() << "msg size\t: " << msg_size  ;
-	DEB_TRACE() << "depth\t: " << depth ;	
+//	DEB_TRACE() << "src size\t: " << src.size();
+//	DEB_TRACE() << "msg size\t: " << msg_size  ;
+//	DEB_TRACE() << "depth\t: " << depth ;	
 	
     // Checking the compression type
     enum Camera::CompressionType compression_type = m_stream.getCompressionType();
 
     if(compression_type == Camera::CompressionType::LZ4)
-    {
-        DEB_TRACE() << "decompression : Camera::CompressionType::LZ4";
+    {        
 		clock_t begin = clock();
 		int return_code = LZ4_decompress_fast((const char*)msg_data,(char*)dst,size);
 		clock_t end = clock();			
 		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-		DEB_TRACE()<<"elapsed_secs LZ4 only (ms)= "<<elapsed_secs*1000;			
+		DEB_TRACE()<<"Decompression duration = "<<elapsed_secs*1000<<" (ms)";			
 
         if(return_code < 0)
         {
@@ -114,8 +113,6 @@ Data _DecompressTask::process(Data& src)
     else
     if(compression_type == Camera::CompressionType::BSLZ4)
     {
-        DEB_TRACE() << "decompression : Camera::CompressionType::BSLZ4";
-
 		clock_t begin = clock();		
         const size_t elem_size  = depth;
         // the blocksize is defined big endian uint32 starting at byte 8, divided by element size.
@@ -126,10 +123,10 @@ Data _DecompressTask::process(Data& src)
         int64_t return_code = bshuf_decompress_lz4((const char*)(((char *)msg_data) + 12),(char*)dst, elem_nb, elem_size, block_size);
 		clock_t end = clock();			
 		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-		DEB_TRACE()<<"elapsed_secs BSLZ4 only (ms)= "<<elapsed_secs*1000;					
+		DEB_TRACE()<<"Decompression duration = "<<elapsed_secs*1000<<" (ms)";			
 		
-        DEB_TRACE() << "block_size : " << block_size;
-        DEB_TRACE() << "elem_nb    : " << elem_nb   ;		
+//        DEB_TRACE() << "block_size : " << block_size;
+//        DEB_TRACE() << "elem_nb    : " << elem_nb   ;		
 
         if(return_code < 0) 
         {
@@ -159,7 +156,7 @@ Data _DecompressTask::process(Data& src)
     }
 	clock_t end_global = clock();	
 	double elapsed_secs_global = double(end_global - begin_global) / CLOCKS_PER_SEC;
-	DEB_TRACE()<<"elapsed_secs global (ms)= "<<elapsed_secs_global*1000;	
+	DEB_TRACE()<<"Process duration = "<<elapsed_secs_global*1000<<" (ms)";	
     return src;
 }
 
