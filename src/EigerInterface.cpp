@@ -142,15 +142,20 @@ void Interface::getStatus(StatusType& status)
     {
       case Camera::Ready:
 	{
-	  SavingCtrlObj::Status saving_status = m_saving->getStatus();
-	  switch(saving_status)
+	  if (m_stream->isRunning())
+	    status.set(HwInterface::StatusType::Readout);
+	  else
 	    {
-	    case SavingCtrlObj::IDLE:
-	      status.set(HwInterface::StatusType::Ready);break;
-	    case SavingCtrlObj::RUNNING:
-	      status.set(HwInterface::StatusType::Readout);break;
-	    default:
-	      status.set(HwInterface::StatusType::Fault);break;
+	      SavingCtrlObj::Status saving_status = m_saving->getStatus();
+	      switch(saving_status)
+		{
+		case SavingCtrlObj::IDLE:
+		  status.set(HwInterface::StatusType::Ready);break;
+		case SavingCtrlObj::RUNNING:
+		  status.set(HwInterface::StatusType::Readout);break;
+		default:
+		  status.set(HwInterface::StatusType::Fault);break;
+		}
 	    }
 	}
         break;
@@ -174,7 +179,6 @@ void Interface::getStatus(StatusType& status)
     
     DEB_RETURN() << DEB_VAR1(status);
 }
-
 
 //-----------------------------------------------------
 // @brief return the hw number of acquired frames
