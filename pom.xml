@@ -26,7 +26,7 @@
         <dependency>
             <groupId>fr.soleil.lib</groupId>
             <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
-            <version>1.7.6</version>
+            <version>1.7.7-SNAPSHOT</version>
         </dependency>
             
         <dependency>
