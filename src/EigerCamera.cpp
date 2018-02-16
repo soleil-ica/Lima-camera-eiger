@@ -137,7 +137,8 @@ Camera::Camera(const std::string& detector_ip)	///< [in] Ip address of the detec
 		m_serie_id(0),
                 m_requests(new Requests(detector_ip)),
                 m_exp_time(1.),
-		m_detector_ip(detector_ip)
+		m_detector_ip(detector_ip),
+		m_timestamp_type("RELATIVE")
 {
     DEB_CONSTRUCTOR();
     DEB_PARAM() << DEB_VAR1(detector_ip);
@@ -1210,4 +1211,15 @@ void Camera::disarm()
 const std::string& Camera::getDetectorIp() const
 {
   return m_detector_ip;
+}
+
+
+const std::string& Camera::getTimestampType() const
+{
+  return m_timestamp_type;
+}
+
+void  Camera::setTimestampType(const std::string& timestamp)
+{
+	m_timestamp_type = timestamp;
 }

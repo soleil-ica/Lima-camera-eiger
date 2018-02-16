@@ -488,6 +488,13 @@ void Stream::_run()
 									size_t header_size = zmq_msg_size(&msg);
 								}
 #endif
+								//fix timestamp acoording to its type
+								if(m_cam.getTimestampType() == "ABSOLUTE")
+								{									
+									frame_info.frame_timestamp = Timestamp::now();
+								}
+								//else -> RELATIVE by default
+								
 								continue_flag = buffer_mgr.newFrameReady(frame_info);
 
 								m_cam.m_image_number++;

@@ -34,7 +34,7 @@
 #include "lima/HwMaxImageSizeCallback.h"
 #include "lima/ThreadUtils.h"
 #include "lima/Event.h"
-
+#include "lima/Timestamp.h"
 #include <eigerapi/EigerDefines.h>
 
 #include <ostream>
@@ -167,6 +167,9 @@ namespace lima
 			void disarm();
 
 			const std::string& getDetectorIp() const;
+            const std::string& getTimestampType() const;
+            void  setTimestampType(const std::string&);
+            
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
 			class AcqCallback;
@@ -204,6 +207,7 @@ namespace lima
 			double                    m_x_pixelsize, m_y_pixelsize;
 			Cond                      m_cond;
 			std::string               m_detector_ip;
+            std::string               m_timestamp_type;
 			double                    m_min_frame_time;
 			
 	};
