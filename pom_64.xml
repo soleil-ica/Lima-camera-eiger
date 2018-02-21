@@ -43,42 +43,12 @@
                     <version>1.7.7-SNAPSHOT</version>
                 </dependency>     
                 
-                <!-- <dependency>
-                    <groupId>net.sf.lib</groupId>
-                    <artifactId>json-${aol}-static-${mode}</artifactId>
-                    <version>0.5.0</version>
-                </dependency>   
-                
-                <dependency>
-                    <groupId>se.haxx.lib</groupId>
-                    <artifactId>curl-${aol}-static-${mode}</artifactId>
-                    <version>7.37.0</version>
-                </dependency>     
-                        
-                <dependency>
-                    <groupId>org.zeromq</groupId>
-                    <artifactId>zeromq-${aol}-shared-${mode}</artifactId>
-                    <version>4.0.6</version>
-                </dependency>     
-                    
-                <dependency>
-                    <groupId>com.google</groupId>
-                    <artifactId>lz4-${aol}-shared-${mode}</artifactId>
-                    <version>1.31</version>
-                </dependency>      -->
-
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>EigerAPI-amd64-Linux-gcc-${mode}</artifactId>
                     <version>1.0.6</version>
                 </dependency>
                 
-                <!-- <dependency>
-                    <groupId>ncsa.uiuc.edu</groupId>
-                    <artifactId>HDF5-${aol}-shared-release</artifactId>
-                    <version>1.8.13</version>
-                </dependency>    -->
-                        
             </dependencies>
         </profile>
         <profile>
@@ -127,56 +97,24 @@
                         <sourceDirectory>src</sourceDirectory>
                         <includePaths>
                             <includePath>include</includePath>
-                            <includePath>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/include/</includePath>
-                            <includePath>/home/informatique/ica/langlois/DEV/dev/lz4-r131/lib/</includePath>
+                            <includePath>${libs-64bits}/lz4-r131/lib/</includePath>
                             <includePath>${libs-64bits}/zeromq-3.2.5/include/</includePath>
-                        </includePaths>
-                        
+                        </includePaths>   
                     </cpp>
 					<linker>
 					<libs>
+                        <lib>
+                            <!-- lz4 131 (1.7.1) 64 -->
+                            <name>lz4</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/lz4-r131/lib/</directory>
+                        </lib>
                         <lib>
                             <!-- zmq 3.2.5 64 -->
                             <name>zmq</name>
                             <type>shared</type>
                             <directory>${libs-64bits}/zeromq-3.2.5/lib/</directory>
                         </lib>
-                        <lib>
-                            <!-- lz4 131 (1.7.1) 64 -->
-                            <name>lz4</name>
-                            <type>shared</type>
-                            <directory>/home/informatique/ica/langlois/DEV/dev/lz4-r131/lib/</directory>
-                        </lib>
-                        <lib>
-                            <!-- curl 7.37 64 -->
-                            <name>curl</name>
-                            <type>shared</type>
-                            <directory>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/lib/.libs</directory>
-                        </lib>
-						<lib>
-							<!-- hdf5 (1.8.16) 64 -->
-							<name>hdf5</name>
-							<type>shared</type>
-							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-						</lib>
-						<lib>
-							<!-- hdf5 (1.8.16) 64 -->
-							<name>hdf5_cpp</name>
-							<type>shared</type>
-							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-						</lib>
-						<lib>
-							<!-- hdf5 (1.8.16) 64 -->
-							<name>hdf5_hl</name>
-							<type>shared</type>
-							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-						</lib>
-						<lib>
-							<!-- hdf5 (1.8.16) 64 -->
-							<name>hdf5_hl_cpp</name>
-							<type>shared</type>
-							<directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-						</lib>
 					</libs>
 				   </linker>
                     <libraries>

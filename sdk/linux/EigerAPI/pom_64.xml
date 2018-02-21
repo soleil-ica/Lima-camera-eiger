@@ -21,26 +21,8 @@
 	</properties>
 
     <dependencies>
-        
-  <!--       <dependency>
-            <groupId>net.sf.lib</groupId>
-            <artifactId>json-${aol}-static-${mode}</artifactId>
-            <version>0.5.0</version>
-        </dependency>    -->
-        
-        <!-- <dependency>
-            <groupId>se.haxx.lib</groupId>
-            <artifactId>curl-${aol}-static-${mode}</artifactId>
-            <version>7.37.0</version>
-        </dependency>       -->
-
-        <!-- <dependency>
-            <groupId>ncsa.uiuc.edu</groupId>
-            <artifactId>HDF5-${aol}-shared-release</artifactId>
-        </dependency> -->
     </dependencies>
    
-
     <build>
         <plugins>
             <plugin>
@@ -51,7 +33,7 @@
                         <sourceDirectory>src</sourceDirectory>
                         <includePaths>
                             <includePath>include</includePath>
-                            <includePath>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/include/</includePath>
+                            <includePath>${libs-64bits}/curl-7.37.0/include/</includePath>
                         </includePaths>
                         <defines>
                             
@@ -62,31 +44,7 @@
                             <lib>
                                 <name>curl</name>
                                 <type>shared</type>
-                                <directory>/home/informatique/ica/langlois/DEV/dev/curl-7.37.0/lib/.libs</directory>
-                            </lib>
-                            <lib>
-                                <!-- hdf5 (1.8.16) 64 -->
-                                <name>hdf5</name>
-                                <type>shared</type>
-                                <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-                            </lib>
-                            <lib>
-                                <!-- hdf5 (1.8.16) 64 -->
-                                <name>hdf5_cpp</name>
-                                <type>shared</type>
-                                <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-                            </lib>
-                            <lib>
-                                <!-- hdf5 (1.8.16) 64 -->
-                                <name>hdf5_hl</name>
-                                <type>shared</type>
-                                <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
-                            </lib>
-                            <lib>
-                                <!-- hdf5 (1.8.16) 64 -->
-                                <name>hdf5_hl_cpp</name>
-                                <type>shared</type>
-                                <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
+                                <directory>${libs-64bits}/curl-7.37.0/lib/</directory>
                             </lib>
                         </libs>			
                     </linker>
