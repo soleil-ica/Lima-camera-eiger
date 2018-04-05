@@ -61,9 +61,9 @@
     </build>
 
     <scm>
-        <connection>${scm.connection.cvs.tango-ds}:Libraries/EigerCPP</connection>
-        <developerConnection>${scm.developerConnection.cvs.tango-ds}:Libraries/EigerCPP</developerConnection>
-        <url>${scm.url.cvs.tango-ds}/Libraries/EigerCPP</url>
+        <connection>scm:git:git://github.com/soleil-ica/Lima-camera-eiger.git</connection>
+        <developerConnection>scm:git:git://github.com/soleil-ica/Lima-camera-eiger.git</developerConnection>
+        <url>https://github.com/soleil-ica/Lima-camera-eiger</url>
     </scm>
    
     <developers>

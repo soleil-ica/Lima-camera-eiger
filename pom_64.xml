@@ -51,40 +51,6 @@
                 
             </dependencies>
         </profile>
-        <profile>
-            <id>Lima_windows</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>fr.soleil.lib</groupId>
-                    <artifactId>LimaCore-${aol}-shared-${mode}</artifactId>
-                    <version>1.5.5</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>fr.soleil.lib</groupId>
-                    <artifactId>NexusCPP-${aol}-static-${mode}</artifactId>
-                    <version>3.0.7-vc9</version>
-                </dependency>
-                        
-                <dependency>
-                    <groupId>fr.soleil.lib</groupId>
-                    <artifactId>YAT-${aol}-static-${mode}</artifactId>
-                    <version>1.10.1-vc9</version>
-                </dependency>
-                    
-                <dependency>
-                    <groupId>ncsa.uiuc.edu</groupId>
-                    <artifactId>HDF5-${aol}-shared-release</artifactId>
-                    <version>1.8.13-vc9</version>
-                </dependency>    
-                            
-            </dependencies>
-        </profile>
     </profiles>
     
     <build>
@@ -99,7 +65,7 @@
                             <includePath>include</includePath>
                             <includePath>${libs-64bits}/lz4-r131/lib/</includePath>
                             <includePath>${libs-64bits}/zeromq-3.2.5/include/</includePath>
-                        </includePaths>   
+                        </includePaths>  
                     </cpp>
 					<linker>
 					<libs>
