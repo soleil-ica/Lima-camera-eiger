@@ -15,72 +15,139 @@
     <name>EigerAPI</name>
     <description>Eiger detector control library</description>
 
-    <dependencies>
+    <profiles>
+        <profile>
+            <id>linux_32</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>                
+                <property>
+                    <name>env</name>
+                    <value>linux_32</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.lib</groupId>
+                    <artifactId>json-${aol}-static-${mode}</artifactId>
+                    <version>0.5.0</version>
+                </dependency>   
         
-        <dependency>
-            <groupId>net.sf.lib</groupId>
-            <artifactId>json-${aol}-static-${mode}</artifactId>
-            <version>0.5.0</version>
-        </dependency>   
-        
-        <dependency>
-            <groupId>se.haxx.lib</groupId>
-            <artifactId>curl-${aol}-static-${mode}</artifactId>
-            <version>7.37.0</version>
-        </dependency>      
+                <dependency>
+                    <groupId>se.haxx.lib</groupId>
+                    <artifactId>curl-${aol}-static-${mode}</artifactId>
+                    <version>7.37.0</version>
+                </dependency>      
 
-        <dependency>
-            <groupId>ncsa.uiuc.edu</groupId>
-            <artifactId>HDF5-${aol}-shared-release</artifactId>
-        </dependency>
-    </dependencies>
-   
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.freehep</groupId>
-                <artifactId>freehep-nar-plugin</artifactId>
-                <configuration>
-                    <cpp>
-                        <sourceDirectory>${project.basedir}</sourceDirectory>
-                        <includes>
-                            <include>src/CurlLoop.cpp</include>
-                            <include>src/Requests.cpp</include>
-                        </includes>                        
-                        <includePaths>
-                            <includePath>include</includePath>
-                            <includePath>/usr/include/curl</includePath>
-                        </includePaths>
-                        <excludes>
-                            <exclude>include/json/*</exclude>
-                            <exclude>src/jsoncpp.cpp</exclude>
-                        </excludes>                        
-                        <defines>
-                            <!--<define>COMPILATION_WITH_CURL</define>--> 
-                        </defines>                       
-                    </cpp>
-<!--                    <linker>
-                        <libs>
-                            <lib>
-                                <name>curl</name>
-                                <type>shared</type>
-                                <directory>/usr/lib</directory>
-                            </lib>
-                        </libs>			
-                    </linker>-->
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>fr.soleil.maven.plugins</groupId>
-                <artifactId>maven-check-plugin</artifactId>
-                <configuration>
-                    <enable>false</enable>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
+                <dependency>
+                    <groupId>ncsa.uiuc.edu</groupId>
+                    <artifactId>HDF5-${aol}-shared-release</artifactId>
+                </dependency>
+            </dependencies>
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.freehep</groupId>
+                        <artifactId>freehep-nar-plugin</artifactId>
+                        <configuration>
+                            <cpp>
+                                <sourceDirectory>${project.basedir}</sourceDirectory>
+                                <includes>
+                                    <include>src/CurlLoop.cpp</include>
+                                    <include>src/Requests.cpp</include>
+                                </includes>                        
+                                <includePaths>
+                                    <includePath>include</includePath>
+                                    <includePath>/usr/include/curl</includePath>
+                                </includePaths>
+                                <excludes>
+                                    <exclude>include/json/*</exclude>
+                                    <exclude>src/jsoncpp.cpp</exclude>
+                                </excludes>                        
+                                <defines>
+                                    <!--<define>COMPILATION_WITH_CURL</define>--> 
+                                </defines>                       
+                            </cpp>
+                            <!--                    <linker>
+                                <libs>
+                                    <lib>
+                                        <name>curl</name>
+                                        <type>shared</type>
+                                        <directory>/usr/lib</directory>
+                                    </lib>
+                                </libs>			
+                            </linker>-->
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>fr.soleil.maven.plugins</groupId>
+                        <artifactId>maven-check-plugin</artifactId>
+                        <configuration>
+                            <enable>false</enable>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+                
+        </profile>
+       
+        <profile>
+            <id>linux_64</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>                
+                <property>
+                    <name>env</name>
+                    <value>linux_64</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- path to the 64 bits libs ${libs-64bits} -->
+                <libs-64bits>/home/informatique/ica/noureddine/DeviceSources/lib-el6-64</libs-64bits>
+            </properties>
+                
+            <!-- LimaProcesslib -->
+            <dependencies>            
+            </dependencies>    
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.freehep</groupId>
+                        <artifactId>freehep-nar-plugin</artifactId>
+                        <configuration>
+                            <cpp>
+                                <sourceDirectory>src</sourceDirectory>
+                                <includePaths>
+                                    <includePath>include</includePath>
+                                    <includePath>${libs-64bits}/curl-7.37.0/include/</includePath>
+                                </includePaths>
+                                <defines>
+                            
+                                </defines>                       
+                            </cpp>
+                            <linker>
+                                <libs>
+                                    <lib>
+                                        <name>curl</name>
+                                        <type>shared</type>
+                                        <directory>${libs-64bits}/curl-7.37.0/lib/</directory>
+                                    </lib>
+                                </libs>			
+                            </linker>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>fr.soleil.maven.plugins</groupId>
+                        <artifactId>maven-check-plugin</artifactId>
+                        <configuration>
+                            <enable>false</enable>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>  
+        </profile>
+    </profiles>
+                
     <scm>
         <connection>${scm.connection.cvs.tango-ds}:Libraries/EigerCPP</connection>
         <developerConnection>${scm.developerConnection.cvs.tango-ds}:Libraries/EigerCPP</developerConnection>
