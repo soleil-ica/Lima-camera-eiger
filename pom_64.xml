@@ -46,7 +46,7 @@
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>EigerAPI-amd64-Linux-gcc-${mode}</artifactId>
-                    <version>1.0.6</version>
+                    <version>1.0.7</version>
                 </dependency>
                 
             </dependencies>
@@ -88,24 +88,6 @@
                             <type>shared</type>
                         </library>
                     </libraries>
-                    <specificConfigurations>
-                        <specificConfiguration>
-                            <id>win32 platform</id>
-                            <activation>
-                                <os>Windows</os>
-                            </activation>
-                            <cpp>
-                                <defines>
-                                    <define>LIBSIMULATOR_EXPORTS</define>
-                                    <define>WIN32</define>
-                                    <define>NDEBUG</define>
-                                    <define>_WINDOWS</define>
-                                    <define>_USRDLL</define>
-                                    <define>_WIN32_WINNT=0x0502</define> <!-- For Windows XP Support -->
-                                </defines>
-                            </cpp>
-                        </specificConfiguration>
-                    </specificConfigurations>
                 </configuration>
             </plugin>
             <plugin>

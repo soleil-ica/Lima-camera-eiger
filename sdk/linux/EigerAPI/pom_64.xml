@@ -9,7 +9,7 @@
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-amd64-Linux-gcc-${mode}</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>
