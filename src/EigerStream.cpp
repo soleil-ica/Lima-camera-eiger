@@ -504,6 +504,9 @@ void Stream::_run()
 								{
 									DEB_TRACE()<< "Stream::_run() : disarm()";
 									m_cam.disarm();
+									//in order to finish & deconnect correctly the zmq
+									//because le message "dseries_end-" is received later in the next startAcq !!
+									continue_flag = false;
 								}
 							}
 							else if (htype.find("dseries_end-") != std::string::npos)
