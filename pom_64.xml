@@ -9,7 +9,7 @@
 
     <groupId>fr.soleil.lib.Lima.Camera</groupId>
     <artifactId>LimaEiger-amd64-Linux-gcc-shared-${mode}</artifactId>
-    <version>2.1.5</version>
+    <version>2.1.7</version>
 
     <packaging>nar</packaging>
     <name>LimaEiger</name>
@@ -40,7 +40,7 @@
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>LimaCore-amd64-Linux-gcc-shared-${mode}</artifactId>
-                    <version>1.7.7-SNAPSHOT</version>
+                    <version>1.7.7</version>
                 </dependency>     
                 
                 <dependency>

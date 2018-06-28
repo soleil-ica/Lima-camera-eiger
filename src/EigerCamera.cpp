@@ -1157,6 +1157,7 @@ void Camera::getSoftwareVersion(std::string& value) ///< [out]
 }
             
 //-----------------------------------------------------------------------------
+//- Compression getter (only for FileWriter mode)
 //-----------------------------------------------------------------------------
 void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled
 {
@@ -1166,6 +1167,7 @@ void Camera::getCompression(bool& value) ///< [out] true:enabled, false:disabled
 
 
 //-----------------------------------------------------------------------------
+//- Compression setter (only for FileWriter mode)
 //-----------------------------------------------------------------------------
 void Camera::setCompression(bool value)
 {
@@ -1173,6 +1175,9 @@ void Camera::setCompression(bool value)
   EIGER_SYNC_SET_PARAM(Requests::FILEWRITER_COMPRESSION,value);
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void Camera::getCompressionType(Camera::CompressionType& type) const
 {
   DEB_MEMBER_FUNCT();
@@ -1182,12 +1187,19 @@ void Camera::getCompressionType(Camera::CompressionType& type) const
   type = compression_type == "lz4" ? LZ4 : BSLZ4;
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void Camera::setCompressionType(Camera::CompressionType type)
 {
   DEB_MEMBER_FUNCT();
   EIGER_SYNC_SET_PARAM(Requests::COMPRESSION_TYPE,
 		       type == LZ4 ? "lz4" : "bslz4");
 }
+
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void Camera::getSerieId(int& serie_id)
 {
   DEB_MEMBER_FUNCT();
@@ -1195,12 +1207,18 @@ void Camera::getSerieId(int& serie_id)
   DEB_RETURN() << DEB_VAR1(serie_id);
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void Camera::deleteMemoryFiles()
 {
   DEB_MEMBER_FUNCT();
   EIGER_SYNC_CMD(Requests::FILEWRITER_CLEAR);
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void Camera::disarm()
 {
   DEB_MEMBER_FUNCT();
@@ -1208,17 +1226,25 @@ void Camera::disarm()
   EIGER_SYNC_CMD(Requests::DISARM);
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 const std::string& Camera::getDetectorIp() const
 {
   return m_detector_ip;
 }
 
-
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 const std::string& Camera::getTimestampType() const
 {
   return m_timestamp_type;
 }
 
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
 void  Camera::setTimestampType(const std::string& timestamp)
 {
 	m_timestamp_type = timestamp;
