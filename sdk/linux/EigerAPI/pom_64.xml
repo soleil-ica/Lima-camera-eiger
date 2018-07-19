@@ -17,7 +17,7 @@
     
     <properties>
 		<!-- path to the 64 bits libs ${libs-64bits} -->
-		<libs-64bits>/home/informatique/ica/noureddine/DeviceSources/lib-el6-64</libs-64bits>
+		<libs-64bits>/home/informatique/ica/ica/LIB_EL6_64</libs-64bits>
 	</properties>
 
     <dependencies>
