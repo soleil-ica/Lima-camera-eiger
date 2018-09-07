@@ -1249,3 +1249,12 @@ void  Camera::setTimestampType(const std::string& timestamp)
 {
 	m_timestamp_type = timestamp;
 }
+
+//-----------------------------------------------------------------------------
+///  getDetectorReadoutTime getter
+//-----------------------------------------------------------------------------
+void Camera::getDetectorReadoutTime(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::DETECTOR_READOUT_TIME,value);
+}

@@ -170,6 +170,9 @@ namespace lima
             const std::string& getTimestampType() const;
             void  setTimestampType(const std::string&);
             
+            void getDetectorReadoutTime(double&);
+            
+            
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
 			class AcqCallback;
