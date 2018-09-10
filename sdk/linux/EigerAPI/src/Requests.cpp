@@ -180,6 +180,8 @@ ParamIndex ParamDescription[] = {
   {Requests::HEADER_WAVELENGTH,			{"wavelength"}},
   // Compression
   {Requests::COMPRESSION_TYPE,			{"compression"}},
+  // roi
+  {Requests::ROI_MODE,			{"roi_mode"}},
 };
 
 const char* get_param_name(Requests::PARAM_NAME param_name)

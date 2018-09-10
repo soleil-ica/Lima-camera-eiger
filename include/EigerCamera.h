@@ -171,7 +171,8 @@ namespace lima
             void  setTimestampType(const std::string&);
             
             void getDetectorReadoutTime(double&);
-            
+            void setRoiMode(const std::string&);
+            void getRoiMode(std::string&);
             
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
