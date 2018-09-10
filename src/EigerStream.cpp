@@ -512,7 +512,7 @@ void Stream::_run()
 							else if (htype.find("dseries_end-") != std::string::npos)
 							{
 								//useless , done previously , anyway the zmq msg "dseries_end-" is never received ! we don't know why ?
-								continue_flag = false;
+								//continue_flag = false;
 							}
 						}
 					}
