@@ -62,6 +62,7 @@ namespace lima
     
 		//! get the camera object to access it directly from client
 		Camera& getCamera() { return m_cam;}
+		void setDownloadDataFile(bool must_download);
 
 	private:
 	    Camera&         m_cam;
@@ -69,7 +70,7 @@ namespace lima
 	    DetInfoCtrlObj* m_det_info;
 	    SyncCtrlObj*    m_sync;
 	    SavingCtrlObj*  m_saving;
-	    Stream*	    m_stream;
+	    Stream*         m_stream;
 	    Decompress*	    m_decompress;
 	};
 

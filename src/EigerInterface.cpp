@@ -187,3 +187,12 @@ int Interface::getNbHwAcquiredFrames()
      return acq_frames;
 }
 
+//-----------------------------------------------------
+// @brief enable/disable downloading data files
+//-----------------------------------------------------
+void Interface::setDownloadDataFile(bool must_download)
+{
+    DEB_MEMBER_FUNCT();
+    m_saving->setDownloadDataFile(must_download);
+}
+
