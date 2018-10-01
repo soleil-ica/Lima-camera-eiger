@@ -188,7 +188,7 @@ void SavingCtrlObj::_setActive(bool active, int stream_idx)
 	std::shared_ptr<Requests::Param> active_req =
 	 m_cam.m_requests->set_param(Requests::FILEWRITER_MODE,
 								 active_str);
-	DEB_TRACE() << "FILEWRITER_MODE:" << DEB_VAR1(active_str);
+	DEB_TRACE() << "FILEWRITER_MODE: " << DEB_VAR1(active_str);
 	active_req->wait();
 }
 
@@ -200,11 +200,11 @@ void SavingCtrlObj::_prepare(int stream_idx)
 	std::shared_ptr<Requests::Param> nb_image_per_file_req =
 	 m_cam.m_requests->set_param(Requests::NIMAGES_PER_FILE,
 								 frames_per_file);
-	DEB_TRACE() << "NIMAGES_PER_FILE:" << DEB_VAR1(frames_per_file);
+	DEB_TRACE() << "NIMAGES_PER_FILE: " << DEB_VAR1(frames_per_file);
 
 	std::shared_ptr<Requests::Param> name_pattern_req =
 	 m_cam.m_requests->set_param(Requests::FILEWRITER_NAME_PATTERN, m_prefix);
-	DEB_TRACE() << "FILEWRITER_NAME_PATTERN" << DEB_VAR1(m_prefix);
+	DEB_TRACE() << "FILEWRITER_NAME_PATTERN: " << DEB_VAR1(m_prefix);
 
 	nb_image_per_file_req->wait(), name_pattern_req->wait();
 

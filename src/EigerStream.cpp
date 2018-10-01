@@ -249,13 +249,13 @@ void Stream::setActive(bool active)
 
       std::shared_ptr<Requests::Param> header_detail_req = 
 	m_cam.m_requests->set_param(Requests::STREAM_HEADER_DETAIL,header_detail_str);
-      DEB_TRACE() << "STREAM_HEADER_DETAIL:" << DEB_VAR1(header_detail_str);
+      DEB_TRACE() << "STREAM_HEADER_DETAIL: " << DEB_VAR1(header_detail_str);
       header_detail_req->wait();
 
       const char* active_str = active ? "enabled" : "disabled";
       std::shared_ptr<Requests::Param> active_req = 
 	m_cam.m_requests->set_param(Requests::STREAM_MODE,active_str);
-      DEB_TRACE() << "STREAM_MODE:" << DEB_VAR1(active_str);
+      DEB_TRACE() << "STREAM_MODE: " << DEB_VAR1(active_str);
       active_req->wait();
     }
   m_active = active,m_dirty_flag = false;
@@ -528,7 +528,7 @@ void Stream::_run()
 		}
 
 		if (stream_socket) zmq_close(stream_socket);
-		DEB_TRACE() << "disconnected from " << stream_endpoint;
+		DEB_TRACE() << "disconnected from: " << stream_endpoint;
 		aLock.lock();
 		m_wait = true;
 	}
