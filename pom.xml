@@ -10,7 +10,7 @@
 
     <groupId>fr.soleil.lib.Lima.Camera</groupId>
     <artifactId>LimaEiger-${aol}-shared-${mode}</artifactId>
-    <version>2.1.7</version>
+    <version>2.1.8</version>
 
     <packaging>nar</packaging>
     <name>LimaEiger</name>
@@ -125,8 +125,7 @@
             </activation>
             <properties>
                 <!-- path to the 64 bits libs -->
-                <!-- <libs-64bits>/home/informatique/ica/langlois/compil_64</libs-64bits> -->
-                <libs-64bits>/home/informatique/ica/noureddine/DeviceSources/lib-el6-64</libs-64bits>
+                <libs-64bits>/home/informatique/ica/ica/LIB_EL6_64</libs-64bits>
             </properties>
                 
             <!-- LimaProcesslib -->
