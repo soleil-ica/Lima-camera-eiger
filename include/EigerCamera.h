@@ -165,6 +165,7 @@ namespace lima
 			void getSerieId(int&);
 			void deleteMemoryFiles();
 			void disarm();
+            void statusUpdate();
 
 			const std::string& getDetectorIp() const;
             const std::string& getTimestampType() const;

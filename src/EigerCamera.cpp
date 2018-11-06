@@ -297,6 +297,14 @@ void Camera::stopAcq()
   EIGER_SYNC_CMD(Requests::ABORT);
 }
 
+//-----------------------------------------------------------------------------
+/// update detector status(temperature/humidity)
+//-----------------------------------------------------------------------------
+void Camera::statusUpdate()
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_CMD(Requests::STATUS_UPDATE);
+}
 
 //-----------------------------------------------------------------------------
 /// return the detector Max image size 
