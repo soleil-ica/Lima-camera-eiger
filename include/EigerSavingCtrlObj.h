@@ -27,47 +27,54 @@
 
 namespace lima
 {
-  namespace Eiger
-  {
-    class SavingCtrlObj : public HwSavingCtrlObj
+namespace Eiger
+{
+
+class SavingCtrlObj : public HwSavingCtrlObj
+{
+    DEB_CLASS_NAMESPC(DebModCamera, "SavingCtrlObj", "Eiger");
+public:
+
+    enum Status
     {
-      DEB_CLASS_NAMESPC(DebModCamera,"SavingCtrlObj", "Eiger");
-    public:
-      enum Status {IDLE,RUNNING,ERROR};
-      SavingCtrlObj(Camera&);
-      virtual ~SavingCtrlObj();
+        IDLE, RUNNING, ERROR
+    } ;
+    SavingCtrlObj(Camera&);
+    virtual ~SavingCtrlObj();
 
-      virtual void getPossibleSaveFormat(std::list<std::string> &format_list) const;
+    virtual void getPossibleSaveFormat(std::list<std::string> &format_list) const;
 
-      virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
-      virtual void resetCommonHeader();
-      
-      void setSerieId(int value);
-      Status getStatus();
-      void stop();
-    protected:
-      class _PollingThread;
-      friend class _PollingThread;
-      class _EndDownloadCallback;
-      friend class _EndDownloadCallback;
+    virtual void setCommonHeader(const HwSavingCtrlObj::HeaderMap&);
+    virtual void resetCommonHeader();
 
-      virtual void _prepare(int=0);
-      virtual void _start(int=0);
-      virtual void _setActive(bool,int=0);
+    void setSerieId(int value);
+    Status getStatus();
+    void stop();
+	void setDownloadDataFile(bool must_download);    
+protected:
+    class _PollingThread;
+    friend class _PollingThread;
+    class _EndDownloadCallback;
+    friend class _EndDownloadCallback;
 
-      Camera&			m_cam;
-      int			m_serie_id;
-      int			m_nb_file_to_watch;
-      int			m_nb_file_transfer_started;
-      int			m_concurrent_download;
-      bool			m_poll_master_file;
-      double			m_waiting_time;
-      std::string		m_error_msg;
-      //Synchro
-      Cond			m_cond;
-      bool			m_quit;
-      _PollingThread*		m_polling_thread;
-      std::map<std::string,int>	m_availables_header_keys;
-    };
-  }
+    virtual void _prepare(int = 0);
+    virtual void _start(int = 0);
+    virtual void _setActive(bool, int = 0);
+
+    Camera&			m_cam;
+    int             m_serie_id;
+    int             m_nb_file_to_watch;
+    int             m_nb_file_transfer_started;
+    int             m_concurrent_download;
+    bool			m_poll_master_file;
+    bool            m_must_download_data_file;
+    double			m_waiting_time;
+    std::string		m_error_msg;
+    //Synchro
+    Cond			m_cond;
+    bool			m_quit;
+    _PollingThread*		m_polling_thread;
+    std::map<std::string, int>	m_availables_header_keys;
+} ;
+}
 }

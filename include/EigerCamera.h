@@ -165,10 +165,15 @@ namespace lima
 			void getSerieId(int&);
 			void deleteMemoryFiles();
 			void disarm();
+            void statusUpdate();
 
 			const std::string& getDetectorIp() const;
             const std::string& getTimestampType() const;
             void  setTimestampType(const std::string&);
+            
+            void getDetectorReadoutTime(double&);
+            void setRoiMode(const std::string&);
+            void getRoiMode(std::string&);
             
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};

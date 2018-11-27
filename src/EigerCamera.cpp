@@ -297,6 +297,14 @@ void Camera::stopAcq()
   EIGER_SYNC_CMD(Requests::ABORT);
 }
 
+//-----------------------------------------------------------------------------
+/// update detector status(temperature/humidity)
+//-----------------------------------------------------------------------------
+void Camera::statusUpdate()
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_CMD(Requests::STATUS_UPDATE);
+}
 
 //-----------------------------------------------------------------------------
 /// return the detector Max image size 
@@ -1248,4 +1256,34 @@ const std::string& Camera::getTimestampType() const
 void  Camera::setTimestampType(const std::string& timestamp)
 {
 	m_timestamp_type = timestamp;
+}
+
+//-----------------------------------------------------------------------------
+///  getDetectorReadoutTime getter
+//-----------------------------------------------------------------------------
+void Camera::getDetectorReadoutTime(double& value) ///< [out] 
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_GET_PARAM(Requests::DETECTOR_READOUT_TIME,value);
+}
+
+//-----------------------------------------------------------------------------
+///  setRoiMode getter
+//-----------------------------------------------------------------------------
+void Camera::setRoiMode(const std::string& value)
+{
+  DEB_MEMBER_FUNCT();
+  EIGER_SYNC_SET_PARAM(Requests::ROI_MODE, value);	
+}
+
+//-----------------------------------------------------------------------------
+///  getRoiMode getter
+//-----------------------------------------------------------------------------
+void Camera::getRoiMode(std::string& value)
+{
+  DEB_MEMBER_FUNCT();	
+  std::string mode;
+  EIGER_SYNC_GET_PARAM(Requests::ROI_MODE, mode);
+  DEB_RETURN() << DEB_VAR1(mode);
+  value = mode;
 }

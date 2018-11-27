@@ -117,8 +117,7 @@ namespace eigerapi
       void*	m_buffer;
     };
 
-    enum COMMAND_NAME {INITIALIZE,ARM, DISARM,TRIGGER,CANCEL,ABORT,
-		       FILEWRITER_CLEAR};
+    enum COMMAND_NAME {INITIALIZE,ARM, DISARM,TRIGGER,CANCEL,ABORT,STATUS_UPDATE, FILEWRITER_CLEAR};
     enum PARAM_NAME {TEMP,
 		     HUMIDITY,
 		     DETECTOR_STATUS,
@@ -169,6 +168,7 @@ namespace eigerapi
 		     HEADER_PHI_START,
 		     HEADER_WAVELENGTH,
 		     COMPRESSION_TYPE,
+             ROI_MODE,
     };
 
     Requests(const std::string& address);
