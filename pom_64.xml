@@ -13,7 +13,7 @@
 
     <packaging>nar</packaging>
     <name>LimaEiger</name>
-    <description>This module controls the LimaEiger Camera</description>
+    <description>This module controls the Dectris Eiger Camera</description>
 	
 	<properties>
 		<!-- path to the 64 bits libs ${libs-64bits} -->
