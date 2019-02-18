@@ -174,7 +174,12 @@ namespace lima
             void getDetectorReadoutTime(double&);
             void setRoiMode(const std::string&);
             void getRoiMode(std::string&);
-            
+
+            void setNbTriggers(int nb_triggers);
+            void getNbTriggers(int& nb_triggers);
+            void setNbFramesPerTrigger(int nb_frames_per_trigger);
+            void getNbFramesPerTrigger(int& nb_frames_per_trigger);
+
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
 			class AcqCallback;
@@ -188,6 +193,8 @@ namespace lima
 			//- lima stuff
 			int                       m_nb_frames;
 			int                       m_image_number;
+            int                       m_nb_triggers;
+            int                       m_nb_frames_per_trigger;
 			double                    m_latency_time;
 			TrigMode                  m_trig_mode;
 

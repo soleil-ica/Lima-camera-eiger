@@ -162,7 +162,9 @@ Camera::Camera(const std::string& detector_ip)	///< [in] Ip address of the detec
     // --- Set detector for software single image mode    
     setTrigMode(IntTrig);
 
-    m_nb_frames = 1;
+	m_nb_frames = 1;
+	m_nb_triggers = 1;
+	m_nb_frames_per_trigger = 1;
 
 }
 
@@ -205,18 +207,24 @@ void Camera::prepareAcq()
   
   int nb_frames;
   unsigned nb_trigger;
+  unsigned nb_frames_per_trigger;
   switch(m_trig_mode)
     {
     case IntTrig:
     case ExtTrigSingle:
-      nb_frames = m_nb_frames,nb_trigger = 1;break;
+		nb_trigger = m_nb_triggers;
+		nb_frames_per_trigger = m_nb_frames_per_trigger;
+	  break;
     case IntTrigMult:
     case ExtTrigMult:
     case ExtGate:
-      nb_frames = 1,nb_trigger = m_nb_frames;break;
+		nb_trigger = m_nb_frames;		
+		nb_frames_per_trigger = 1;
+	  break;
     default:
-      THROW_HW_ERROR(Error) << "Very weird can't be in this case";
+		THROW_HW_ERROR(Error) << "Very weird can't be in this case";
     }
+  
   double frame_time = m_exp_time + m_latency_time;
   if(frame_time < m_min_frame_time)
     {    
@@ -226,13 +234,16 @@ void Camera::prepareAcq()
 	THROW_HW_ERROR(Error) << "This detector can't go at this frame rate (" << 1 / frame_time
 			      << ") is limited to (" << 1 / m_min_frame_time << ")";
     }
-  DEB_PARAM() << DEB_VAR1(frame_time);
-  std::shared_ptr<Requests::Param> frame_time_req=
-    m_requests->set_param(Requests::FRAME_TIME,frame_time);
-  std::shared_ptr<Requests::Param> nimages_req =
-    m_requests->set_param(Requests::NIMAGES,nb_frames);
-  std::shared_ptr<Requests::Param> ntrigger_req =
-    m_requests->set_param(Requests::NTRIGGER,nb_trigger);
+
+	DEB_PARAM() << DEB_VAR1(frame_time);
+	DEB_TRACE()<<"m_trig_mode = "<<m_trig_mode;
+	DEB_TRACE()<<"frame_time = "<<frame_time;
+	DEB_TRACE()<<"nb_trigger = "<<nb_trigger;
+	DEB_TRACE()<<"nb_frames_per_trigger = "<<nb_frames_per_trigger;
+	
+  std::shared_ptr<Requests::Param> frame_time_req = m_requests->set_param(Requests::FRAME_TIME,frame_time);
+  std::shared_ptr<Requests::Param> nimages_req	= m_requests->set_param(Requests::NIMAGES,nb_frames_per_trigger);
+  std::shared_ptr<Requests::Param> ntrigger_req	= m_requests->set_param(Requests::NTRIGGER,nb_trigger);
 
   try
     {
@@ -273,8 +284,7 @@ void Camera::startAcq()
   AutoMutex lock(m_cond.mutex());
 
 
-  if(m_trig_mode == IntTrig ||
-     m_trig_mode == IntTrigMult)
+  if(m_trig_mode == IntTrig || m_trig_mode == IntTrigMult)
     {
       std::shared_ptr<Requests::Command> trigger =
 	m_requests->get_command(Requests::TRIGGER);
@@ -413,19 +423,31 @@ void Camera::setTrigMode(TrigMode trig_mode) ///< [in] lima trigger mode to set
   switch(trig_mode)
     {
     case IntTrig:
+		trig_name = "ints";
+		m_trig_mode = IntTrig;
+	break;	  
     case IntTrigMult:
-      trig_name = "ints";break;
+		trig_name = "ints";
+		m_trig_mode = IntTrigMult;
+	break;
     case ExtTrigSingle:
+		trig_name = "exts";
+		m_trig_mode = ExtTrigSingle;
+break;
     case ExtTrigMult:
-      trig_name = "exts";break;
+		trig_name = "exts";
+		m_trig_mode = ExtTrigMult;
+	break;
     case ExtGate:
-      trig_name = "exte";break;
+		trig_name = "exte";
+		m_trig_mode = ExtGate;
+	break;
     default:
       THROW_HW_ERROR(NotSupported) << DEB_VAR1(trig_mode);
     }
   
   EIGER_SYNC_SET_PARAM(Requests::TRIGGER_MODE,trig_name);
-  m_trig_mode = trig_mode;
+  
 }
 
 
@@ -568,6 +590,50 @@ void Camera::getNbFrames(int& nb_frames) ///< [out] current number of frames to 
   DEB_RETURN() << DEB_VAR1(nb_frames);
 }
 
+//-----------------------------------------------------------------------------
+/// Set the number of triggers to be taken
+//-----------------------------------------------------------------------------
+void Camera::setNbTriggers(int nb_triggers) ///< [in] number of triggers to take
+{
+    DEB_MEMBER_FUNCT();
+    DEB_PARAM() << DEB_VAR1(nb_triggers);
+
+    m_nb_triggers = nb_triggers;
+}
+
+
+//-----------------------------------------------------------------------------
+/// Get the number of triggers to be taken
+//-----------------------------------------------------------------------------
+void Camera::getNbTriggers(int& nb_triggers) ///< [out] current number of triggers to take
+{
+  DEB_MEMBER_FUNCT();
+  nb_triggers = m_nb_triggers;
+  DEB_RETURN() << DEB_VAR1(nb_triggers);
+}
+
+//-----------------------------------------------------------------------------
+/// Set the number of Frames Per Trigger to be taken
+//-----------------------------------------------------------------------------
+void Camera::setNbFramesPerTrigger(int nb_frames_per_trigger) ///< [in] number of frames per trigger to take
+{
+    DEB_MEMBER_FUNCT();
+    DEB_PARAM() << DEB_VAR1(nb_frames_per_trigger);
+
+
+    m_nb_frames_per_trigger = nb_frames_per_trigger;
+}
+
+
+//-----------------------------------------------------------------------------
+/// Get the number of Frames Per Trigger to be taken
+//-----------------------------------------------------------------------------
+void Camera::getNbFramesPerTrigger(int& nb_frames_per_trigger) ///< [out] current number of frames per trigger to take
+{
+  DEB_MEMBER_FUNCT();
+  nb_frames_per_trigger = m_nb_frames_per_trigger;
+  DEB_RETURN() << DEB_VAR1(nb_frames_per_trigger);
+}
 
 //-----------------------------------------------------------------------------
 /// Get the current acquired frames
@@ -680,8 +746,7 @@ void Camera::initialiseController()
   synchro_list.push_back(frame_time_req);
 
   bool auto_summation;
-  synchro_list.push_back(m_requests->get_param(Requests::AUTO_SUMMATION,
-					       auto_summation));
+  synchro_list.push_back(m_requests->get_param(Requests::AUTO_SUMMATION,auto_summation));
   
   synchro_list.push_back(m_requests->get_param(Requests::SOFTWARE_VERSION,m_software_version));
 
@@ -705,13 +770,21 @@ void Camera::initialiseController()
 
   //Trigger mode
   if(trig_name == "ints")
-    m_trig_mode = nb_trigger > 1 ? IntTrigMult : IntTrig;
+  {
+	////m_trig_mode = nb_trigger > 1 ? IntTrigMult : IntTrig;
+  }
   else if(trig_name == "exts")
-    m_trig_mode = nb_trigger > 1 ? ExtTrigMult : ExtTrigSingle;
+  {
+	////m_trig_mode = nb_trigger > 1 ? ExtTrigMult : ExtTrigSingle;
+  }
   else if(trig_name == "exte")
-    m_trig_mode = ExtGate;
+  {
+	////m_trig_mode = ExtGate;
+  }
   else
+  {
     THROW_HW_ERROR(InvalidValue) << "Unexpected trigger mode: " << DEB_VAR1(trig_name);
+  }
   
   Requests::Param::Value min_frame_time = frame_time_req->get_min();
   m_min_frame_time = min_frame_time.data.double_val;
@@ -1272,8 +1345,10 @@ void Camera::getDetectorReadoutTime(double& value) ///< [out]
 //-----------------------------------------------------------------------------
 void Camera::setRoiMode(const std::string& value)
 {
-  DEB_MEMBER_FUNCT();
-  EIGER_SYNC_SET_PARAM(Requests::ROI_MODE, value);	
+	DEB_MEMBER_FUNCT();
+	EIGER_SYNC_SET_PARAM(Requests::ROI_MODE, value);	
+	//update min_frame_time/detector_read_out/etc... at each RoiMode changement
+	initialiseController();
 }
 
 //-----------------------------------------------------------------------------
