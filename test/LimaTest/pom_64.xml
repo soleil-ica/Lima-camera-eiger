@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fr.soleil</groupId>
+        <artifactId>super-pom-C-CPP-device</artifactId>
+        <version>20.2.0-64</version>
+    </parent>
+  
+    <groupId>fr.soleil.device</groupId>
+    <artifactId>TestLimaEiger-amd64-Linux-gcc-shared-${mode}</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  
+    <packaging>nar</packaging>
+    <name>TestLimaEiger</name>
+    <description>TestLimaEiger main</description>
+    
+    <properties>
+		<!-- path to the 64 bits libs -->
+        <libs-64bits>/home/informatique/ica/ica/LIB_EL6_64</libs-64bits>
+	</properties>
+        
+    <dependencies>    
+		<dependency>
+			<groupId>fr.soleil.lib</groupId>
+			<artifactId>LimaCore-amd64-Linux-gcc-shared-${mode}</artifactId>
+			<version>1.7.9</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.soleil.lib.Lima.Camera</groupId>
+			<artifactId>LimaEiger-amd64-Linux-gcc-shared-${mode}</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+          <plugin>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-nar-plugin</artifactId>
+            <configuration>
+               <cpp>
+                   <sourceDirectory>src</sourceDirectory>
+                   <includePaths>
+                        <includePath>src</includePath>                       		
+                    </includePaths>
+                   <defines>     
+                   </defines>       
+               </cpp>
+               <linker>
+                    <libs>
+                        <lib>
+                            <!-- hdf5 (1.8.16) 64 -->
+                            <name>hdf5</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
+                        </lib>
+                        <lib>
+                            <!-- hdf5 (1.8.16) 64 -->
+                            <name>hdf5_cpp</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
+                        </lib>
+                        <lib>
+                            <!-- hdf5 (1.8.16) 64 -->
+                            <name>hdf5_hl</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>
+                        </lib>
+                        <lib>
+                            <!-- hdf5 (1.8.16) 64 -->
+                            <name>hdf5_hl_cpp</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/hdf5-1.8.16/lib</directory>                                
+                        </lib>                                
+                        
+                        <lib>
+                            <!-- YAT (1.13.16) 64 -->
+                            <name>YAT-amd64-Linux-gcc-shared-release-1.13.16</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/yat-1.13.16/lib</directory>
+                        </lib>
+                        <lib>
+                            <!-- gsl (1.11) 64-->
+                            <name>gsl</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/gsl-1.11/lib/</directory>
+                        </lib>
+                        <lib>
+                            <!-- gsl (1.11) 64-->
+                            <name>gslcblas</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/gsl-1.11/lib/</directory>
+                        </lib>
+                        <lib>
+                            <!-- lz4 131 (1.7.1) 64 -->
+                            <name>lz4</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/lz4-r131/lib/</directory>
+                        </lib>
+                        <lib>
+                            <!-- zmq 3.2.5 64 -->
+                            <name>zmq</name>
+                            <type>shared</type>
+                            <directory>${libs-64bits}/zeromq-3.2.5/lib/</directory>
+                        </lib>
+                    </libs>
+                </linker>
+            </configuration>
+          </plugin>		
+        </plugins>
+	</build>
+ 
+    <developers>
+        <developer>
+          <id>langlois</id>
+          <name>langlois</name>
+          <url>http://controle/</url>
+          <organization>Synchrotron Soleil</organization>
+          <organizationUrl>http://www.synchrotron-soleil.fr</organizationUrl>
+          <roles>
+            <role>developer</role>
+          </roles>
+          <timezone>1</timezone>
+        </developer>
+    </developers>
+</project>
