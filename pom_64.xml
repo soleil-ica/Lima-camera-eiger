@@ -4,7 +4,7 @@
     <parent>
         <groupId>fr.soleil</groupId>
         <artifactId>super-pom-C-CPP</artifactId>
-        <version>RELEASE</version>
+        <version>20.2.0-64</version>
     </parent>
 
     <groupId>fr.soleil.lib.Lima.Camera</groupId>
