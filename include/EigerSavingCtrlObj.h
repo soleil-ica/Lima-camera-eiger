@@ -70,6 +70,7 @@ protected:
     bool            m_must_download_data_file;
     double			m_waiting_time;
     std::string		m_error_msg;
+    bool            m_already_done;
     //Synchro
     Cond			m_cond;
     bool			m_quit;

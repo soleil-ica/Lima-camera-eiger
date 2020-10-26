@@ -248,6 +248,11 @@ Requests::~Requests()
 {
 }
 
+void Requests::set_curl_delay_ms(double curl_delay_ms)
+{
+     m_loop.set_curl_delay_ms(curl_delay_ms);
+}
+
 std::shared_ptr<Requests::Command>
 Requests::get_command(Requests::COMMAND_NAME cmd_name)
 {

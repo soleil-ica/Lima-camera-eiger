@@ -75,6 +75,7 @@ namespace eigerapi
 
     void add_request(std::shared_ptr<FutureRequest>);
     void cancel_request(std::shared_ptr<FutureRequest>);
+    void set_curl_delay_ms(double);
   private:
     typedef std::map<CURL*,std::shared_ptr<FutureRequest> > MapRequests;
     typedef std::list<std::shared_ptr<FutureRequest> > ListRequests;
@@ -92,5 +93,6 @@ namespace eigerapi
     MapRequests		m_pending_requests;
     ListRequests	m_new_requests;
     ListRequests	m_cancel_requests;
+    double          m_curl_delay_ms;
   };
 }

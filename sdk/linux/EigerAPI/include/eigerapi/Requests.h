@@ -195,6 +195,7 @@ namespace eigerapi
     std::shared_ptr<CurlLoop::FutureRequest> delete_file(const std::string& filename,
 							 bool full_url = false);
     
+    void set_curl_delay_ms(double);
     void cancel(std::shared_ptr<CurlLoop::FutureRequest> request);
   private:
     std::shared_ptr<Param> _create_get_param(PARAM_NAME);

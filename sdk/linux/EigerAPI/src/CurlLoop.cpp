@@ -74,7 +74,8 @@ struct CURL_INIT
 CurlLoop::CurlLoop() : 
   m_running(false),
   m_quit(false),
-  m_thread_id(0)
+  m_thread_id(0),
+  m_curl_delay_ms(50)
 {
   if(pthread_mutex_init(&m_lock,NULL))
     THROW_EIGER_EXCEPTION("pthread_mutex_init","Can't initialize the lock");
@@ -139,6 +140,12 @@ void CurlLoop::cancel_request(std::shared_ptr<CurlLoop::FutureRequest> request)
   Lock req_lock(&request->m_lock);
   request->m_status = FutureRequest::CANCEL;
 }
+
+void CurlLoop::set_curl_delay_ms(double curl_delay_ms)
+{
+    m_curl_delay_ms = curl_delay_ms;
+}
+
 void* CurlLoop::_runFunc(void *curlloopPt)
 {
   ((CurlLoop*)curlloopPt)->_run();
@@ -210,9 +217,15 @@ void CurlLoop::_run()
       // fds are not ready in curl, wait 100ms
       int nb_event = 0;
       if(max_fd == -1)
-	usleep(100 * 1000);
+      {
+	    usleep(m_curl_delay_ms * 1000);
+	    //std::cout << "==================== sleeped m_curl_delay_ms ms waiting for curl =====================" << std::endl;
+	  }
       else
-	nb_event = select(max_fd + 1,&fdread,&fdwrite,&fdexcep,timeoutPt);
+      {
+        //std::cout << "==================== Curl is finally ready ... =====================" << std::endl;
+	    nb_event = select(max_fd + 1,&fdread,&fdwrite,&fdexcep,timeoutPt);
+	  }
 	
       if(nb_event == -1)
 	{
