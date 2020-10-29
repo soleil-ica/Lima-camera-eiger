@@ -1,5 +1,8 @@
 # Eiger simulator
 
+<img align="right" alt="Eiger 9M" width="350" src="docs/eiger_9M.png" />
+
+
 ![Pypi python versions][pypi-python-versions]
 ![Pypi version][pypi-version]
 ![Pypi status][pypi-status]
@@ -91,6 +94,11 @@ For reference, here is a simple client that listens to the ZMQ stream:
       size = sum(len(i) for i in data)
       print(f'packet #parts={len(data)} size={size/1000} KB')
 ```
+
+## Benchmarks
+
+Benchmark results available [here](docs/benchmarks.md).
+
 
 [pypi-python-versions]: https://img.shields.io/pypi/pyversions/eiger-simulator.svg
 [pypi-version]: https://img.shields.io/pypi/v/eiger-simulator.svg

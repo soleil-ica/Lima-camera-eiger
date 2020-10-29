@@ -8,7 +8,10 @@ import threading
 from typing import List
 
 import zmq
-import fastapi
+
+from fastapi import FastAPI, Request, Body
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from . import config
 from .dataset import frames_iter
@@ -56,7 +59,7 @@ class ZMQChannel:
                 new_queue = self.new_queue()
                 flushed = queue.qsize()
                 queue = new_queue
-                log.info(f'Error send ZMQ: {err!r}. Flushed {flushed} messages')
+                log.error(f'Error send ZMQ: {err!r}. Flushed {flushed} messages')
         self.new_queue()
 
     def initialize(self):
@@ -136,12 +139,12 @@ class Detector:
             frames = []
             x = self.config['x_pixels_in_detector']['value']
             y = self.config['y_pixels_in_detector']['value']
-            for frame in frames_iter(self.dataset):
+            compression = self.config['compression']['value']
+            encoding = 'lz4<' if compression == 'lz4' else 'bs16-lz4<'
+            for frame in frames_iter(self.dataset, compression=compression):
                 total_size += len(frame)
-                # TODO: Calculate encoding, shape (or maybe read it from dataset)
                 frame_info = {
-#                    'encoding': f'bs{frame.dtype.itemsize * 8}-lz4<',
-                    'encoding': f'lz4<',
+                    'encoding': encoding,
                     'shape': [x, y],
                     'type': 'uint16',
                     'size': len(frame)
@@ -149,7 +152,9 @@ class Detector:
                 frames.append((zmq.Frame(frame), frame, frame_info))
                 if total_size > self.max_memory:
                     break
-            log.info('Generated %d frames', len(frames))
+            nb_frames = len(frames)
+            log.info('Generated %d frames in %f MB of RAM (avg %f MB / frame)',
+                     nb_frames, total_size*1e-6, total_size / nb_frames * 1e-6)
             self.frames = frames
 
     async def initialize(self):
@@ -277,7 +282,14 @@ class Detector:
         raise NotImplementedError
 
 
-app = fastapi.FastAPI()
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="eigersim/static", packages=["bootstrap4"]), name="static")
+templates = Jinja2Templates('eigersim/templates')
+
+
+@app.get('/')
+def index(request: Request):
+    return templates.TemplateResponse('index.html', {'request': request})
 
 
 # DETECTOR MODULE =============================================================
@@ -291,12 +303,11 @@ def version():
 
 @app.get('/detector/api/{version}/config/{param}')
 def detector_config(version: Version, param: str):
-
     return app.detector.config[param]
 
 
 @app.put('/detector/api/{version}/config/{param}')
-def detector_config_put(version: Version, param: str, body=fastapi.Body(...)) -> List[str]:
+def detector_config_put(version: Version, param: str, body=Body(...)) -> List[str]:
     app.detector.config[param]['value'] = body['value']
     return ["bit_depth_image", "count_time",
             "countrate_correction_count_cutoff",
@@ -363,7 +374,7 @@ def monitor_config(version: Version, param: str):
 
 
 @app.put('/monitor/api/{version}/config/{param}')
-def monitor_config_put(version: Version, param: str, body=fastapi.Body(...)):
+def monitor_config_put(version: Version, param: str, body=Body(...)):
     app.detector.monitor['config'][param]['value'] = body['value']
 
 
@@ -413,7 +424,7 @@ def filewriter_config(version: Version, param: str):
 
 
 @app.put('/filewriter/api/{version}/config/{param}')
-def filewriter_config_put(version: Version, param: str, body=fastapi.Body(...)):
+def filewriter_config_put(version: Version, param: str, body=Body(...)):
     app.detector.filewriter['config'][param]['value'] = body['value']
 
 
@@ -463,7 +474,7 @@ def stream_config(version: Version, param: str):
 
 
 @app.put('/stream/api/{version}/config/{param}')
-def stream_config_put(version: Version, param: str, body=fastapi.Body(...)):
+def stream_config_put(version: Version, param: str, body=Body(...)):
     app.detector.stream['config'][param]['value'] = body['value']
 
 

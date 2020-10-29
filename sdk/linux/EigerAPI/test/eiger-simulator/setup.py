@@ -7,8 +7,8 @@ from setuptools import setup, find_packages
 
 TESTING = any(x in sys.argv for x in ["test", "pytest"])
 
-requirements = ['fastapi', 'uvicorn', 'pyzmq>=17', 'click',
-                'h5py', 'lz4', 'bitshuffle']
+requirements = ['fastapi', 'uvicorn', 'bootstrap4', 'aiofiles', 'jinja2',
+                'pyzmq>=17', 'click', 'h5py', 'lz4']#, 'bitshuffle']
 
 setup_requirements = []
 if TESTING:
@@ -47,12 +47,14 @@ setup(
     keywords='alba, dectris, eiger, simulator',
     name='eiger-simulator',
     packages=find_packages(),
-    package_data={},
+    package_data={
+        'eigersim': ['static/js/*', 'templates/*']
+    },
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     python_requires='>=3.7',
     extras_require=extras_requirements,
     url='https://git.cells.es/controls/eiger-simulator',
-    version='0.3.0'
+    version='0.5.0'
 )
