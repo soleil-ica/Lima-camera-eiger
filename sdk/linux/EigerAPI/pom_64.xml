@@ -4,12 +4,12 @@
     <parent>
         <groupId>fr.soleil</groupId>
         <artifactId>super-pom-C-CPP</artifactId>
-        <version>RELEASE</version>
+        <version>20.2.0-64</version>
     </parent>
 	
     <groupId>fr.soleil.lib</groupId>
     <artifactId>EigerAPI-amd64-Linux-gcc-${mode}</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 	
     <packaging>nar</packaging>
     <name>EigerAPI</name>

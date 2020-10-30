@@ -1,0 +1,127 @@
+Collecting fastapi
+  Downloading https://files.pythonhosted.org/packages/48/65/454fb440d48098845875b5ba8599efafee1efabb97720a584c78674e6d26/fastapi-0.61.1-py3-none-any.whl (48kB)
+Collecting uvicorn
+  Downloading https://files.pythonhosted.org/packages/30/cc/01cc4cb980dfcf04eb283b6497c7f280928a0b02c68c0f85b6901e7716ae/uvicorn-0.12.2-py3-none-any.whl (45kB)
+Collecting bootstrap4
+  Downloading https://files.pythonhosted.org/packages/0d/18/6a61f71128f2a3e677e803af4348181f756453180c3f5e1b225c579a23fc/bootstrap4-0.1.0.tar.gz (588kB)
+Collecting aiofiles
+  Downloading https://files.pythonhosted.org/packages/f4/2b/078a9771ae4b67e36b0c2a973df845260833a4eb088b81c84b738509b4c4/aiofiles-0.5.0-py3-none-any.whl
+Collecting jinja2
+  Downloading https://files.pythonhosted.org/packages/30/9e/f663a2aa66a09d838042ae1a2c5659828bb9b41ea3a6efa20a20fd92b121/Jinja2-2.11.2-py2.py3-none-any.whl (125kB)
+Collecting pyzmq
+  Downloading https://files.pythonhosted.org/packages/2a/12/e4d817be081ef2d7ba2cce98082eba964852b40cf53e6f3d654e7cc43921/pyzmq-19.0.2-cp37-cp37m-manylinux1_i686.whl (1.0MB)
+Collecting click
+  Downloading https://files.pythonhosted.org/packages/d2/3d/fa76db83bf75c4f8d338c2fd15c8d33fdd7ad23a9b5e57eb6c5de26b430e/click-7.1.2-py2.py3-none-any.whl (82kB)
+Collecting h5py
+  Using cached https://files.pythonhosted.org/packages/7f/d9/0ddeea0a6dcb0e330c5d98a72c2fed52a0430f48d69e5bf4d50024f3c0ba/h5py-2.10.0-cp37-cp37m-manylinux1_i686.whl
+Collecting lz4
+  Downloading https://files.pythonhosted.org/packages/ea/31/04a270cf5db55ddf053ffc5f08f985b5aa18a2d559f02b35a7b1cd3824d7/lz4-3.1.0-cp37-cp37m-manylinux1_i686.whl (1.5MB)
+Collecting bitshuffle
+  Using cached https://files.pythonhosted.org/packages/af/d9/af5212bf0844c7c05c1c6493d95e16c1c18b7f2ac5f619c9c400a99aa401/bitshuffle-0.3.5.tar.gz
+Collecting pydantic<2.0.0,>=1.0.0 (from fastapi)
+  Downloading https://files.pythonhosted.org/packages/5b/fb/4fa1443af7a19c3c0f062542ab74f1f69dd76cbaad1c4805ad6e311138cf/pydantic-1.7-cp37-cp37m-manylinux1_i686.whl (8.7MB)
+Collecting starlette==0.13.6 (from fastapi)
+  Downloading https://files.pythonhosted.org/packages/c5/a4/c9e228d7d47044ce4c83ba002f28ff479e542455f0499198a3f77c94f564/starlette-0.13.6-py3-none-any.whl (59kB)
+Collecting h11>=0.8 (from uvicorn)
+  Downloading https://files.pythonhosted.org/packages/b2/79/9c5f5cd738ec2a9b26453b3093915c0999f24454e2773921025c03b5509e/h11-0.11.0-py2.py3-none-any.whl (54kB)
+Collecting typing-extensions; python_version < "3.8" (from uvicorn)
+  Downloading https://files.pythonhosted.org/packages/60/7a/e881b5abb54db0e6e671ab088d079c57ce54e8a01a3ca443f561ccadb37e/typing_extensions-3.7.4.3-py3-none-any.whl
+Collecting MarkupSafe>=0.23 (from jinja2)
+  Downloading https://files.pythonhosted.org/packages/d6/e5/348e7d7977202d9a6c7f4cac3c6d8f71b01bb3c91e0bd4b5c23670951fd6/MarkupSafe-1.1.1-cp37-cp37m-manylinux1_i686.whl
+Collecting numpy>=1.7 (from h5py)
+  Downloading https://files.pythonhosted.org/packages/16/77/7fb992c1c31303ef2013bb77e9b71fddaaaa84debde090fb52579ba0871e/numpy-1.19.2-cp37-cp37m-manylinux1_i686.whl (11.5MB)
+Collecting six (from h5py)
+  Downloading https://files.pythonhosted.org/packages/ee/ff/48bde5c0f013094d729fe4b0316ba2a24774b3ff1c52d924a8a4cb04078a/six-1.15.0-py2.py3-none-any.whl
+Requirement already satisfied: setuptools>=0.7 in /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/lib/python3.7/site-packages (from bitshuffle) (40.6.3)
+Collecting Cython>=0.19 (from bitshuffle)
+  Downloading https://files.pythonhosted.org/packages/b5/ac/204bb3d14f95c9c53c65640a1a05285412d02934168c5416beea824a1148/Cython-0.29.21-cp37-cp37m-manylinux1_i686.whl (1.9MB)
+Building wheels for collected packages: bootstrap4, bitshuffle
+  Running setup.py bdist_wheel for bootstrap4: started
+  Running setup.py bdist_wheel for bootstrap4: finished with status 'done'
+  Stored in directory: /home/informatique/ica/langlois/.cache/pip/wheels/b0/45/77/c622608eacfc84a6799f949f3d6911efb4421a0a08a60080b7
+  Running setup.py bdist_wheel for bitshuffle: started
+  Running setup.py bdist_wheel for bitshuffle: finished with status 'error'
+  Complete output from command /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/bin/python -u -c "import setuptools, tokenize;__file__='/tmp/pip-install-bv393spm/bitshuffle/setup.py';f=getattr(tokenize, 'open', open)(__file__);code=f.read().replace('\r\n', '\n');f.close();exec(compile(code, __file__, 'exec'))" bdist_wheel -d /tmp/pip-wheel-y6xtlpvp --python-tag cp37:
+  Can't find hdf5 with pkg-config fallback to static config
+  Can't find hdf5 with pkg-config fallback to static config
+  Can't find hdf5 with pkg-config fallback to static config
+  Can't find hdf5 with pkg-config fallback to static config
+  running bdist_wheel
+  running build
+  running build_py
+  creating build
+  creating build/lib.linux-x86_64-3.7
+  creating build/lib.linux-x86_64-3.7/bitshuffle
+  copying bitshuffle/__init__.py -> build/lib.linux-x86_64-3.7/bitshuffle
+  creating build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/__init__.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/make_regression_tdata.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/test_ext.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/test_h5filter.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/test_h5plugin.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  copying bitshuffle/tests/test_regression.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+  creating build/lib.linux-x86_64-3.7/bitshuffle/tests/data
+  copying bitshuffle/tests/data/regression_0.1.3.h5 -> build/lib.linux-x86_64-3.7/bitshuffle/tests/data
+  running build_ext
+  
+  #################################
+  # Compiling with OpenMP support #
+  #################################
+  
+  building 'bitshuffle.ext' extension
+  creating build/temp.linux-x86_64-3.7
+  creating build/temp.linux-x86_64-3.7/bitshuffle
+  creating build/temp.linux-x86_64-3.7/src
+  creating build/temp.linux-x86_64-3.7/lz4
+  gcc -pthread -B /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -DBSHUF_VERSION_MAJOR=0 -DBSHUF_VERSION_MINOR=3 -DBSHUF_VERSION_POINT=5 -Isrc/ -Ilz4/ -I/tmp/pip-install-bv393spm/bitshuffle/.eggs/numpy-1.19.2-py3.7-linux-x86_64.egg/numpy/core/include -I/home/informatique/ica/langlois/miniconda2/envs/eiger_simu/include/python3.7m -c bitshuffle/ext.c -o build/temp.linux-x86_64-3.7/bitshuffle/ext.o -std=c99 -fPIC -ffast-math -march=native -fno-strict-aliasing -O3 -fopenmp
+  unable to execute 'gcc': No such file or directory
+  error: command 'gcc' failed with exit status 1
+  
+  ----------------------------------------
+  Running setup.py clean for bitshuffle
+Successfully built bootstrap4
+Failed to build bitshuffle
+Installing collected packages: pydantic, starlette, fastapi, h11, click, typing-extensions, uvicorn, bootstrap4, aiofiles, MarkupSafe, jinja2, pyzmq, numpy, six, h5py, lz4, Cython, bitshuffle
+  Running setup.py install for bitshuffle: started
+    Running setup.py install for bitshuffle: finished with status 'error'
+    Complete output from command /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/bin/python -u -c "import setuptools, tokenize;__file__='/tmp/pip-install-bv393spm/bitshuffle/setup.py';f=getattr(tokenize, 'open', open)(__file__);code=f.read().replace('\r\n', '\n');f.close();exec(compile(code, __file__, 'exec'))" install --record /tmp/pip-record-rnp1b2yf/install-record.txt --single-version-externally-managed --compile:
+    Can't find hdf5 with pkg-config fallback to static config
+    Can't find hdf5 with pkg-config fallback to static config
+    Can't find hdf5 with pkg-config fallback to static config
+    Can't find hdf5 with pkg-config fallback to static config
+    running install
+    running build
+    running build_py
+    creating build
+    creating build/lib.linux-x86_64-3.7
+    creating build/lib.linux-x86_64-3.7/bitshuffle
+    copying bitshuffle/__init__.py -> build/lib.linux-x86_64-3.7/bitshuffle
+    creating build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/__init__.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/make_regression_tdata.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/test_ext.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/test_h5filter.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/test_h5plugin.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    copying bitshuffle/tests/test_regression.py -> build/lib.linux-x86_64-3.7/bitshuffle/tests
+    creating build/lib.linux-x86_64-3.7/bitshuffle/tests/data
+    copying bitshuffle/tests/data/regression_0.1.3.h5 -> build/lib.linux-x86_64-3.7/bitshuffle/tests/data
+    running build_ext
+    Compiling bitshuffle/ext.pyx because it depends on /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/lib/python3.7/site-packages/Cython/Includes/libc/string.pxd.
+    [1/1] Cythonizing bitshuffle/ext.pyx
+    /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/lib/python3.7/site-packages/Cython/Compiler/Main.py:369: FutureWarning: Cython directive 'language_level' not set, using 2 for now (Py2). This will change in a later release! File: /tmp/pip-install-bv393spm/bitshuffle/bitshuffle/ext.pyx
+      tree = Parsing.p_module(s, pxd, full_module_name)
+    
+    #################################
+    # Compiling with OpenMP support #
+    #################################
+    
+    building 'bitshuffle.ext' extension
+    creating build/temp.linux-x86_64-3.7
+    creating build/temp.linux-x86_64-3.7/bitshuffle
+    creating build/temp.linux-x86_64-3.7/src
+    creating build/temp.linux-x86_64-3.7/lz4
+    gcc -pthread -B /home/informatique/ica/langlois/miniconda2/envs/eiger_simu/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -DBSHUF_VERSION_MAJOR=0 -DBSHUF_VERSION_MINOR=3 -DBSHUF_VERSION_POINT=5 -Isrc/ -Ilz4/ -I/home/informatique/ica/langlois/miniconda2/envs/eiger_simu/lib/python3.7/site-packages/numpy/core/include -I/home/informatique/ica/langlois/miniconda2/envs/eiger_simu/include/python3.7m -c bitshuffle/ext.c -o build/temp.linux-x86_64-3.7/bitshuffle/ext.o -march=native -fPIC -fno-strict-aliasing -O3 -ffast-math -std=c99 -fopenmp
+    unable to execute 'gcc': No such file or directory
+    error: command 'gcc' failed with exit status 1
+    
+    ----------------------------------------

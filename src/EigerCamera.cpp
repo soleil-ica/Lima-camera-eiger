@@ -152,8 +152,7 @@ Camera::Camera(const std::string& detector_ip)	///< [in] Ip address of the detec
 	DEB_ALWAYS() << "Could not get configuration parameters, try to initialize";
 	EIGER_SYNC_CMD_TIMEOUT(Requests::INITIALIZE,5*60);
 	initialiseController();
-      }
-    
+      } 
 
     // Display max image size
     DEB_TRACE() << "Detector max width: " << m_maxImageWidth;
@@ -1330,6 +1329,16 @@ void  Camera::setTimestampType(const std::string& timestamp)
 {
 	m_timestamp_type = timestamp;
 }
+
+
+//-----------------------------------------------------------------------------
+//-
+//-----------------------------------------------------------------------------
+void  Camera::setCurlDelayMs(double curl_delay_ms)
+{
+    m_requests->set_curl_delay_ms(curl_delay_ms);
+}
+
 
 //-----------------------------------------------------------------------------
 ///  getDetectorReadoutTime getter

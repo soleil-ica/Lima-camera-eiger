@@ -79,7 +79,8 @@ m_nb_file_transfer_started(0),
 m_concurrent_download(0),
 m_poll_master_file(false),
 m_must_download_data_file(false),
-m_quit(false)
+m_quit(false),
+m_already_done(false)
 {
 	m_polling_thread = new _PollingThread(*this, this->m_cam.m_requests);
 	m_polling_thread->start();
@@ -114,11 +115,17 @@ SavingCtrlObj::~SavingCtrlObj()
 	delete m_polling_thread;
 }
 
+/*----------------------------------------------------------------------------
+				getPossibleSaveFormat
+----------------------------------------------------------------------------*/
 void SavingCtrlObj::getPossibleSaveFormat(std::list<std::string> &format_list) const
 {
 	format_list.push_back(HwSavingCtrlObj::HDF5_FORMAT_STR);
 }
 
+/*----------------------------------------------------------------------------
+				setCommonHeader
+----------------------------------------------------------------------------*/
 void SavingCtrlObj::setCommonHeader(const HwSavingCtrlObj::HeaderMap& header)
 {
 	DEB_MEMBER_FUNCT();
@@ -184,12 +191,15 @@ void SavingCtrlObj::_setActive(bool active, int stream_idx)
 {
 	DEB_MEMBER_FUNCT();
 
-	const char *active_str = active ? "enabled" : "disabled";
-	std::shared_ptr<Requests::Param> active_req =
-	 m_cam.m_requests->set_param(Requests::FILEWRITER_MODE,
-								 active_str);
-	DEB_TRACE() << "FILEWRITER_MODE: " << DEB_VAR1(active_str);
-	active_req->wait();
+	//Don't resend parameters if not changed
+  	if(!m_already_done)
+  	{
+		const char *active_str = active ? "enabled" : "disabled";
+		std::shared_ptr<Requests::Param> active_req = m_cam.m_requests->set_param(Requests::FILEWRITER_MODE, active_str);
+		DEB_TRACE() << "FILEWRITER_MODE: " << DEB_VAR1(active_str);
+		active_req->wait();
+		m_already_done = true;
+	}
 }
 
 void SavingCtrlObj::_prepare(int stream_idx)

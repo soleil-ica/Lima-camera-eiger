@@ -170,6 +170,7 @@ namespace lima
 			const std::string& getDetectorIp() const;
             const std::string& getTimestampType() const;
             void  setTimestampType(const std::string&);
+            void  setCurlDelayMs(double);
             
             void getDetectorReadoutTime(double&);
             void setRoiMode(const std::string&);

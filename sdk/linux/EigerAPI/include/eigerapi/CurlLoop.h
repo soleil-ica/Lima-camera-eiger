@@ -29,68 +29,80 @@
 
 namespace eigerapi
 {
-  class CurlLoop
-  {
-  public:
+class CurlLoop
+{
+public:
     class FutureRequest
     {
-      friend class CurlLoop;
+        friend class CurlLoop;
+
     public:
-      static double const TIMEOUT;
-      enum Status {IDLE,CANCEL,RUNNING,OK,ERROR};
-      virtual ~FutureRequest();
-      
-      void wait(double timeout = TIMEOUT,bool lock = true) const;
-      Status get_status() const;
+        static double const TIMEOUT;
+        enum Status
+        {
+            IDLE,
+            CANCEL,
+            RUNNING,
+            OK,
+            ERROR
+        };
+        virtual ~FutureRequest();
 
-      class Callback
-      {
-      public:
-	Callback() {};
-	virtual ~Callback() {}
-	virtual void status_changed(FutureRequest::Status) = 0;
-      };
-      
-      void register_callback(std::shared_ptr<Callback>&);
+        void wait(double timeout = TIMEOUT, bool lock = true) const;
+        Status get_status() const;
 
-      CURL* get_handle() {return m_handle;}
-      FutureRequest(const std::string& url);
+        class Callback
+        {
+        public:
+            Callback(){};
+            virtual ~Callback() {}
+            virtual void status_changed(FutureRequest::Status) = 0;
+        };
+
+        void register_callback(std::shared_ptr<Callback> &);
+
+        CURL *get_handle() { return m_handle; }
+        FutureRequest(const std::string &url);
+
     protected:
-      virtual void _request_finished() {};
+        virtual void _request_finished(){};
 
-      CURL*				m_handle;
-      Status				m_status;
-      std::string			m_error_code;
-      // Synchro
-      mutable pthread_mutex_t		m_lock;
-      mutable pthread_cond_t		m_cond;
-      std::shared_ptr<Callback>*	m_cbk;
-      std::string			m_url;
+        CURL *m_handle;
+        Status m_status;
+        std::string m_error_code;
+        // Synchro
+        mutable pthread_mutex_t m_lock;
+        mutable pthread_cond_t m_cond;
+        std::shared_ptr<Callback> *m_cbk;
+        std::string m_url;
     };
-    
+
     CurlLoop();
     ~CurlLoop();
 
-    void quit();		// quit the curl loop
+    void quit(); // quit the curl loop
 
     void add_request(std::shared_ptr<FutureRequest>);
     void cancel_request(std::shared_ptr<FutureRequest>);
-  private:
-    typedef std::map<CURL*,std::shared_ptr<FutureRequest> > MapRequests;
-    typedef std::list<std::shared_ptr<FutureRequest> > ListRequests;
-    static void* _runFunc(void*);
+    void set_curl_delay_ms(double);
+
+private:
+    typedef std::map<CURL *, std::shared_ptr<FutureRequest>> MapRequests;
+    typedef std::list<std::shared_ptr<FutureRequest>> ListRequests;
+    static void *_runFunc(void *);
     void _run();
 
     // Synchro
-    int			m_pipes[2];
-    volatile bool	m_running;
-    volatile bool	m_quit;
-    pthread_mutex_t	m_lock;
-    pthread_cond_t	m_cond;
-    pthread_t		m_thread_id;
+    int m_pipes[2];
+    volatile bool m_running;
+    volatile bool m_quit;
+    pthread_mutex_t m_lock;
+    pthread_cond_t m_cond;
+    pthread_t m_thread_id;
     //Pending Request
-    MapRequests		m_pending_requests;
-    ListRequests	m_new_requests;
-    ListRequests	m_cancel_requests;
-  };
-}
+    MapRequests m_pending_requests;
+    ListRequests m_new_requests;
+    ListRequests m_cancel_requests;
+    double m_curl_delay_ms;
+};
+} // namespace eigerapi
