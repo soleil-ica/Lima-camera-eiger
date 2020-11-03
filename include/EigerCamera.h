@@ -171,7 +171,8 @@ namespace lima
             const std::string& getTimestampType() const;
             void  setTimestampType(const std::string&);
             void  setCurlDelayMs(double);
-            
+		    void setNbFramesPerTriggerIsMaster(bool);
+	            
             void getDetectorReadoutTime(double&);
             void setRoiMode(const std::string&);
             void getRoiMode(std::string&);
@@ -222,6 +223,7 @@ namespace lima
 			std::string               m_detector_ip;
             std::string               m_timestamp_type;
 			double                    m_min_frame_time;
+			bool 		m_nb_frames_per_trigger_is_master;
 			
 	};
 	} // namespace Eiger
