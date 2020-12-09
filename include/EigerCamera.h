@@ -171,11 +171,17 @@ namespace lima
             const std::string& getTimestampType() const;
             void  setTimestampType(const std::string&);
             void  setCurlDelayMs(double);
-            
+		    void setNbFramesPerTriggerIsMaster(bool);
+	            
             void getDetectorReadoutTime(double&);
             void setRoiMode(const std::string&);
             void getRoiMode(std::string&);
-            
+
+            void setNbTriggers(int nb_triggers);
+            void getNbTriggers(int& nb_triggers);
+            void setNbFramesPerTrigger(int nb_frames_per_trigger);
+            void getNbFramesPerTrigger(int& nb_frames_per_trigger);
+
 		private:
 			enum InternalStatus {IDLE,RUNNING,ERROR};
 			class AcqCallback;
@@ -189,6 +195,8 @@ namespace lima
 			//- lima stuff
 			int                       m_nb_frames;
 			int                       m_image_number;
+            int                       m_nb_triggers;
+            int                       m_nb_frames_per_trigger;
 			double                    m_latency_time;
 			TrigMode                  m_trig_mode;
 
@@ -215,6 +223,7 @@ namespace lima
 			std::string               m_detector_ip;
             std::string               m_timestamp_type;
 			double                    m_min_frame_time;
+			bool 		m_nb_frames_per_trigger_is_master;
 			
 	};
 	} // namespace Eiger
