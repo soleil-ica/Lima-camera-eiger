@@ -4,12 +4,12 @@
     <parent>
         <groupId>fr.soleil</groupId>
         <artifactId>super-pom-C-CPP</artifactId>
-        <version>20.2.0-64</version>
+        <version>21.2.5-64</version>
     </parent>
 
     <groupId>fr.soleil.lib.Lima.Camera</groupId>
     <artifactId>LimaEiger-amd64-Linux-gcc-shared-${mode}</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.1</version>
 
     <packaging>nar</packaging>
     <name>LimaEiger</name>
@@ -39,7 +39,7 @@
                 <dependency>
                     <groupId>fr.soleil.lib</groupId>
                     <artifactId>LimaCore-amd64-Linux-gcc-shared-${mode}</artifactId>
-                    <version>1.7.9</version>
+                    <version>1.7.10</version>
                 </dependency>     
                 
                 <dependency>
@@ -63,7 +63,8 @@
                         <includePaths>
                             <includePath>include</includePath>
                             <includePath>${libs-64bits}/lz4-r131/lib/</includePath>
-                            <includePath>${libs-64bits}/zeromq-3.2.5/include/</includePath>
+                            <!-- for zmq -->
+                            <includePath>${libs-64bits}/libtango9-9.2.5-64/include/</includePath>     
                         </includePaths>  
                     </cpp>
 					<linker>
@@ -75,10 +76,10 @@
                             <directory>${libs-64bits}/lz4-r131/lib/</directory>
                         </lib>
                         <lib>
-                            <!-- zmq 3.2.5 64 -->
+                            <!-- zmq 4.2.5 64 -->
                             <name>zmq</name>
                             <type>shared</type>
-                            <directory>${libs-64bits}/zeromq-3.2.5/lib/</directory>
+                            <directory>${libs-64bits}/libtango9-9.2.5-64/lib</directory>
                         </lib>
 					</libs>
 				   </linker>
