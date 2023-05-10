@@ -752,6 +752,10 @@ void Camera::initialiseController()
 
     std::shared_ptr<Requests::Param> frame_time_req = m_requests->get_param(Requests::FRAME_TIME);
     synchro_list.push_back(frame_time_req);
+    std::shared_ptr<Requests::Param> photon_energy_req = m_requests->get_param(Requests::PHOTON_ENERGY);
+    synchro_list.push_back(photon_energy_req);
+    std::shared_ptr<Requests::Param> threshold_energy_req = m_requests->get_param(Requests::THRESHOLD_ENERGY);
+    synchro_list.push_back(threshold_energy_req);
 
     bool auto_summation;
     synchro_list.push_back(m_requests->get_param(Requests::AUTO_SUMMATION, auto_summation));
@@ -810,8 +814,21 @@ void Camera::initialiseController()
             THROW_HW_ERROR(InvalidValue) << "Unexpected trigger mode: " << DEB_VAR1(trig_name);
     }
 
+    //- get min of frame time (ie exposure time)
     Requests::Param::Value min_frame_time = frame_time_req->get_min();
     m_min_frame_time = min_frame_time.data.double_val;
+
+    //- get min/max of photon energy
+    Requests::Param::Value min_photon_energy = photon_energy_req->get_min();
+    m_min_photon_energy = min_photon_energy.data.double_val;
+    Requests::Param::Value max_photon_energy = photon_energy_req->get_max();
+    m_max_photon_energy = max_photon_energy.data.double_val;
+
+    //- get min/max of threshold energy
+    Requests::Param::Value min_threshold_energy = threshold_energy_req->get_min();
+    m_min_threshold_energy = min_threshold_energy.data.double_val;
+    Requests::Param::Value max_threshold_energy = threshold_energy_req->get_max();
+    m_max_threshold_energy = max_threshold_energy.data.double_val;
 }
 
 /*----------------------------------------------------------------------------
@@ -960,10 +977,17 @@ void Camera::getEfficiencyCorrection(bool &value) ///< [out] true:enabled, false
 //-----------------------------------------------------------------------------
 ///  ThresholdEnergy setter
 //-----------------------------------------------------------------------------
-void Camera::setThresholdEnergy(double value) ///< [in] true:enabled, false:disabled
+void Camera::setThresholdEnergy(double value) ///< [in]
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::THRESHOLD_ENERGY, value);
+    if (value >= m_min_threshold_energy && value <= m_max_threshold_energy)
+    {
+        EIGER_SYNC_SET_PARAM(Requests::THRESHOLD_ENERGY, value);
+    }
+    else
+    {
+        THROW_HW_ERROR(Error) << "Threshold Energy value (" << value << ") should be between (" << m_min_threshold_energy << ") and  (" << m_max_threshold_energy << ")";
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -996,16 +1020,23 @@ void Camera::getVirtualPixelCorrection(bool &value) ///< [out] true:enabled, fal
 //-----------------------------------------------------------------------------
 ///  PhotonEnergy setter
 //-----------------------------------------------------------------------------
-void Camera::setPhotonEnergy(double value) ///< [in] true:enabled, false:disabled
+void Camera::setPhotonEnergy(double value) ///< [in]
 {
     DEB_MEMBER_FUNCT();
-    EIGER_SYNC_SET_PARAM(Requests::PHOTON_ENERGY, value);
+    if (value >= m_min_photon_energy && value <= m_max_photon_energy)
+    {
+        EIGER_SYNC_SET_PARAM(Requests::PHOTON_ENERGY, value);
+    }
+    else
+    {
+        THROW_HW_ERROR(Error) << "Photon Energy value (" << value << ") should be between (" << m_min_photon_energy << ") and  (" << m_max_photon_energy << ")";
+    }
 }
 
 //-----------------------------------------------------------------------------
 ///  PhotonEnergy getter
 //-----------------------------------------------------------------------------
-void Camera::getPhotonEnergy(double &value) ///< [out] true:enabled, false:disabled
+void Camera::getPhotonEnergy(double &value) ///< [out]
 {
     DEB_MEMBER_FUNCT();
     EIGER_SYNC_GET_PARAM(Requests::PHOTON_ENERGY, value);
@@ -1014,7 +1045,7 @@ void Camera::getPhotonEnergy(double &value) ///< [out] true:enabled, false:disab
 //-----------------------------------------------------------------------------
 ///  Wavelength setter
 //-----------------------------------------------------------------------------
-void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
+void Camera::setWavelength(double value) ///< [in]
 {
     DEB_MEMBER_FUNCT();
     EIGER_SYNC_SET_PARAM(Requests::HEADER_WAVELENGTH, value);
@@ -1023,7 +1054,7 @@ void Camera::setWavelength(double value) ///< [in] true:enabled, false:disabled
 //-----------------------------------------------------------------------------
 ///  Wavelength getter
 //-----------------------------------------------------------------------------
-void Camera::getWavelength(double &value) ///< [out] true:enabled, false:disabled
+void Camera::getWavelength(double &value) ///< [out]
 {
     DEB_MEMBER_FUNCT();
     EIGER_SYNC_GET_PARAM(Requests::HEADER_WAVELENGTH, value);

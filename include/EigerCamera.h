@@ -130,6 +130,11 @@ namespace lima
 			void getVirtualPixelCorrection(bool&);
 			void setPhotonEnergy(double);
             void getPhotonEnergy(double&);		
+
+            void getDataCollectionDate(std::string&);                        
+            void getSoftwareVersion(std::string&);
+
+            //- used for the header of the file
             void setWavelength(double);
             void getWavelength(double&);
             void setBeamCenterX(double);
@@ -138,9 +143,6 @@ namespace lima
             void getBeamCenterY(double&);
             void setDetectorDistance(double);
             void getDetectorDistance(double&);            
-            void getDataCollectionDate(std::string&);                        
-            void getSoftwareVersion(std::string&);
-            
             void setChiIncrement(double);
             void getChiIncrement(double&);
             void setChiStart(double);
@@ -223,7 +225,12 @@ namespace lima
 			std::string               m_detector_ip;
             std::string               m_timestamp_type;
 			double                    m_min_frame_time;
-			bool 		m_nb_frames_per_trigger_is_master;
+            double                    m_min_photon_energy;
+            double                    m_max_photon_energy;
+            double                    m_min_threshold_energy;
+            double                    m_max_threshold_energy;
+            
+			bool 		              m_nb_frames_per_trigger_is_master;
 			
 	};
 	} // namespace Eiger
