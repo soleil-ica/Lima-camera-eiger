@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <sys/time.h>
 
 
 //- LIMA
@@ -11,6 +12,7 @@
 #include <lima/CtAcquisition.h>
 #include <lima/CtVideo.h>
 #include <lima/CtImage.h>
+#include <lima/CtSaving.h>
 #include <EigerInterface.h>
 #include <EigerCamera.h>
 
@@ -158,11 +160,11 @@ void do_snap(lima::CtControl& ct, lima::Eiger::Interface& hw)
 int main(int argc, char *argv[])
 {
 	std::cout << "============================================" << std::endl;
-	std::cout << "Usage :./ds_TestLima ip exp lat expacc nbframes nbsnap bpp packet interpacket" << std::endl << std::endl;
+	std::cout << "Usage :./ds_TestLimaEiger ip exp lat expacc nbframes nbsnap bpp packet interpacket" << std::endl << std::endl;
 
 	try
 	{
-		std::string ip_adress				= "172.16.3.137";	//default value
+		std::string ip_adress			= "172.16.3.137";	//default value
 		double exposure_time			= 500;				//default value is 1000 ms
 		double latency_time				= 0.0;				//default value is 0 ms
 		double acc_max_exposure_time	= 100;				//default value is 100 ms
@@ -170,7 +172,10 @@ int main(int argc, char *argv[])
 		int nb_snap						= 1;                //default value
 		unsigned bpp					= 8;
 		int packet_size					= 1500;             //default value
-		int interpacket_delay			= 0;				//default value        
+		int interpacket_delay			= 0;				//default value  
+
+        struct timeval start_time;
+	    struct timeval end_time;     
 
 		//read args of main 
 		switch (argc)
@@ -341,6 +346,9 @@ int main(int argc, char *argv[])
 				break;
 		}
 
+        //- test gettimeofday
+        std::cout << "test gettimeofday" << std::endl;
+        gettimeofday(&start_time, NULL);
 		//        
 		std::cout << "============================================" << std::endl;
 		std::cout << "ip_adress              = " << ip_adress << std::endl;
@@ -354,9 +362,20 @@ int main(int argc, char *argv[])
 		std::cout << "interpacket_delay      = " << interpacket_delay << std::endl;
 		std::cout << "============================================" << std::endl;
 
+        gettimeofday(&end_time, NULL);
+        std::cout   << "test gettimeofday : Elapsed time : " 
+			        << 1e3 * (end_time.tv_sec - start_time.tv_sec) + 1e-3 * (end_time.tv_usec - start_time.tv_usec) << " ms" << std::endl;
+
+
 		//initialize Eiger::Camera objects & Lima Objects
 		std::cout << "Create Camera Object" << std::endl;
+        gettimeofday(&start_time, NULL);
 		lima::Eiger::Camera myCamera(ip_adress);
+        gettimeofday(&end_time, NULL);
+        std::cout   << "lima::Eiger::Camera : Elapsed time : " 
+			        << 1e3 * (end_time.tv_sec - start_time.tv_sec) + 1e-3 * (end_time.tv_usec - start_time.tv_usec) << " ms" << std::endl;
+
+	    std::cout << "============================================" << std::endl;
 
 		std::cout << "Create Interface Object" << std::endl;
 		lima::Eiger::Interface myInterface(myCamera);
@@ -371,13 +390,13 @@ int main(int argc, char *argv[])
 		switch (bpp)
 		{
 			case 8:
-				//- Set imageType = Bpp16
+				//- Set imageType = Bpp8
 				std::cout << "Set imageType \t= " << bpp << std::endl;
 				hw_det_info->setCurrImageType(lima::Bpp8);
 				break;
 
 			case 12:
-				//- Set imageType = Bpp16
+				//- Set imageType = Bpp12
 				std::cout << "Set imageType \t= " << bpp << std::endl;
 				hw_det_info->setCurrImageType(lima::Bpp12);
 				break;
@@ -388,7 +407,7 @@ int main(int argc, char *argv[])
 				hw_det_info->setCurrImageType(lima::Bpp16);
 				break;
 			case 32:
-				//- Set imageType = Bpp16
+				//- Set imageType = Bpp32
 				std::cout << "Set imageType \t= " << bpp << std::endl;
 				hw_det_info->setCurrImageType(lima::Bpp32);
 				break;
@@ -428,6 +447,28 @@ int main(int argc, char *argv[])
 		myControl.acquisition()->setAcqNbFrames(nb_frames);
 
 		std::cout << "\n" << std::endl;
+
+        //==========================================================================================================================
+        //- Device : Eiger::read_nbTriggers
+        /*std::cout << "Device : Eiger::read_nbTriggers ..." << std::endl;
+        int nb_triggers = 0;
+        gettimeofday(&start_time, NULL);
+        lima::TrigMode trig_mode;
+        myCamera.getTrigMode(trig_mode); // unusefull but written like this in the device
+        myCamera.getNbTriggers(nb_triggers);
+        gettimeofday(&end_time, NULL);
+        std::cout   << "Device : Eiger::read_nbTriggers : Elapsed time : " 
+			        << 1e3 * (end_time.tv_sec - start_time.tv_sec) + 1e-3 * (end_time.tv_usec - start_time.tv_usec) << " ms" << std::endl;
+*/
+        //==========================================================================================================================
+        //- Device : Eiger::read_managedMode
+        std::cout << "Device : Eiger::read_managedMode ..." << std::endl;
+        gettimeofday(&start_time, NULL);
+        lima::CtSaving::ManagedMode mode;
+        myControl.saving()->getManagedMode(mode) ;
+        gettimeofday(&end_time, NULL);
+        std::cout   << "Device : Eiger::read_managedMode : Elapsed time : " 
+			        << 1e3 * (end_time.tv_sec - start_time.tv_sec) + 1e-3 * (end_time.tv_usec - start_time.tv_usec) << " ms" << std::endl;
 
 		//start nb_snap acquisition of 1 frame
 		for (unsigned i = 0; i < nb_snap; i++)
